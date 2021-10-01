@@ -2,10 +2,16 @@ from dataapi import data_collection as dc
 import numpy as np
 import pandas as pd
 import pickle
+from torch.utils.data import Dataset
+from sklearn.utils import shuffle
 
-class DataGenerator():
-    def __init__(self, hdf5_path, window_length, protocol, signal_name):
+class DataGenerator(Dataset):
+    def __init__(self, hdf5_path, window_length, protocol, signal_name,
+                 bckg_rate = None):
         '''
+        Wrapper for the Pytorch dataset that segments and samples the 
+        EEG records according to the window length.
+        ------------------------------
         hdf5_path: str
             Path to hdf5 file that should be used to build the
             generator
@@ -13,6 +19,12 @@ class DataGenerator():
             Length of windows for the data to be segmented into
         protocol: str
             Train or test
+        signal_name: str
+            Name of the signal to segment for training. 
+        bckg_rate: int
+            Number of background segments to include in the dataset 
+            per seizure segment. If None all background examples are 
+            used. 
         '''
 
         self.hdf5_path = hdf5_path
@@ -27,25 +39,54 @@ class DataGenerator():
                               + signal_name + '_norm_coef.pickle'
         calc_norm_coef = False
 
+        # Check if the normalisation coefficients have been calculated and saved
         try:
             with open(self.norm_coef_path, 'rb') as fp:
                 self.norm_coef = pickle.load(fp)
         except:
             calc_norm_coef = True
 
+        # Check if the segmentation has been computed and saved
         try:
             with open(self.pickle_path, 'rb') as fp:
                 self.segments = pickle.load(fp)
         except:
             self.segments = self._segment_data(calc_norm_coef)
-    
+        
+        bckg_samples = len(self.segments['bckg'])
+        seiz_samples = len(self.segments['seiz'])
+
+        # Resample the data if bckg_rate is given
+        if bckg_rate is not None:
+            if bckg_rate > bckg_samples/seiz_samples:
+                bckg_rate = bckg_samples/seiz_samples
+            # Downsample background class
+            self.segments['bckg'] = self.segments['bckg'].sample(n = int(bckg_rate*seiz_samples))
+
+        # Create collected sample matrix
+        self.samples = self.segments['seiz'].append(self.segments['bckg'], 
+                                                    ignore_index = True)
+        self.samples = shuffle(self.samples).reset_index()
+        
+    def __len__(self):
+        return len(self.samples)
+
     def __getitem__(self, idx):
-        item = self.segments.iloc[idx]
+        item = self.samples.iloc[idx]
         label = int(item['label'])
         sample = self._get_segment(item)
         return sample, label
     
     def _get_segment(self, item):
+        '''
+        Get EEG segment based on the path and start and end samples
+        given in item.
+        --------------
+        item: pd.DataFrame
+            Row from pd.DataFrame containing information about the
+            segment to be sampled. 
+        '''
+
         sig = self.data_file[item['path']]
         seg = sig[item['startseg']:item['endseg'],:]
 
@@ -61,7 +102,11 @@ class DataGenerator():
         segments to sample when generating data. 
         '''
         protocol = self.data_file[self.protocol]
-        segments = pd.DataFrame()
+
+        segments = dict() 
+        segments['seiz'] = pd.DataFrame()
+        segments['bckg'] = pd.DataFrame()
+        labels = ['bckg', 'seiz']
 
         if calc_norm_coef:
             self.norm_coef = dict()
@@ -73,10 +118,15 @@ class DataGenerator():
             for rec in protocol[subj].keys():
                 record = protocol[subj][rec]
                 signal = record[self.signal_name]
+
+                # Calculate normalisation coefficients for each record
                 if calc_norm_coef:
                     mean = np.mean(signal, axis = 0)
                     std = np.std(signal, axis = 0)
+                
+                # Get annotation on sample basis
                 one_hot_label = self._anno_to_one_hot(record)
+                
                 windows = int(record.duration/self.window_length)
                 window_samples = self.window_length*signal.fs
 
@@ -104,7 +154,11 @@ class DataGenerator():
                     self.norm_coef[path]['mean'] = mean
                     self.norm_coef[path]['std'] = std
 
-                segments = segments.append(seg_rec)
+                seg_rec_pos = seg_rec[seg_rec['label'] == 1]
+                seg_rec_neg = seg_rec[seg_rec['label'] == 0]
+                segments['seiz'] = segments['seiz'].append(seg_rec_pos)
+                segments['bckg'] = segments['bckg'].append(seg_rec_neg)
+
 
         # save segmentation as pickle for future use
         with open(self.pickle_path, 'wb') as fp:

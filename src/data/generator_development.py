@@ -1,14 +1,16 @@
 from dataapi import data_collection as dc
+from h5py._hl import dataset
 import numpy as np
 #from src.data import datagenerator
+from torch.utils.data import DataLoader, WeightedRandomSampler
 import datagenerator
 
-F = dc.File('data/hdf5/temple_seiz.hdf5', 'r')
-
-dataloader = datagenerator.DataGenerator('data/hdf5/temple_seiz.hdf5', 
-                                         window_length=4, protocol = 'train', 
-                                         signal_name='TCP')
-item = dataloader.__getitem__(0)
+dataset = datagenerator.DataGenerator('data/hdf5/temple_seiz.hdf5', 
+                                         window_length = 4, protocol = 'train', 
+                                         signal_name = 'TCP', bckg_rate = 20)
+#weights = dataset.samples['weight']
+#sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement = False)
+dataloader = DataLoader(dataset, batch_size=64)#, sampler=sampler)
 
 subj = F['train/00006904']
 rec = F['train/00006904/s004_t000']
