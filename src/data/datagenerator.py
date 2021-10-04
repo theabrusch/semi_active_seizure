@@ -21,7 +21,7 @@ class DataGenerator(Dataset):
             Train or test
         signal_name: str
             Name of the signal to segment for training. 
-        bckg_rate: int
+        bckg_rate: int or None
             Number of background segments to include in the dataset 
             per seizure segment. If None all background examples are 
             used. 
@@ -31,6 +31,9 @@ class DataGenerator(Dataset):
         self.data_file = dc.File(hdf5_path, 'r')
         self.window_length = window_length
         self.protocol = protocol
+        self.bckg_rate = bckg_rate
+
+        # Define paths for saving the segmentation
         self.signal_name = signal_name
         dset = hdf5_path.split('/')[-1].split('.')[0]
         self.pickle_path = 'data/' + dset + '_' + protocol + '_'\
@@ -53,15 +56,23 @@ class DataGenerator(Dataset):
         except:
             self.segments = self._segment_data(calc_norm_coef)
         
-        bckg_samples = len(self.segments['bckg'])
-        seiz_samples = len(self.segments['seiz'])
+        self.bckg_samples = len(self.segments['bckg'])
+        self.seiz_samples = len(self.segments['seiz'])
 
-        # Resample the data if bckg_rate is given
-        if bckg_rate is not None:
-            if bckg_rate > bckg_samples/seiz_samples:
-                bckg_rate = bckg_samples/seiz_samples
-            # Downsample background class
-            self.segments['bckg'] = self.segments['bckg'].sample(n = int(bckg_rate*seiz_samples))
+        # Set the background rate to the 
+        if self.bckg_rate is None:
+            self.bckg_rate = self.bckg_samples/self.seiz_samples
+        elif self.bckg_rate > self.bckg_samples/self.seiz_samples:
+            self.bckg_rate = self.bckg_samples/self.seiz_samples
+
+        # Create weights for sampling. If background rate is 
+        # 1 a batch should contain 50% background and 50% 
+        # seizure. 
+        bckg_weight = 1/self.bckg_samples*self.bckg_rate
+        seiz_weight = 1/self.seiz_samples
+
+        self.segments['bckg']['weight'] = bckg_weight
+        self.segments['seiz']['weight'] = seiz_weight
 
         # Create collected sample matrix
         self.samples = self.segments['seiz'].append(self.segments['bckg'], 
@@ -69,12 +80,24 @@ class DataGenerator(Dataset):
         self.samples = shuffle(self.samples).reset_index()
         
     def __len__(self):
-        return len(self.samples)
+        '''
+        Set the number of samples in the dataset relative to the 
+        number of seizures and the bckg_rate such that the seizures
+        are not heavily oversampled in each epoch. This is passed 
+        to the sampler. 
+        ''' 
+        return int((1+self.bckg_rate)*self.seiz_samples)
 
     def __getitem__(self, idx):
+        '''
+        Get segment based on idx. This is the function
+        that the dataloader calls when sampling during 
+        training. 
+        '''
         item = self.samples.iloc[idx]
         label = int(item['label'])
         sample = self._get_segment(item)
+
         return sample, label
     
     def _get_segment(self, item):
