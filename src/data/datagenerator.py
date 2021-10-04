@@ -4,10 +4,11 @@ import pandas as pd
 import pickle
 from torch.utils.data import Dataset
 from sklearn.utils import shuffle
+import warnings
 
 class DataGenerator(Dataset):
     def __init__(self, hdf5_path, window_length, protocol, signal_name,
-                 bckg_rate = None):
+                 stride=None, bckg_rate = None, anno_based_seg = False):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
         EEG records according to the window length.
@@ -30,14 +31,28 @@ class DataGenerator(Dataset):
         self.hdf5_path = hdf5_path
         self.data_file = dc.File(hdf5_path, 'r')
         self.window_length = window_length
+        if stride is None:
+            self.stride = self.window_length
+        else:
+            self.stride = stride
+
         self.protocol = protocol
         self.bckg_rate = bckg_rate
+        self.anno_based_seg = anno_based_seg
+        
+        if isinstance(self.stride, list) and not anno_based_seg:
+            self.stride = self.stride[0]
+            warnings.warn('The segmentation is not based on annotations '+\
+                          'so the stride is set to ' + str(self.stride), UserWarning)
+                        
 
         # Define paths for saving the segmentation
         self.signal_name = signal_name
         dset = hdf5_path.split('/')[-1].split('.')[0]
+        stride_string = ''.join(str(stride).split(' '))
         self.pickle_path = 'data/' + dset + '_' + protocol + '_'\
-                           + signal_name + '_winlen_' + str(window_length) + '.pickle'
+                           + signal_name + '_winlen_' + str(window_length) + '_anno_seg_'\
+                           + str(anno_based_seg)+'_stride_' + stride_string + '.pickle'
         self.norm_coef_path = 'data/' + dset + '_' + protocol + '_'\
                               + signal_name + '_norm_coef.pickle'
         calc_norm_coef = False
@@ -98,7 +113,7 @@ class DataGenerator(Dataset):
         label = int(item['label'])
         sample = self._get_segment(item)
 
-        return sample, label
+        return sample.T, label
     
     def _get_segment(self, item):
         '''
@@ -141,31 +156,18 @@ class DataGenerator(Dataset):
             for rec in protocol[subj].keys():
                 record = protocol[subj][rec]
                 signal = record[self.signal_name]
+                path = self.protocol + '/' + subj + '/' + rec + '/' + self.signal_name
 
                 # Calculate normalisation coefficients for each record
                 if calc_norm_coef:
                     mean = np.mean(signal, axis = 0)
                     std = np.std(signal, axis = 0)
                 
-                # Get annotation on sample basis
-                one_hot_label = self._anno_to_one_hot(record)
-                
-                windows = int(record.duration/self.window_length)
-                window_samples = self.window_length*signal.fs
-
-                path = self.protocol + '/' + subj + '/' + rec + '/' + self.signal_name
-                labels = np.zeros(windows)
-                start_win = np.zeros(windows)
-                end_win = np.zeros(windows)
-
-                for win in range(windows):
-                    sw = win*window_samples
-                    ew = (win+1)*window_samples
-                    start_win[win] = sw
-                    end_win[win] = ew
-                    # set label to seizure if any seizure is present in the segment
-                    labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>0)
-                
+                if self.anno_based_seg:
+                    labels, start_win, end_win = self._anno_based_segment(record)
+                else:
+                    labels, start_win, end_win = self._record_based_segment(record)
+                    
                 seg_rec = pd.DataFrame({'startseg': start_win.astype(int), 
                                         'endseg': end_win.astype(int), 
                                         'label': labels})
@@ -193,6 +195,28 @@ class DataGenerator(Dataset):
 
         return segments
     
+    def _record_based_segment(self, record):
+        # Get annotation on sample basis
+        one_hot_label = self._anno_to_one_hot(record)
+        signal = record[self.signal_name]
+        
+        windows = int((record.duration-self.window_length)/self.stride)+1
+        window_samples = self.window_length*signal.fs
+        stride_samples = self.stride*signal.fs
+
+        labels = np.zeros(windows)
+        start_win = np.zeros(windows)
+        end_win = np.zeros(windows)
+
+        for win in range(windows):
+            sw = win*stride_samples
+            ew = sw + window_samples
+            start_win[win] = sw
+            end_win[win] = ew
+            # set label to seizure if any seizure is present in the segment
+            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>0)
+        return labels, start_win, end_win
+    
     def _anno_to_one_hot(self, record):
         '''
         Create one hot encoding of annotations
@@ -211,3 +235,42 @@ class DataGenerator(Dataset):
                 one_hot_label[round(anno_start):round(anno_end),0] = 1
         
         return one_hot_label
+
+    def _anno_based_segment(self, record):
+        signal = record[self.signal_name]
+        annos = record['Annotations']
+        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz']
+        if isinstance(self.stride, int):
+            stride = [self.stride, self.stride]
+        else:
+            stride = self.stride
+
+        i = 0
+        for anno in annos:
+            anno_start = int((anno['Start'] - record.start_time)*signal.fs)
+            window_samples = self.window_length*signal.fs
+
+            if anno['Name'].lower() in seiz_classes:
+                anno_stride = stride[1]
+                windows = int((anno['Duration']-self.window_length)/anno_stride + 1)
+                label = np.ones(windows)
+            else:
+                anno_stride = stride[0]
+                windows = int((anno['Duration']-self.window_length)/anno_stride + 1)
+                label = np.zeros(windows)
+
+            stride_samples = anno_stride*signal.fs
+            sw = anno_start + np.array([win*stride_samples for win in range(windows)])
+            ew = sw + window_samples
+
+            if i == 0:
+                start_win = sw
+                end_win = ew
+                labels = label
+            else:
+                start_win = np.append(start_win, sw)
+                end_win = np.append(end_win, ew)
+                labels = np.append(labels, label)
+            i+=1
+        
+        return labels, start_win, end_win
