@@ -17,3 +17,20 @@ temp = next(iter(dataloader))
 
 model = baselinemodels.BaselineCNN(input_shape=(20,500))
 out = model(torch.Tensor(temp[0]))
+
+seiz_duration = dict()
+bckg_duration = dict()
+
+F = dc.File('data/hdf5/temple_seiz.hdf5', 'r')
+
+for protocol in F.keys():
+    seiz_duration[protocol] = []
+    bckg_duration[protocol] = []
+    for subj in F[protocol].keys():
+        for rec in F[protocol][subj].keys():
+            annos = F[protocol][subj][rec]['Annotations']
+            for anno in annos:
+                if anno['Name'] in ['cpsz', 'gnsz', 'spsz', 'tcsz']:
+                    seiz_duration[protocol].append(anno['Duration'])
+                else:
+                    bckg_duration[protocol].append(anno['Duration'])
