@@ -151,7 +151,7 @@ class DataGenerator(Dataset):
         
         i=0
         for subj in protocol.keys():
-            print('Segmenting data for subject', i, 'out of', len(protocol.keys()))
+            print('Segmenting data for subject', i + 1, 'out of', len(protocol.keys()))
             i+=1
             for rec in protocol[subj].keys():
                 record = protocol[subj][rec]
@@ -252,14 +252,31 @@ class DataGenerator(Dataset):
 
             if anno['Name'].lower() in seiz_classes:
                 anno_stride = stride[1]
-                windows = int((anno['Duration']-self.window_length)/anno_stride + 1)
-                label = np.ones(windows)
+                windows = (anno['Duration']-self.window_length)/anno_stride + 1
+                lab = 1
             else:
                 anno_stride = stride[0]
-                windows = int((anno['Duration']-self.window_length)/anno_stride + 1)
-                label = np.zeros(windows)
+                windows = (anno['Duration']-self.window_length)/anno_stride + 1
+                lab = 0
 
             stride_samples = anno_stride*signal.fs
+            if windows%1 != 0:
+                if anno_start - ((windows%1)*signal.fs)/2 > 0:
+                    anno_start = anno_start - ((windows%1)*signal.fs)/2
+                if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
+                    windows = int(np.ceil(windows))
+                else:
+                    windows = int(windows)
+            else:
+                windows = int(windows)
+
+            if windows <= 0:
+                print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
+                label = np.array([])
+            else:
+                label = np.zeros(windows)
+                label[:] = lab
+
             sw = anno_start + np.array([win*stride_samples for win in range(windows)])
             ew = sw + window_samples
 
