@@ -8,7 +8,8 @@ import warnings
 
 class DataGenerator(Dataset):
     def __init__(self, hdf5_path, window_length, protocol, signal_name,
-                 stride=None, bckg_rate = None, anno_based_seg = False):
+                 stride=None, bckg_rate = None, anno_based_seg = False,
+                 subjects_to_use = 'all'):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
         EEG records according to the window length.
@@ -36,6 +37,7 @@ class DataGenerator(Dataset):
         else:
             self.stride = stride
 
+        self.subjects_to_use = subjects_to_use
         self.protocol = protocol
         self.bckg_rate = bckg_rate
         self.anno_based_seg = anno_based_seg
@@ -71,6 +73,10 @@ class DataGenerator(Dataset):
         except:
             self.segments = self._segment_data(calc_norm_coef)
         
+        if isinstance(subjects_to_use, list):
+            self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
+            self.segments['seiz'] = self.segments['seiz'][self.segments['bckg']['subj'].isin(subjects_to_use)]
+
         self.bckg_samples = len(self.segments['bckg'])
         self.seiz_samples = len(self.segments['seiz'])
 

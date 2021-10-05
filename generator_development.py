@@ -4,15 +4,28 @@ from src.data import datagenerator
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from src.models import baselinemodels
 import torch
+from src.data import train_val_split
 
-dataset = datagenerator.DataGenerator('data/hdf5/temple_seiz.hdf5', 
-                                      window_length = 2, 
-                                      protocol = 'test', signal_name = 'TCP', 
-                                      bckg_rate = 1, anno_based_seg=True)
-weights = dataset.samples['weight']
-sampler = WeightedRandomSampler(weights, num_samples=dataset.__len__(), replacement = True)
-dataloader = DataLoader(dataset, batch_size=32, sampler=sampler)
-temp = next(iter(dataloader))
+hdf5_path = 'data/hdf5/temple_seiz.hdf5'
+train, val = train_val_split.train_val_split(hdf5_path, 0.8)
+
+train_dataset = datagenerator.DataGenerator(hdf5_path, 
+                                            window_length = 2, stride = 1,
+                                            protocol = 'train', signal_name = 'TCP', 
+                                            bckg_rate = 20, anno_based_seg=True,
+                                            subjects_to_use=train)
+val_dataset = datagenerator.DataGenerator(hdf5_path, 
+                                          window_length = 2, stride = 1, 
+                                          protocol = 'train', signal_name = 'TCP', 
+                                          bckg_rate = 20, anno_based_seg=True,
+                                          subjects_to_use=val)
+
+train_weights = train_dataset.samples['weight']
+train_sampler = WeightedRandomSampler(train_weights, num_samples=train_dataset.__len__(), replacement = True)
+train_dataloader = DataLoader(train_dataset, batch_size=32, sampler=train_sampler)
+val_weights = val_dataset.samples['weight']
+val_sampler = WeightedRandomSampler(val_weights, num_samples=val_dataset.__len__(), replacement = True)
+val_dataloader = DataLoader(val_dataset, batch_size=32, sampler=val_sampler)
 
 
 model = baselinemodels.BaselineCNN(input_shape=(20,500))
