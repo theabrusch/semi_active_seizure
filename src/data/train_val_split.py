@@ -52,3 +52,26 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_names, pickle_path=None):
 
     return seiz_subjs
 
+
+def get_seiz_recs(subject, seiz_names, pickle_path=None):
+    seiz_recs = dict()
+    seiz_recs['seiz'] = []
+    seiz_recs['non seiz'] = []
+
+    for rec in subject.keys():
+        seiz = 0
+        annos = subject[rec]['Annotations']
+        for anno in annos:
+            if anno['Name'].lower() in seiz_names:
+                seiz = 1
+        if seiz == 1:
+            seiz_recs['seiz'].append(rec)
+        else:
+            seiz_recs['non seiz'].append(rec)
+
+        if pickle_path is not None:
+            with open(pickle_path, 'wb') as fp:
+                pickle.dump(seiz_recs, fp)
+
+    return seiz_recs
+
