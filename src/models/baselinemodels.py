@@ -1,7 +1,8 @@
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-import pandas as pd
+import warnings
+warnings.filterwarnings('ignore', 'Named tensors.*', )
+
 
 def conv_size(input_size, kernel, padding, stride=1):
     '''
@@ -30,13 +31,15 @@ class BaselineCNN(nn.Module):
         h, w = conv_size((h,w), 2, 0, stride=2)
         h, w = conv_size((h,w), 3, 0, stride=1)
 
+        ch_dim = [input_shape[0] if input_shape[0]%2 != 0 else input_shape[0]-1][0]
+
         self.convblock = nn.Sequential(
             nn.Conv2d(in_channels = 1, out_channels = 20, 
                       kernel_size = (1,11), padding = 'same'),
             nn.ELU(),
             nn.BatchNorm2d(20),
             nn.Conv2d(in_channels = 20, out_channels = 20, 
-                      kernel_size=(input_shape[0], 21), padding = 'same'),
+                      kernel_size=(ch_dim, 21), padding = 'same'),
             nn.ELU(),
             nn.BatchNorm2d(20),
             nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
@@ -59,5 +62,5 @@ class BaselineCNN(nn.Module):
         out = self.convblock(x.unsqueeze(1))
         out = self.GlobAvgPool(out)
         out = out.squeeze(3).squeeze(2)
-        out = F.softmax(out)
+        out = F.softmax(out, dim = 1)
         return out

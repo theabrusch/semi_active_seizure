@@ -9,7 +9,7 @@ import warnings
 class DataGenerator(Dataset):
     def __init__(self, hdf5_path, window_length, protocol, signal_name,
                  stride=None, bckg_rate = None, anno_based_seg = False,
-                 subjects_to_use = 'all'):
+                 subjects_to_use = 'all', prefetch_data = False):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
         EEG records according to the window length.
@@ -39,6 +39,7 @@ class DataGenerator(Dataset):
 
         self.subjects_to_use = subjects_to_use
         self.protocol = protocol
+        self.prefetch_data = prefetch_data
         self.bckg_rate = bckg_rate
         self.anno_based_seg = anno_based_seg
         
@@ -67,18 +68,23 @@ class DataGenerator(Dataset):
             calc_norm_coef = True
 
         # Check if the segmentation has been computed and saved
-        try:
-            with open(self.pickle_path, 'rb') as fp:
-                self.segments = pickle.load(fp)
-        except:
-            self.segments = self._segment_data(calc_norm_coef)
-        
-        if isinstance(subjects_to_use, list):
-            self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
-            self.segments['seiz'] = self.segments['seiz'][self.segments['bckg']['subj'].isin(subjects_to_use)]
+        if not self.prefetch_data:
+            try:
+                with open(self.pickle_path, 'rb') as fp:
+                    self.segments = pickle.load(fp)
+            except:
+                self.segments = self._segment_data(calc_norm_coef)
+            if isinstance(subjects_to_use, list) or isinstance(subjects_to_use, np.ndarray):
+                self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
+                self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(subjects_to_use)]
+            self.bckg_samples = len(self.segments['bckg'])
+            self.seiz_samples = len(self.segments['seiz'])
+        else:
+            self.segments = self._prefetch()
+            self.bckg_samples = len(self.segments['bckg']['samples'])
+            self.seiz_samples = len(self.segments['seiz']['samples'])   
 
-        self.bckg_samples = len(self.segments['bckg'])
-        self.seiz_samples = len(self.segments['seiz'])
+        
 
         # Set the background rate to the 
         if self.bckg_rate is None:
@@ -92,13 +98,24 @@ class DataGenerator(Dataset):
         bckg_weight = 1/self.bckg_samples*self.bckg_rate
         seiz_weight = 1/self.seiz_samples
 
-        self.segments['bckg']['weight'] = bckg_weight
-        self.segments['seiz']['weight'] = seiz_weight
+        if not self.prefetch_data:
+            self.segments['bckg']['weight'] = bckg_weight
+            self.segments['seiz']['weight'] = seiz_weight
 
-        # Create collected sample matrix
-        self.samples = self.segments['seiz'].append(self.segments['bckg'], 
-                                                    ignore_index = True)
-        self.samples = shuffle(self.samples).reset_index()
+            # Create collected sample matrix
+            self.samples = self.segments['seiz'].append(self.segments['bckg'], 
+                                                        ignore_index = True)
+            samptemp = shuffle(self.samples)
+            self.weigths = samptemp['weight']
+            self.samples = samptemp.to_records()
+        else:
+            weights = np.zeros(self.bckg_samples + self.seiz_samples)
+            weights[:self.seiz_samples] = seiz_weight
+            weights[self.seiz_samples::] = bckg_weight
+            samp = np.append(self.segments['seiz']['samples'], self.segments['bckg']['samples'], axis = 0)
+            lab = np.append(self.segments['seiz']['label'], self.segments['bckg']['label'], axis = 0)
+            self.samples = list(zip(samp, lab))
+            self.samples, self.weights = shuffle(self.samples, weights)
         
     def __len__(self):
         '''
@@ -115,11 +132,16 @@ class DataGenerator(Dataset):
         that the dataloader calls when sampling during 
         training. 
         '''
-        item = self.samples.iloc[idx]
-        label = int(item['label'])
-        sample = self._get_segment(item)
+        if self.prefetch_data:
+            item = self.samples[idx]
+            sample = item[0]
+            label = item[1]
+        else:
+            item = self.samples[idx]
+            label = int(item['label'])
+            sample = self._get_segment(item)
 
-        return sample.T, label
+        return sample, label
     
     def _get_segment(self, item):
         '''
@@ -138,7 +160,53 @@ class DataGenerator(Dataset):
         mean = np.expand_dims(self.norm_coef[item['path']]['mean'], 0)
         std = np.expand_dims(self.norm_coef[item['path']]['std'], 0)
         seg = (seg-mean)/std
-        return seg
+        return seg.T
+    
+    def _prefetch(self):
+        protocol = self.data_file[self.protocol]
+
+        segments = dict() 
+        segments['seiz'] = dict()
+        segments['bckg'] = dict()
+        
+        i=0
+        for subj in self.subjects_to_use:
+            print('Segmenting data for subject', i + 1, 'out of', len(protocol.keys()))
+            i+=1
+            for rec in protocol[subj].keys():
+                record = protocol[subj][rec]
+                signal = record[self.signal_name]
+
+                # Calculate normalisation coefficients for each record
+                mean = np.expand_dims(np.mean(signal, axis = 0),1)
+                std = np.expand_dims(np.std(signal, axis = 0),1)
+                
+                if self.anno_based_seg:
+                    labels, samples = self._anno_based_segment(record, prefetch = True)
+                else:
+                    labels, samples = self._record_based_segment(record, prefetch = True)
+
+                samples = (samples - mean)/std
+                pos_samples = labels == 1
+                neg_samples = labels == 0
+
+                if 'samples' in segments['seiz'].keys():
+                    segments['seiz']['samples'] = np.append(segments['seiz']['samples'], samples[pos_samples], axis = 0)
+                    segments['bckg']['samples'] = np.append(segments['bckg']['samples'], samples[neg_samples], axis = 0)
+                    segments['seiz']['label'] = np.append(segments['seiz']['label'], labels[pos_samples], axis = 0)
+                    segments['bckg']['label'] = np.append(segments['bckg']['label'], labels[neg_samples], axis = 0)
+                else:
+                    segments['seiz']['samples'] = samples[pos_samples]
+                    segments['bckg']['samples'] = samples[neg_samples]
+                    segments['seiz']['label'] = labels[pos_samples]
+                    segments['bckg']['label'] = labels[neg_samples]
+    
+        return segments
+
+    
+    def _get_X_shape(self):
+        temp = self.__getitem__(0)
+        return temp[0].shape
     
     def _segment_data(self, calc_norm_coef):
         '''
@@ -201,27 +269,38 @@ class DataGenerator(Dataset):
 
         return segments
     
-    def _record_based_segment(self, record):
+    def _record_based_segment(self, record, prefetch=False):
         # Get annotation on sample basis
         one_hot_label = self._anno_to_one_hot(record)
         signal = record[self.signal_name]
+        channels = len(signal.attrs['chNames'])
         
         windows = int((record.duration-self.window_length)/self.stride)+1
         window_samples = self.window_length*signal.fs
         stride_samples = self.stride*signal.fs
 
-        labels = np.zeros(windows)
-        start_win = np.zeros(windows)
-        end_win = np.zeros(windows)
+        if prefetch:
+            samples = np.zeros((windows, channels, window_samples))
+            labels = np.zeros(windows)
+        else:
+            labels = np.zeros(windows)
+            start_win = np.zeros(windows)
+            end_win = np.zeros(windows)
 
         for win in range(windows):
             sw = win*stride_samples
             ew = sw + window_samples
-            start_win[win] = sw
-            end_win[win] = ew
+            if prefetch:
+                samples[win,:,:] = signal[sw:ew,:].T
+            else: 
+                start_win[win] = sw
+                end_win[win] = ew
             # set label to seizure if any seizure is present in the segment
             labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>0)
-        return labels, start_win, end_win
+        if prefetch:
+            return labels, samples
+        else:
+            return labels, start_win, end_win
     
     def _anno_to_one_hot(self, record):
         '''
@@ -230,7 +309,7 @@ class DataGenerator(Dataset):
         signal = record[self.signal_name]
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
-        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz']
+        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
 
         for anno in annos:
             anno_start = (anno['Start'] - record.start_time)*signal.fs
@@ -242,10 +321,11 @@ class DataGenerator(Dataset):
         
         return one_hot_label
 
-    def _anno_based_segment(self, record):
+    def _anno_based_segment(self, record, prefetch=False):
         signal = record[self.signal_name]
+        channels = len(signal.attrs['chNames'])
         annos = record['Annotations']
-        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz']
+        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
         if isinstance(self.stride, int):
             stride = [self.stride, self.stride]
         else:
@@ -267,8 +347,8 @@ class DataGenerator(Dataset):
 
             stride_samples = anno_stride*signal.fs
             if windows%1 != 0:
-                if anno_start - ((windows%1)*signal.fs)/2 > 0:
-                    anno_start = anno_start - ((windows%1)*signal.fs)/2
+                if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
+                    anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
                 if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
                     windows = int(np.ceil(windows))
                 else:
@@ -282,18 +362,32 @@ class DataGenerator(Dataset):
             else:
                 label = np.zeros(windows)
                 label[:] = lab
-
+            
             sw = anno_start + np.array([win*stride_samples for win in range(windows)])
             ew = sw + window_samples
 
+            if prefetch:
+                samples = np.zeros((windows, channels, window_samples))
+                for win in range(windows):
+                    samples[win,:,:] = signal[sw[win]:ew[win],:].T
+        
             if i == 0:
-                start_win = sw
-                end_win = ew
+                if prefetch:
+                    samples_collect = samples
+                else:
+                    start_win = sw
+                    end_win = ew
                 labels = label
             else:
-                start_win = np.append(start_win, sw)
-                end_win = np.append(end_win, ew)
+                if prefetch:
+                    samples_collect = np.append(samples_collect, samples, axis = 0)
+                else:
+                    start_win = np.append(start_win, sw)
+                    end_win = np.append(end_win, ew)
                 labels = np.append(labels, label)
             i+=1
         
-        return labels, start_win, end_win
+        if prefetch:
+            return labels, samples_collect
+        else:
+            return labels, start_win, end_win
