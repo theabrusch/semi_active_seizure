@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 def train_val_split(hdf5_path, train_percent):
     dset = hdf5_path.split('/')[-1].split('.')[0]
     pickle_path = 'data/' + dset + '_' + 'seiz_subjs.pickle'
-    seiz_names = ['cpsz', 'gnsz', 'spsz', 'tcsz']
+    seiz_names = ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
 
     # get subjects with seizure and without to ensure an equal split
     try:
