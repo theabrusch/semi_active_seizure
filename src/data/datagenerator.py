@@ -7,26 +7,50 @@ from sklearn.utils import shuffle
 import warnings
 
 class DataGenerator(Dataset):
-    def __init__(self, hdf5_path, window_length, protocol, signal_name,
-                 stride=None, bckg_rate = None, anno_based_seg = False,
-                 subjects_to_use = 'all', prefetch_data = False):
+    def __init__(self, 
+                 hdf5_path, 
+                 protocol, 
+                 signal_name,
+                 window_length, 
+                 stride = None, 
+                 bckg_rate = None, 
+                 anno_based_seg = False,
+                 subjects_to_use = 'all', 
+                 prefetch_data_dir = False,
+                 prefetch_data_from_seg = False):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
         EEG records according to the window length.
         ------------------------------
         hdf5_path: str
             Path to hdf5 file that should be used to build the
-            generator
-        window_length: float
-            Length of windows for the data to be segmented into
+            generator. 
         protocol: str
             Train or test
         signal_name: str
             Name of the signal to segment for training. 
+        window_length: float
+            Length of windows for the data to be segmented into
+        stride: float or None
+            Stride between windows to creat overlap. If None is given, 
+            the stride is set to window length (ie. no overlap).
         bckg_rate: int or None
             Number of background segments to include in the dataset 
             per seizure segment. If None all background examples are 
             used. 
+        anno_based_seg: bool
+            If True, the segmentation is based on the annotations in
+            the dataset. If False, the segmentation starts from the
+            beginning of each record. 
+        subjects_to_use: list or 'all'
+            If list, the subjects in the list are included in the 
+            dataset. If not a list, all subjects are included. 
+        prefetch_data_dir: bool
+            If True, the segmentation is computed from scratch and
+            the samples are prefetched and saved in memory. 
+        prefetch_data_from_seg: bool
+            If True, the data is prefetched from a precomputed 
+            segmentation. 
         '''
 
         self.hdf5_path = hdf5_path
@@ -39,7 +63,8 @@ class DataGenerator(Dataset):
 
         self.subjects_to_use = subjects_to_use
         self.protocol = protocol
-        self.prefetch_data = prefetch_data
+        self.prefetch_data_dir = prefetch_data_dir
+        self.prefetch_data_from_seg = prefetch_data_from_seg
         self.bckg_rate = bckg_rate
         self.anno_based_seg = anno_based_seg
         
@@ -60,6 +85,13 @@ class DataGenerator(Dataset):
                               + signal_name + '_norm_coef.pickle'
         calc_norm_coef = False
 
+        if self.prefetch_data_dir and self.prefetch_data_from_seg:
+            warn_str = 'prefetch_data_dir and prefetch_data_from_seg' + \
+                       'cannot both be true. Setting prefetch_data_dir' + \
+                       'to False.'
+            warnings.warn(warn_str, UserWarning)
+            self.prefetch_data_from_seg = False
+
         # Check if the normalisation coefficients have been calculated and saved
         try:
             with open(self.norm_coef_path, 'rb') as fp:
@@ -68,11 +100,13 @@ class DataGenerator(Dataset):
             calc_norm_coef = True
 
         # Check if the segmentation has been computed and saved
-        if not self.prefetch_data:
+        if not self.prefetch_data_dir:
             try:
+                print('Trying to load segmentation from disk.')
                 with open(self.pickle_path, 'rb') as fp:
                     self.segments = pickle.load(fp)
             except:
+                print('Segmentation not computed, starting computation of segmentation.')
                 self.segments = self._segment_data(calc_norm_coef)
             if isinstance(subjects_to_use, list) or isinstance(subjects_to_use, np.ndarray):
                 self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
@@ -80,16 +114,18 @@ class DataGenerator(Dataset):
             self.bckg_samples = len(self.segments['bckg'])
             self.seiz_samples = len(self.segments['seiz'])
         else:
+            print('Starting prefetch of data directly from records.')
             self.segments = self._prefetch()
             self.bckg_samples = len(self.segments['bckg']['samples'])
             self.seiz_samples = len(self.segments['seiz']['samples'])   
-
-        
 
         # Set the background rate to the 
         if self.bckg_rate is None:
             self.bckg_rate = self.bckg_samples/self.seiz_samples
         elif self.bckg_rate > self.bckg_samples/self.seiz_samples:
+            print('Background rate is too high compared to ratio.',
+                  'Setting background rate to', 
+                  self.bckg_samples/self.seiz_samples, '.')
             self.bckg_rate = self.bckg_samples/self.seiz_samples
 
         # Create weights for sampling. If background rate is 
@@ -98,16 +134,21 @@ class DataGenerator(Dataset):
         bckg_weight = 1/self.bckg_samples*self.bckg_rate
         seiz_weight = 1/self.seiz_samples
 
-        if not self.prefetch_data:
+        if not self.prefetch_data_dir:
             self.segments['bckg']['weight'] = bckg_weight
             self.segments['seiz']['weight'] = seiz_weight
 
             # Create collected sample matrix
-            self.samples = self.segments['seiz'].append(self.segments['bckg'], 
-                                                        ignore_index = True)
-            samptemp = shuffle(self.samples)
-            self.weigths = samptemp['weight']
-            self.samples = samptemp.to_records()
+            segments = self.segments['seiz'].append(self.segments['bckg'], 
+                                                   ignore_index = True)
+            samptemp = shuffle(segments).reset_index()
+            self.weights = samptemp['weight']
+            if self.prefetch_data_from_seg:
+                print('Starting prefetch of data from segmentation...')
+                samples = self._prefetch_from_seg(samptemp)
+            else:
+                samples = samptemp.to_records(index = False)
+            self.samples = samples
         else:
             weights = np.zeros(self.bckg_samples + self.seiz_samples)
             weights[:self.seiz_samples] = seiz_weight
@@ -132,12 +173,15 @@ class DataGenerator(Dataset):
         that the dataloader calls when sampling during 
         training. 
         '''
-        if self.prefetch_data:
-            item = self.samples[idx]
+        item = self.samples[idx]
+        if self.prefetch_data_dir or self.prefetch_data_from_seg:
+            # if data has been prefetched, simply take the 
+            # sample
             sample = item[0]
-            label = item[1]
+            label = int(item[1])
         else:
-            item = self.samples[idx]
+            # if data has not been prefetched, get the sample
+            # using the start and end of the segment
             label = int(item['label'])
             sample = self._get_segment(item)
 
@@ -162,7 +206,48 @@ class DataGenerator(Dataset):
         seg = (seg-mean)/std
         return seg.T
     
+    def _prefetch_from_seg(self, seg):
+        '''
+        If segmentation has already been done,
+        the data can be prefetched by calling
+        _get_segment() and saving all samples in 
+        memory.
+        Inputs
+        ----------------------------------------
+        seg: pd.DataFrame
+            Segmentation to use for getting samples. 
+        
+        Outputs
+        ----------------------------------------
+        samples: list 
+            List of tuples where each tuple is 
+            (sample, label). 
+        '''
+        samples = []
+
+        for i in range(len(seg)):
+            if (i+1)%1000 == 0:
+                print('Prefetching segment', (i+1), 'out of', len(seg))
+            item = seg.loc[i,:]
+            sample = self._get_segment(item)
+            label = item['label']
+            samples.append((sample, label))
+        
+        # close data file since it is no longer needed
+        self.data_file.close()
+        return samples
+
+    
     def _prefetch(self):
+        '''
+        If the segmentation has not already been computed, 
+        the prefetching can be done directly. 
+        Outputs
+        -------------------------------------------------
+        segments: dict
+            Dictionary with all samples. Divided into 
+            seizure and background. 
+        '''
         protocol = self.data_file[self.protocol]
 
         segments = dict() 
@@ -200,7 +285,8 @@ class DataGenerator(Dataset):
                     segments['bckg']['samples'] = samples[neg_samples]
                     segments['seiz']['label'] = labels[pos_samples]
                     segments['bckg']['label'] = labels[neg_samples]
-    
+        
+        self.data_file.close()
         return segments
 
     
