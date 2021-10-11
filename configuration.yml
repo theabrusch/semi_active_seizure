@@ -6,9 +6,9 @@ data_gen:
   hdf5_path: data/hdf5/temple_seiz_sub.hdf5
   protocol: train
   window_length: &win_len 2
-  stride: &stride [1,2]
+  stride: &stride [2,2]
   signal_name: TCP
-  bckg_rate: 1
+  bckg_rate: &bckg_rate 1
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: True
   prefetch_data_dir: False
@@ -18,7 +18,6 @@ data_gen:
 generator_kwargs:
   batch_size: 64
   val_batch_size: 64
-
 
 
 model_kwargs:
@@ -33,35 +32,16 @@ fit:
   #
   # Hyperparameters passed to the Trainer object
   #
-
   # Loss function
-  loss: FocalTverskyLoss # DiceBeta
-  loss_kwargs: {alpha: 0.8, gamma: 3, smooth: 0.1} #keep this line empty if youre not using Dice beta
-  val_freq: 1
+  loss: CrossEntropy 
+  weight: *bckg_rate
+
 
   # Optimization
-  optimizer: Adam
-  optimizer_kwargs: {lr: 0.001}
+  optimizer:
+    optimizer: Adam
+    lr: 0.001 
+    scheduler: None
 
-  n_epochs: 50
-  verbose: 2
-  #architec_path: !join [outputs/models/,*model,_,*scaler,_,*time,'.json']
-  #validation_steps: 12
-  #steps_per_epoch: 66
+  n_epochs: 1
   
-predict_on_signal:
-  predict_only: True
-  model_run_id: test_VGG_RNN_1618231849_8f82cfbf
-  use_hot_weights: False
-  
-  post_analysis: False
-  pred_shift_sec: 10
-  save_predictions: True
-  save_integration: False
-  integration_window: 10
-  export_to_edf: False
-  inactive_period: 45
-  thr: [40,45,50,55,60,65,70,75,80,85,90,95,99,100]
-  proximity_window: [30,30]
-  batch_size_pred: 10
-  pred_on: pred #or int
