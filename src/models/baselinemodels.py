@@ -23,7 +23,7 @@ def conv_size(input_size, kernel, padding, stride=1):
 
 class BaselineCNN(nn.Module):
 
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, **kwargs):
         super(BaselineCNN, self).__init__() 
 
         h, w = conv_size(input_shape, (1,2), 0, stride=(1,2))

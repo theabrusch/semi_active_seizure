@@ -4,8 +4,6 @@ data_gen:
   #
   gen_type: DataGenerator
   hdf5_path: data/hdf5/temple_seiz_sub.hdf5
-  batch_size: 64
-  val_batch_size: 64
   protocol: train
   window_length: &win_len 2
   stride: &stride [1,2]
@@ -17,28 +15,18 @@ data_gen:
   prefetch_data_from_seg: False
   train_percent: 0.8
 
+generator_kwargs:
+  batch_size: 64
+  val_batch_size: 64
 
-build:
+
+
+model_kwargs:
   #
   # Hyperparameters passed to the Model.build and __init__ methods
   #
-  seed: 1
   model_summary: True
-  model: &model VGG_RNN
-  model_kwargs: 
-    pooling: 'max'
-    rnn_depth: 2
-    rnn_type: "GRU"
-    rnn_units: 64
-    rnn_activation: 'tanh'
-    rec_activation: 'sigmoid'
-    dense_units: 128
-    dense_depth: 2
-    dense_decay: 0.5
-    dense_activation: 'relu'
-    l2_reg: 0
-    dropout: 0
-    many_to: one # or many 
+  model: &model BaselineCNN
 
 
 fit:
