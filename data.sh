@@ -1,1 +1,1 @@
-rsync -Pav -a ~/Desktop/Speciale_data --rsh=ssh theb@login1.gbar.dtu.dk:/zhome/89/a/117273/Desktop/semi_active_seizure/data/hdf5
+rsync -Pav -a ~/Desktop/Speciale_data/ --rsh=ssh theb@login1.gbar.dtu.dk:/work3/theb/
