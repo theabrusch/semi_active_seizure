@@ -6,9 +6,9 @@ data_gen:
   hdf5_path: data/hdf5/temple_seiz_sub.hdf5
   protocol: train
   window_length: &win_len 2
-  stride: &stride [2,2]
+  stride: &stride [1,1]
   signal_name: TCP
-  bckg_rate: &bckg_rate 1
+  bckg_rate: &bckg_rate None
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: True
   prefetch_data_dir: False

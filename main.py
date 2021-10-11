@@ -21,6 +21,8 @@ model = get_model.get_model(model_config)
 # train model
 optim_config = config['fit']['optimizer']
 optimizer, scheduler = get_optim.get_optim(model.parameters(), optim_config)
+
+config['fit']['weight'] = train_dataset.bckg_rate
 loss_fn = get_loss.get_loss(**config['fit'])
 
 train_model = train_model.model_train(model, 

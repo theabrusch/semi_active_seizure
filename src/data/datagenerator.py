@@ -124,7 +124,7 @@ class DataGenerator(Dataset):
             self.seiz_samples = len(self.segments['seiz']['samples'])   
 
         # Set the background rate to the 
-        if self.bckg_rate is None:
+        if self.bckg_rate == 'None':
             self.bckg_rate = self.bckg_samples/self.seiz_samples
         elif self.bckg_rate > self.bckg_samples/self.seiz_samples:
             print('Background rate is too high compared to ratio.',
