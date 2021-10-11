@@ -1,0 +1,79 @@
+data_gen:
+  #
+  # Hyperparameters passed to the DataGenerator object
+  #
+  gen_type: DataGenerator
+  hdf5_path: data/hdf5/temple_seiz_sub.hdf5
+  batch_size: 64
+  val_batch_size: 64
+  protocol: train
+  window_length: &win_len 2
+  stride: &stride [1,2]
+  signal_name: TCP
+  bckg_rate: 1
+  seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
+  anno_based_seg: True
+  prefetch_data_dir: False
+  prefetch_data_from_seg: False
+  train_percent: 0.8
+
+
+build:
+  #
+  # Hyperparameters passed to the Model.build and __init__ methods
+  #
+  seed: 1
+  model_summary: True
+  model: &model VGG_RNN
+  model_kwargs: 
+    pooling: 'max'
+    rnn_depth: 2
+    rnn_type: "GRU"
+    rnn_units: 64
+    rnn_activation: 'tanh'
+    rec_activation: 'sigmoid'
+    dense_units: 128
+    dense_depth: 2
+    dense_decay: 0.5
+    dense_activation: 'relu'
+    l2_reg: 0
+    dropout: 0
+    many_to: one # or many 
+
+
+fit:
+  #
+  # Hyperparameters passed to the Trainer object
+  #
+
+  # Loss function
+  loss: FocalTverskyLoss # DiceBeta
+  loss_kwargs: {alpha: 0.8, gamma: 3, smooth: 0.1} #keep this line empty if youre not using Dice beta
+  val_freq: 1
+
+  # Optimization
+  optimizer: Adam
+  optimizer_kwargs: {lr: 0.001}
+
+  n_epochs: 50
+  verbose: 2
+  #architec_path: !join [outputs/models/,*model,_,*scaler,_,*time,'.json']
+  #validation_steps: 12
+  #steps_per_epoch: 66
+  
+predict_on_signal:
+  predict_only: True
+  model_run_id: test_VGG_RNN_1618231849_8f82cfbf
+  use_hot_weights: False
+  
+  post_analysis: False
+  pred_shift_sec: 10
+  save_predictions: True
+  save_integration: False
+  integration_window: 10
+  export_to_edf: False
+  inactive_period: 45
+  thr: [40,45,50,55,60,65,70,75,80,85,90,95,99,100]
+  proximity_window: [30,30]
+  batch_size_pred: 10
+  pred_on: pred #or int

@@ -3,10 +3,9 @@ import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def train_val_split(hdf5_path, train_percent):
+def train_val_split(hdf5_path, train_percent, seiz_classes, **kwargs):
     dset = hdf5_path.split('/')[-1].split('.')[0]
     pickle_path = 'data/' + dset + '_' + 'seiz_subjs.pickle'
-    seiz_names = ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
 
     # get subjects with seizure and without to ensure an equal split
     try:
@@ -14,7 +13,7 @@ def train_val_split(hdf5_path, train_percent):
             seiz_subjs = pickle.load(fp)
     except:
         print('Extracting seizure subjects and non seizure subjects.')
-        seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_names, pickle_path)
+        seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_classes, pickle_path)
 
     train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], train_size=train_percent)
     train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], train_size=train_percent)
@@ -24,7 +23,7 @@ def train_val_split(hdf5_path, train_percent):
 
     return train, val
 
-def get_seiz_subjs(hdf5_path, protocol, seiz_names, pickle_path=None):
+def get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path=None):
     F = dc.File(hdf5_path, 'r')
     proto = F[protocol]
     seiz_subjs = dict()
@@ -39,7 +38,7 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_names, pickle_path=None):
         for rec in proto[subj].keys():
             annos = proto[subj][rec]['Annotations']
             for anno in annos:
-                if anno['Name'].lower() in seiz_names:
+                if anno['Name'].lower() in seiz_classes:
                     seiz = 1
         if seiz == 1:
             seiz_subjs['seiz'].append(subj)
@@ -53,7 +52,7 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_names, pickle_path=None):
     return seiz_subjs
 
 
-def get_seiz_recs(subject, seiz_names, pickle_path=None):
+def get_seiz_recs(subject, seiz_classes, pickle_path=None):
     seiz_recs = dict()
     seiz_recs['seiz'] = []
     seiz_recs['non seiz'] = []
@@ -62,7 +61,7 @@ def get_seiz_recs(subject, seiz_names, pickle_path=None):
         seiz = 0
         annos = subject[rec]['Annotations']
         for anno in annos:
-            if anno['Name'].lower() in seiz_names:
+            if anno['Name'].lower() in seiz_classes:
                 seiz = 1
         if seiz == 1:
             seiz_recs['seiz'].append(rec)

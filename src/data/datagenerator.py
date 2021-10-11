@@ -12,12 +12,14 @@ class DataGenerator(Dataset):
                  protocol, 
                  signal_name,
                  window_length, 
+                 seiz_classes,
                  stride = None, 
                  bckg_rate = None, 
                  anno_based_seg = False,
                  subjects_to_use = 'all', 
                  prefetch_data_dir = False,
-                 prefetch_data_from_seg = False):
+                 prefetch_data_from_seg = False,
+                 **kwargs):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
         EEG records according to the window length.
@@ -67,6 +69,7 @@ class DataGenerator(Dataset):
         self.prefetch_data_from_seg = prefetch_data_from_seg
         self.bckg_rate = bckg_rate
         self.anno_based_seg = anno_based_seg
+        self.seiz_classes = seiz_classes
         
         if isinstance(self.stride, list) and not anno_based_seg:
             self.stride = self.stride[0]
@@ -105,6 +108,7 @@ class DataGenerator(Dataset):
                 print('Trying to load segmentation from disk.')
                 with open(self.pickle_path, 'rb') as fp:
                     self.segments = pickle.load(fp)
+                print('Succesfully loaded segmentation.')
             except:
                 print('Segmentation not computed, starting computation of segmentation.')
                 self.segments = self._segment_data(calc_norm_coef)
@@ -395,12 +399,11 @@ class DataGenerator(Dataset):
         signal = record[self.signal_name]
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
-        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
 
         for anno in annos:
             anno_start = (anno['Start'] - record.start_time)*signal.fs
             anno_end = anno_start+anno['Duration']*signal.fs
-            if anno['Name'].lower() in seiz_classes:
+            if anno['Name'].lower() in self.seiz_classes:
                 one_hot_label[round(anno_start):round(anno_end),1] = 1
             else:
                 one_hot_label[round(anno_start):round(anno_end),0] = 1
@@ -411,7 +414,7 @@ class DataGenerator(Dataset):
         signal = record[self.signal_name]
         channels = len(signal.attrs['chNames'])
         annos = record['Annotations']
-        seiz_classes = ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
+
         if isinstance(self.stride, int):
             stride = [self.stride, self.stride]
         else:
@@ -422,7 +425,7 @@ class DataGenerator(Dataset):
             anno_start = int((anno['Start'] - record.start_time)*signal.fs)
             window_samples = self.window_length*signal.fs
 
-            if anno['Name'].lower() in seiz_classes:
+            if anno['Name'].lower() in self.seiz_classes:
                 anno_stride = stride[1]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 1

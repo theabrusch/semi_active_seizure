@@ -5,7 +5,15 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 from src.models import baselinemodels
 import torch
 from src.data import train_val_split
+import yaml
+from src.data import get_generator
 
+with open('configuration.yml', 'r') as file:
+    config = yaml.safe_load(file)
+
+train_dataloader, val_dataloader = get_generator.get_generator(config['data_gen'])
+
+train_dataset = datagenerator.DataGenerator(**config['data_gen'])
 # Setup datasets
 hdf5_path = 'data/hdf5/temple_seiz_sub.hdf5'
 train, val = train_val_split.train_val_split(hdf5_path, 0.8)
