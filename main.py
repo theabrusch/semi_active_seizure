@@ -1,5 +1,6 @@
 from dataapi import data_collection as dc
 import numpy as np
+import pickle
 import yaml
 from src.data import get_generator
 from src.models import get_model, get_optim, get_loss, train_model
@@ -31,7 +32,9 @@ train_loss, val_loss = train_model.train(train_dataloader,
                                          val_dataloader,
                                          config['fit']['n_epochs'])
 
-temp = next(iter(train_dataloader))
-out_temp = train_model.model(temp[0].float())
-out_temp2 = model(temp[0].float())
+with open('train_loss.pickle', 'wb') as f:
+    pickle.dump(train_loss, f)
+
+with open('val_loss.pickle', 'w') as f:
+    pickle.dump(val_loss, f)
 
