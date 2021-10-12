@@ -33,6 +33,12 @@ train_model = train_model.model_train(model,
 train_loss, val_loss = train_model.train(train_dataloader,
                                          val_dataloader,
                                          config['fit']['n_epochs'])
+temp = next(iter(train_dataloader))
+temp_out = train_model.model(temp[0].float().to(train_model.device))
+temp_out2 = model(temp[0].float())
+
+print(temp_out==temp_out2)
+
 
 with open('train_loss.pickle', 'wb') as f:
     pickle.dump(train_loss, f)

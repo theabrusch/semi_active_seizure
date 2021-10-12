@@ -3,7 +3,8 @@ data_gen:
   # Hyperparameters passed to the DataGenerator object
   #
   gen_type: DataGenerator
-  hdf5_path: /work3/theb/boston_scalp_new.hdf5
+  #hdf5_path: /work3/theb/boston_scalp_new.hdf5
+  hdf5_path: /Users/theabrusch/Desktop/Speciale_data/boston_scalp_new.hdf5
   protocol: train
   window_length: &win_len 2
   stride: &stride [1,1]
@@ -13,7 +14,7 @@ data_gen:
   anno_based_seg: True
   prefetch_data_dir: False
   prefetch_data_from_seg: False
-  train_percent: 0.8
+  train_percent: 0.9
 
 generator_kwargs:
   batch_size: 64

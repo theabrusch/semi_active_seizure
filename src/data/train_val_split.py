@@ -16,7 +16,11 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, **kwargs):
         seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_classes, pickle_path)
 
     train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], train_size=train_percent)
-    train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], train_size=train_percent)
+    if len(seiz_subjs['non seiz']) > 0:
+        train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], train_size=train_percent)
+    else:
+        train_non_seiz = []
+        val_non_seiz = []
 
     train = np.append(train_seiz, train_non_seiz)
     val = np.append(val_seiz, val_non_seiz)
@@ -44,7 +48,6 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path=None):
             seiz_subjs['seiz'].append(subj)
         else:
             seiz_subjs['non seiz'].append(subj)
-
     if pickle_path is not None:
         with open(pickle_path, 'wb') as fp:
             pickle.dump(seiz_subjs, fp)
