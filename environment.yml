@@ -21,4 +21,6 @@ dependencies:
     - tabulate==0.8.9
     - tenacity==8.0.1
     - torch==1.9.1
+    - pyyaml
+    - scikit-learn
 

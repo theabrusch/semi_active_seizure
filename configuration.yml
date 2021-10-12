@@ -7,9 +7,9 @@ data_gen:
   #hdf5_path: /Users/theabrusch/Desktop/Speciale_data/boston_scalp_new.hdf5
   protocol: train
   window_length: &win_len 2
-  stride: &stride [1,1]
+  stride: &stride [2,1]
   signal_name: EEG
-  bckg_rate: &bckg_rate None
+  bckg_rate: &bckg_rate 20
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: True
   prefetch_data_dir: False

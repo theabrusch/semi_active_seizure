@@ -7,7 +7,7 @@
 ### specify that all cores should be on the same host
 #BSUB -R "span[hosts=1]"
 ### specify the memory needed
-#BSUB -R "rusage[mem=100GB]"
+#BSUB -R "rusage[mem=200GB]"
 ### Number of hours needed
 #BSUB -N 
 #BSUB -W 05:00
