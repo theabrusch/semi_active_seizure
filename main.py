@@ -42,14 +42,15 @@ print('Training model for', config['fit']['n_epochs'],'took', datetime.now()-tim
 
 temp = next(iter(train_dataloader))
 temp_out = train_model.model(temp[0].float().to(train_model.device))
-temp_out2 = model(temp[0].float())
+temp_out2 = model(temp[0].float().to(train_model.device))
 
-print(temp_out==temp_out2)
+print(temp_out)
+print(temp_out2)
 
 
 with open('train_loss.pickle', 'wb') as f:
     pickle.dump(train_loss, f)
 
-with open('val_loss.pickle', 'w') as f:
+with open('val_loss.pickle', 'wb') as f:
     pickle.dump(val_loss, f)
 
