@@ -13,7 +13,7 @@ data_gen:
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: True
   prefetch_data_dir: False
-  prefetch_data_from_seg: False
+  prefetch_data_from_seg: True
   train_percent: 0.9
 
 generator_kwargs:

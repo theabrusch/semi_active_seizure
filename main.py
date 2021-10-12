@@ -5,6 +5,7 @@ import yaml
 from src.data import get_generator
 from src.models import get_model, get_optim, get_loss, train_model
 from datetime import datetime
+print('done loading packages')
 
 
 with open('configuration.yml', 'r') as file:
