@@ -3,7 +3,7 @@ data_gen:
   # Hyperparameters passed to the DataGenerator object
   #
   gen_type: DataGenerator
-  hdf5_path: data/hdf5/temple_seiz_sub.hdf5
+  hdf5_path: /work3/theb/boston_scalp_new.hdf5
   protocol: train
   window_length: &win_len 2
   stride: &stride [1,1]
