@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J first_full_run
+#BSUB -J test_tensor_board
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -19,4 +19,5 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
+tensorboard --logdir=runs
 python3 main.py 

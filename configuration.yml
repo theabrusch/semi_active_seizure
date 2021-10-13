@@ -11,8 +11,8 @@ data_gen:
   signal_name: EEG
   bckg_rate: &bckg_rate 20
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
-  anno_based_seg: True
-  prefetch_data_dir: False
+  anno_based_seg: False
+  prefetch_data_dir: True
   prefetch_data_from_seg: False
   train_percent: 0.9
 
@@ -41,8 +41,8 @@ fit:
   # Optimization
   optimizer:
     optimizer: Adam
-    lr: 0.003 
+    lr: 0.0001 
     scheduler: None
 
-  n_epochs: 90
+  n_epochs: 10
   

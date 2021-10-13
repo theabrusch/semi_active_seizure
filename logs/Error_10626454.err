@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "main.py", line 54, in <module>
+    pickle.dump(val_loss, f)
+TypeError: write() argument must be str, not bytes
