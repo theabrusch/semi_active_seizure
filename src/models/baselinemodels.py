@@ -26,44 +26,40 @@ class BaselineCNN(nn.Module):
     def __init__(self, input_shape, dropoutprob = 0.2, padding=True, **kwargs):
         super(BaselineCNN, self).__init__() 
 
-        ch_dim = [input_shape[0] if input_shape[0]%2 != 0 else input_shape[0]-1][0]
+        ch_dim = input_shape[0]
 
         if padding:
-            h, w = conv_size(input_shape, (1,2), 0, stride=(1,2))
-            h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
+            padding = [(0,5), (int(ch_dim/2),0), (5,5), (5,5)]
         else:
-            h, w = conv_size(input_shape, (1, 10), 0, stride = 1)
-            h, w = conv_size((h,w), (ch_dim, 1), 0, stride = 1)
-            h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
-            h, w = conv_size((h,w), (10,10), 0, stride=1)
-            h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
-            h, w = conv_size((h,w), (10,10), 0, stride=1)
-            
-        if padding:
-            padding = 'same'
-        else:
-            padding = 'valid'
+            padding = [(0,0), (int(ch_dim/2),0), (0,0), (0,0)]
 
+        h, w = conv_size(input_shape, (1, 10), padding[0], stride = 1)
+        h, w = conv_size((h,w), (ch_dim,1), padding[1], stride = 1)
+        h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
+        h, w = conv_size((h,w), (10,10), padding[2], stride=1)
+        h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
+        h, w = conv_size((h,w), (10,10), padding[3], stride=1)
+        
         self.convblock = nn.Sequential(
             nn.Conv2d(in_channels = 1, out_channels = 20, 
-                      kernel_size = (1,10), padding = padding),
+                      kernel_size = (1,10), padding = padding[0]),
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(20),
             nn.Conv2d(in_channels = 20, out_channels = 20, 
-                      kernel_size=(ch_dim, 1), padding = padding),
+                      kernel_size=(ch_dim, 1), padding = padding[1]),
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(20),
             nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.Conv2d(in_channels = 20, out_channels = 40, 
-                      kernel_size = (10, 10), padding = padding),
+                      kernel_size = (10, 10), padding = padding[2]),
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(40),
             nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.Conv2d(in_channels = 40, out_channels=80, 
-                      kernel_size = (10, 10), padding = padding)
+                      kernel_size = (10, 10), padding = padding[3])
         )
         self.flatten = nn.Flatten()
         self.dropout = nn.Dropout(dropoutprob)
