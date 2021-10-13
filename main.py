@@ -5,6 +5,10 @@ import yaml
 from src.data import get_generator
 from src.models import get_model, get_optim, get_loss, train_model
 from datetime import datetime
+import torch
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
+
 print('done loading packages')
 
 
@@ -23,6 +27,9 @@ model_config = config['model_kwargs']
 model_config['input_shape'] = train_dataset._get_X_shape()
 model = get_model.get_model(model_config)
 
+temp = next(iter(train_dataloader))[0]
+out1 = model(temp.float())
+
 # train model
 optim_config = config['fit']['optimizer']
 optimizer, scheduler = get_optim.get_optim(model.parameters(), optim_config)
@@ -30,22 +37,24 @@ optimizer, scheduler = get_optim.get_optim(model.parameters(), optim_config)
 config['fit']['weight'] = train_dataset.bckg_rate
 loss_fn = get_loss.get_loss(**config['fit'])
 
-train_model = train_model.model_train(model, 
-                                      optimizer, 
-                                      loss_fn, 
-                                      scheduler)
+train_model = train_model.model_train(model = model, 
+                                      optimizer = optimizer, 
+                                      loss_fn = loss_fn, 
+                                      writer = writer,
+                                      scheduler = scheduler)
 time = datetime.now()
 train_loss, val_loss = train_model.train(train_dataloader,
                                          val_dataloader,
                                          config['fit']['n_epochs'])
 print('Training model for', config['fit']['n_epochs'],'took', datetime.now()-time, '.')
 
-temp = next(iter(train_dataloader))
-temp_out = train_model.model(temp[0].float().to(train_model.device))
-temp_out2 = model(temp[0].float().to(train_model.device))
+writer.close()
+temp_out = train_model.model(temp.float().to(train_model.device))
+temp_out2 = model(temp.float().to(train_model.device))
 
-print(temp_out)
+print(out1)
 print(temp_out2)
+print((temp_out-temp_out2)<1e-6)
 
 
 with open('train_loss.pickle', 'wb') as f:

@@ -1,11 +1,12 @@
 import torch
+from torch.utils.tensorboard import writer
 from src.models import get_optim
 
 class model_train():
     '''
     Class for training pytorch model
     '''
-    def __init__(self, model, optimizer, loss_fn, scheduler = None):
+    def __init__(self, model, optimizer, loss_fn, writer = None, scheduler = None):
         self.model = model
         self.optimizer = optimizer
         self.loss_fn = loss_fn
@@ -13,6 +14,7 @@ class model_train():
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.loss_fn.to(self.device)
+        self.writer = writer
 
 
     def train(self,
@@ -48,6 +50,8 @@ class model_train():
                 self.scheduler.step()
 
             train_loss[epoch] = running_train_loss/num_batch
+            if self.writer is not None:
+                self.writer.add_scaler('Loss/train', train_loss[epoch], epoch)
             print('Training loss:', train_loss[epoch])
 
             num_batch = 1
@@ -61,7 +65,10 @@ class model_train():
                 num_batch += 1
             
             val_loss[epoch] = running_val_loss/num_batch
+            if self.writer is not None:
+                self.writer.add_scaler('Loss/val', val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
+        self.writer.flush()
         return train_loss, val_loss
                     
 
