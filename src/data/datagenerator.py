@@ -205,8 +205,8 @@ class DataGenerator(Dataset):
         seg = sig[item['startseg']:item['endseg'],:]
 
         # Standardise with respect to record
-        mean = np.expand_dims(self.norm_coef[item['path']]['mean'], 0)
-        std = np.expand_dims(self.norm_coef[item['path']]['std'], 0)
+        mean = self.norm_coef[item['path']]['mean']
+        std = self.norm_coef[item['path']]['std']
         seg = (seg-mean)/std
         return seg.T
     
@@ -267,8 +267,8 @@ class DataGenerator(Dataset):
                 signal = record[self.signal_name]
 
                 # Calculate normalisation coefficients for each record
-                mean = np.expand_dims(np.mean(signal, axis = 0),1)
-                std = np.expand_dims(np.std(signal, axis = 0),1)
+                mean = np.mean(signal)
+                std = np.std(signal, axis = 0)
                 
                 if self.anno_based_seg:
                     labels, samples = self._anno_based_segment(record, prefetch = True)
@@ -324,8 +324,8 @@ class DataGenerator(Dataset):
 
                 # Calculate normalisation coefficients for each record
                 if calc_norm_coef:
-                    mean = np.mean(signal, axis = 0)
-                    std = np.std(signal, axis = 0)
+                    mean = np.mean(signal)
+                    std = np.std(signal)
                 
                 if self.anno_based_seg:
                     labels, start_win, end_win = self._anno_based_segment(record)
@@ -366,8 +366,8 @@ class DataGenerator(Dataset):
         channels = len(signal.attrs['chNames'])
         
         windows = int((record.duration-self.window_length)/self.stride)+1
-        window_samples = self.window_length*signal.fs
-        stride_samples = self.stride*signal.fs
+        window_samples = int(self.window_length*signal.fs)
+        stride_samples = int(self.stride*signal.fs)
 
         if prefetch:
             samples = np.zeros((windows, channels, window_samples))
@@ -378,8 +378,8 @@ class DataGenerator(Dataset):
             end_win = np.zeros(windows)
 
         for win in range(windows):
-            sw = win*stride_samples
-            ew = sw + window_samples
+            sw =int(win*stride_samples)
+            ew = int(sw + window_samples)
             if prefetch:
                 samples[win,:,:] = signal[sw:ew,:].T
             else: 
