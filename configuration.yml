@@ -17,8 +17,8 @@ data_gen:
   train_percent: 0.9
 
 generator_kwargs:
-  batch_size: 256
-  val_batch_size: 256
+  batch_size: 512
+  val_batch_size: 512
 
 
 model_kwargs:
