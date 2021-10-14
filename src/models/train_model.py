@@ -1,6 +1,6 @@
 import torch
-from torch.utils.tensorboard import writer
-from src.models import get_optim
+from datetime import date, datetime
+
 
 class model_train():
     '''
@@ -27,8 +27,9 @@ class model_train():
 
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
-
+        
         for epoch in range(epochs):
+            time = datetime.now()
             running_train_loss = 0
             running_val_loss = 0
 
@@ -68,6 +69,11 @@ class model_train():
             if self.writer is not None:
                 self.writer.add_scalar('Loss/val', val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
+            epoch_time = (datetime.now()-time).total_seconds()
+            print('Epoch time', epoch_time)
+            if self.writer is not None:
+                self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
+        
         self.writer.flush()
         return train_loss, val_loss
                     
