@@ -1,5 +1,5 @@
 from src.data import datagenerator, train_val_split
-from torch.utils.data import DataLoader, WeightedRandomSampler
+from torch.utils.data import DataLoader, WeightedRandomSampler, SequentialSampler
 
 
 def get_dataset(data_gen):
@@ -21,14 +21,16 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
                                           replacement = True)
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size=generator_kwargs['batch_size'], 
-                                  sampler=train_sampler)
+                                  sampler=train_sampler,
+                                  num_workers=2)
     val_weights = val_dataset.weights
     val_sampler = WeightedRandomSampler(val_weights, 
                                         num_samples=val_dataset.__len__(), 
                                         replacement = True)
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size=generator_kwargs['val_batch_size'], 
-                                sampler=val_sampler)
+                                sampler=val_sampler,
+                                num_workers=2)
 
     return train_dataloader, val_dataloader
 
@@ -38,8 +40,10 @@ def get_test_generator(data_gen, generator_kwargs, val_subj):
         val_dataset = datagenerator.DataGenerator(**data_gen, 
                                                   subjects_to_use = val_subj,
                                                   test = True)
+        sampler = SequentialSampler(val_dataset)
         val_dataloader = DataLoader(val_dataset, 
-                                    batch_size=generator_kwargs['val_batch_size'])
+                                    batch_size = generator_kwargs['val_batch_size'],
+                                    sampler = sampler)
     
     return val_dataloader
 
