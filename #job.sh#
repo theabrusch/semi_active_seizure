@@ -19,5 +19,4 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-tensorboard --logdir=runs
 python3 main.py 

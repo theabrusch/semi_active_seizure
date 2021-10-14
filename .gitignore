@@ -3,3 +3,4 @@
 notebooks/*
 *.edf
 *.tse
+logs/*
