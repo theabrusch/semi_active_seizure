@@ -4,3 +4,4 @@ notebooks/*
 *.edf
 *.tse
 logs/*
+runs/*

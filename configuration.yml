@@ -8,7 +8,7 @@ data_gen:
   protocol: train
   window_length: &win_len 2
   stride: &stride [2,1]
-  signal_name: TCP
+  signal_name: EEG
   bckg_rate: &bckg_rate 20
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: False
