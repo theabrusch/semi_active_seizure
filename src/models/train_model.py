@@ -51,7 +51,7 @@ class model_train():
 
             train_loss[epoch] = running_train_loss/num_batch
             if self.writer is not None:
-                self.writer.add_scaler('Loss/train', train_loss[epoch], epoch)
+                self.writer.add_scalar('Loss/train', train_loss[epoch], epoch)
             print('Training loss:', train_loss[epoch])
 
             num_batch = 1
@@ -66,7 +66,7 @@ class model_train():
             
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
-                self.writer.add_scaler('Loss/val', val_loss[epoch], epoch)
+                self.writer.add_scalar('Loss/val', val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
         self.writer.flush()
         return train_loss, val_loss
