@@ -19,6 +19,7 @@ class DataGenerator(Dataset):
                  subjects_to_use = 'all', 
                  prefetch_data_dir = False,
                  prefetch_data_from_seg = False,
+                 test = False,
                  **kwargs):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
@@ -81,11 +82,11 @@ class DataGenerator(Dataset):
         self.signal_name = signal_name
         dset = hdf5_path.split('/')[-1].split('.')[0]
         stride_string = ''.join(str(stride).split(' '))
-        self.pickle_path = 'data/' + dset + '_' + protocol + '_'\
-                           + signal_name + '_winlen_' + str(window_length) + '_anno_seg_'\
+        self.pickle_path = 'data/' + dset + '_' + protocol + \
+                           '_winlen_' + str(window_length) + '_anno_seg_'\
                            + str(anno_based_seg)+'_stride_' + stride_string + '.pickle'
-        self.norm_coef_path = 'data/' + dset + '_' + protocol + '_'\
-                              + signal_name + '_norm_coef.pickle'
+        self.norm_coef_path = 'data/' + dset + '_' + protocol + \
+                              '_norm_coef.pickle'
         calc_norm_coef = False
 
         if self.prefetch_data_dir and self.prefetch_data_from_seg:
@@ -145,7 +146,8 @@ class DataGenerator(Dataset):
             # Create collected sample matrix
             segments = self.segments['seiz'].append(self.segments['bckg'], 
                                                    ignore_index = True)
-            samptemp = shuffle(segments).reset_index()
+            if not test:
+                samptemp = shuffle(segments).reset_index()
             self.weights = samptemp['weight']
             if self.prefetch_data_from_seg:
                 print('Starting prefetch of data from segmentation...')
@@ -160,7 +162,8 @@ class DataGenerator(Dataset):
             samp = np.append(self.segments['seiz']['samples'], self.segments['bckg']['samples'], axis = 0)
             lab = np.append(self.segments['seiz']['label'], self.segments['bckg']['label'], axis = 0)
             self.samples = list(zip(samp, lab))
-            self.samples, self.weights = shuffle(self.samples, weights)
+            if not test:
+                self.samples, self.weights = shuffle(self.samples, weights)
         
     def __len__(self):
         '''
@@ -264,7 +267,10 @@ class DataGenerator(Dataset):
             i+=1
             for rec in protocol[subj].keys():
                 record = protocol[subj][rec]
-                signal = record[self.signal_name]
+
+                for sig in self.signal_name:
+                    if sig in record.keys():
+                        signal = record[sig]
 
                 # Calculate normalisation coefficients for each record
                 mean = np.mean(signal)
@@ -319,8 +325,11 @@ class DataGenerator(Dataset):
             i+=1
             for rec in protocol[subj].keys():
                 record = protocol[subj][rec]
-                signal = record[self.signal_name]
-                path = self.protocol + '/' + subj + '/' + rec + '/' + self.signal_name
+                for sig in self.signal_name:
+                    if sig in record.keys():
+                        signal = record[sig]
+                        signal_name = sig
+                path = self.protocol + '/' + subj + '/' + rec + '/' + signal_name
 
                 # Calculate normalisation coefficients for each record
                 if calc_norm_coef:
@@ -362,7 +371,9 @@ class DataGenerator(Dataset):
     def _record_based_segment(self, record, prefetch=False):
         # Get annotation on sample basis
         one_hot_label = self._anno_to_one_hot(record)
-        signal = record[self.signal_name]
+        for sig in self.signal_name:
+            if sig in record.keys():
+                signal = record[sig]
         channels = len(signal.attrs['chNames'])
         
         windows = int((record.duration-self.window_length)/self.stride)+1
@@ -396,7 +407,9 @@ class DataGenerator(Dataset):
         '''
         Create one hot encoding of annotations
         '''
-        signal = record[self.signal_name]
+        for sig in self.signal_name:
+            if sig in record.keys():
+                signal = record[sig]
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
 
@@ -411,7 +424,9 @@ class DataGenerator(Dataset):
         return one_hot_label
 
     def _anno_based_segment(self, record, prefetch=False):
-        signal = record[self.signal_name]
+        for sig in self.signal_name:
+            if sig in record.keys():
+                signal = record[sig]
         channels = len(signal.attrs['chNames'])
         annos = record['Annotations']
 

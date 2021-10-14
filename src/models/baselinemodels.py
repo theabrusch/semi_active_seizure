@@ -74,10 +74,10 @@ class BaselineCNN(nn.Module):
         self.fc = nn.Linear(in_features=h*w*80, out_features=2)
     
     def forward(self,x, training=True):
-        x = self.convblock(x.unsqueeze(1), training=training)
+        x = self.convblock(x.unsqueeze(1))
         x = self.flatten(x)
         x = F.elu(x)
-        x = self.dropout(x, training=training)
+        x = self.dropout(x)
         x = self.fc(x)
         out = F.softmax(x, dim = 1)
         return out

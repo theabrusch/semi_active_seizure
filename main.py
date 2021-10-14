@@ -63,3 +63,8 @@ with open('train_loss.pickle', 'wb') as f:
 with open('val_loss.pickle', 'wb') as f:
     pickle.dump(val_loss, f)
 
+if config['test']['run_test']:
+    val_generator = get_generator.get_test_generator(config['data_gen'], 
+                                                     config['generator_kwargs'], 
+                                                     val_dataset.subjects_to_use)
+                                                     
