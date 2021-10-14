@@ -38,7 +38,7 @@ class model_train():
                 x = batch[0].float().to(self.device)
                 y = batch[1].long().to(self.device)
                 self.optimizer.zero_grad()
-                out = self.model(x)
+                out = self.model(x, training = True)
                 loss = self.loss_fn(out, y)
                 loss.backward()
                 self.optimizer.step()
@@ -58,7 +58,7 @@ class model_train():
             for batch in val_loader:
                 x = batch[0].float().to(self.device)
                 y = batch[1].long().to(self.device)
-                out = self.model(x)
+                out = self.model(x, training = False)
                 loss = self.loss_fn(out, y)
 
                 running_val_loss += loss.detach().cpu()

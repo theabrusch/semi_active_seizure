@@ -3,8 +3,8 @@ data_gen:
   # Hyperparameters passed to the DataGenerator object
   #
   gen_type: DataGenerator
-  #hdf5_path: /work3/theb/boston_scalp_new.hdf5
-  hdf5_path: data/hdf5/temple_seiz_sub.hdf5
+  hdf5_path: /work3/theb/boston_scalp_new.hdf5
+  #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
   protocol: train
   window_length: &win_len 2
   stride: &stride [2,1]
@@ -13,7 +13,7 @@ data_gen:
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: False
   prefetch_data_dir: False
-  prefetch_data_from_seg: False
+  prefetch_data_from_seg: True
   train_percent: 0.9
 
 generator_kwargs:
@@ -28,7 +28,7 @@ model_kwargs:
   model_summary: True
   model: &model BaselineCNN
   dropoutprob: 0.2
-  padding: True
+  padding: False
 
 
 fit:

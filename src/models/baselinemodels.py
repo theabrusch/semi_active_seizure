@@ -3,6 +3,14 @@ import torch.nn.functional as F
 import warnings
 warnings.filterwarnings('ignore', 'Named tensors.*', )
 
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
 
 def conv_size(input_size, kernel, padding, stride=1):
     '''
@@ -65,11 +73,11 @@ class BaselineCNN(nn.Module):
         self.dropout = nn.Dropout(dropoutprob)
         self.fc = nn.Linear(in_features=h*w*80, out_features=2)
     
-    def forward(self,x):
-        x = self.convblock(x.unsqueeze(1))
+    def forward(self,x, training=True):
+        x = self.convblock(x.unsqueeze(1), training=training)
         x = self.flatten(x)
         x = F.elu(x)
-        x = self.dropout(x)
+        x = self.dropout(x, training=training)
         x = self.fc(x)
         out = F.softmax(x, dim = 1)
         return out
