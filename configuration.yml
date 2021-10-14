@@ -1,10 +1,15 @@
+general:
+  seed: &seed 4000
+  run_test: True
+
 data_gen:
   #
   # Hyperparameters passed to the DataGenerator object
   #
   gen_type: DataGenerator
-  hdf5_path: /work3/theb/boston_scalp_new.hdf5
-  #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
+  seed: *seed
+  #hdf5_path: /work3/theb/boston_scalp_new.hdf5
+  hdf5_path: data/hdf5/temple_seiz_sub.hdf5
   protocol: train
   window_length: &win_len 2
   stride: &stride [2,1]
@@ -17,6 +22,7 @@ data_gen:
   train_percent: 0.9
 
 generator_kwargs:
+  seed: *seed
   batch_size: 512
   val_batch_size: 512
 
@@ -47,7 +53,3 @@ fit:
     scheduler: None
 
   n_epochs: 10
-
-test:
-  run_test: True
-  
