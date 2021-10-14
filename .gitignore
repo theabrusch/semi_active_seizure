@@ -5,3 +5,4 @@ notebooks/*
 *.tse
 logs/*
 runs/*
+*/__pycache__/*

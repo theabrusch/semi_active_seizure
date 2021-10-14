@@ -3,9 +3,12 @@ import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def train_val_split(hdf5_path, train_percent, seiz_classes, **kwargs):
+def train_val_split(hdf5_path, train_percent, seiz_classes, seed, **kwargs):
     dset = hdf5_path.split('/')[-1].split('.')[0]
     pickle_path = 'data/' + dset + '_' + 'seiz_subjs.pickle'
+    
+    if seed == 'None':
+        seed = None
 
     # get subjects with seizure and without to ensure an equal split
     try:
@@ -15,9 +18,13 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, **kwargs):
         print('Extracting seizure subjects and non seizure subjects.')
         seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_classes, pickle_path)
 
-    train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], train_size=train_percent)
+    train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], 
+                                            train_size=train_percent, 
+                                            random_state=seed)
     if len(seiz_subjs['non seiz']) > 0:
-        train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], train_size=train_percent)
+        train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], 
+                                                        train_size=train_percent, 
+                                                        random_state=seed)
     else:
         train_non_seiz = []
         val_non_seiz = []
