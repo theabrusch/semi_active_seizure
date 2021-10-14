@@ -43,7 +43,7 @@ fit:
   # Optimization
   optimizer:
     optimizer: Adam
-    lr: 0.001 
+    lr: 0.0005 
     scheduler: None
 
   n_epochs: 10
