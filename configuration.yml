@@ -8,12 +8,12 @@ data_gen:
   protocol: train
   window_length: &win_len 2
   stride: &stride [2,1]
-  signal_name: EEG
+  signal_name: [EEG, TCP]
   bckg_rate: &bckg_rate 20
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
   anno_based_seg: False
   prefetch_data_dir: False
-  prefetch_data_from_seg: True
+  prefetch_data_from_seg: False
   train_percent: 0.9
 
 generator_kwargs:
@@ -43,7 +43,7 @@ fit:
   # Optimization
   optimizer:
     optimizer: Adam
-    lr: 0.0001 
+    lr: 0.001 
     scheduler: None
 
   n_epochs: 10
