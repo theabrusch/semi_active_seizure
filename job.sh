@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J test_epoch_time_prefetch_1_worker
+#BSUB -J test_epoch_time_prefetch_yes
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -19,4 +19,4 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 main.py 
+python3 main.py --file_path /work3/theb/boston_scalp_new.hdf5 --bckg_stride 2 --seiz_stride 1 --num_workers 0 --bckg_rate 20 --lr 1e-4 --prefetch_data_from_seg True

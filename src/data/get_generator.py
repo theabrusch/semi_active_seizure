@@ -23,7 +23,8 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size = generator_kwargs['batch_size'], 
                                   sampler = train_sampler,
-                                  num_workers = generator_kwargs['num_workers'])
+                                  num_workers = generator_kwargs['num_workers'],
+                                  pin_memory = True)
     val_weights = val_dataset.weights
 
     val_generator = Generator()
@@ -36,7 +37,8 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size = generator_kwargs['val_batch_size'], 
                                 sampler = val_sampler,
-                                num_workers = generator_kwargs['num_workers'])
+                                num_workers = generator_kwargs['num_workers'],
+                                pin_memory = True)
 
     return train_dataloader, val_dataloader
 
