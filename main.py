@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
-    parser.add_argument('--dropoutprob', type=float, default=0.2)
+    parser.add_argument('--dropoutprob', type=float, default=0.4)
     parser.add_argument('--padding', type=bool, default=False)       
 
     # Training parameters
