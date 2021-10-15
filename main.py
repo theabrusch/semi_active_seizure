@@ -27,10 +27,6 @@ model_config = config['model_kwargs']
 model_config['input_shape'] = train_dataset._get_X_shape()
 model = get_model.get_model(model_config)
 
-val_generator = get_generator.get_test_generator(config['data_gen'], 
-                                                config['generator_kwargs'], 
-                                                val_dataset.subjects_to_use)
-
 temp = next(iter(train_dataloader))[0]
 out1 = model(temp.float())
 
@@ -50,21 +46,6 @@ time = datetime.now()
 train_loss, val_loss = train_model.train(train_dataloader,
                                          val_dataloader,
                                          config['fit']['n_epochs'])
-print('Training model for', config['fit']['n_epochs'],'took', datetime.now()-time, '.')
+print('Training model for', config['fit']['n_epochs'],'epochs took', datetime.now()-time, '.')
 
 writer.close()
-temp_out = train_model.model(temp.float().to(train_model.device))
-temp_out2 = model(temp.float().to(train_model.device))
-
-print(out1)
-print(temp_out2)
-print((temp_out-temp_out2)<1e-6)
-
-
-if config['general']['run_test']:
-    config['data_gen']['prefetch_data_dir'] = False
-    config['data_gen']['prefecth_data_from_seg'] = False
-    config['data_gen']['anno_based_seg'] = False
-    val_generator = get_generator.get_test_generator(config['data_gen'], 
-                                                     config['generator_kwargs'], 
-                                                     val_dataset.subjects_to_use)

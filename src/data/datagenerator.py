@@ -166,8 +166,7 @@ class DataGenerator(Dataset):
             self.samples = list(zip(samp, lab))
             if not test:
                 self.samples, self.weights = shuffle(self.samples, weights)
-        if not prefetch_data_from_seg or prefetch_data_dir:
-            self.data_file.close()
+
     def __len__(self):
         '''
         Set the number of samples in the dataset relative to the 
@@ -206,8 +205,6 @@ class DataGenerator(Dataset):
             Row from pd.DataFrame containing information about the
             segment to be sampled. 
         '''
-        if not self.prefetch_data_from_seg:
-            self.data_file = dc.File(self.hdf5_path, 'r')
         sig = self.data_file[item['path']]
         seg = sig[item['startseg']:item['endseg'],:]
 
@@ -215,8 +212,7 @@ class DataGenerator(Dataset):
         mean = self.norm_coef[item['path']]['mean']
         std = self.norm_coef[item['path']]['std']
         seg = (seg-mean)/std
-        if not self.prefetch_data_from_seg:
-            self.data_file.close()
+        
         return seg.T
     
     def _prefetch_from_seg(self, seg):
