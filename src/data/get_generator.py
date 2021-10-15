@@ -6,6 +6,8 @@ from torch import Generator
 def get_dataset(data_gen):
     if data_gen['gen_type'] == 'DataGenerator':
         train, val = train_val_split.train_val_split(**data_gen)
+        print('Training subjects', train)
+        print('Val subjects', val)
         print('Initialising training dataset.')
         train_dataset = datagenerator.DataGenerator(**data_gen, 
                                                     subjects_to_use = train)
