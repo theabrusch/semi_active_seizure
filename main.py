@@ -27,6 +27,10 @@ model_config = config['model_kwargs']
 model_config['input_shape'] = train_dataset._get_X_shape()
 model = get_model.get_model(model_config)
 
+val_generator = get_generator.get_test_generator(config['data_gen'], 
+                                                config['generator_kwargs'], 
+                                                val_dataset.subjects_to_use)
+
 temp = next(iter(train_dataloader))[0]
 out1 = model(temp.float())
 
@@ -57,14 +61,10 @@ print(temp_out2)
 print((temp_out-temp_out2)<1e-6)
 
 
-with open('train_loss.pickle', 'wb') as f:
-    pickle.dump(train_loss, f)
-
-with open('val_loss.pickle', 'wb') as f:
-    pickle.dump(val_loss, f)
-
-if config['test']['run_test']:
+if config['general']['run_test']:
+    config['data_gen']['prefetch_data_dir'] = False
+    config['data_gen']['prefecth_data_from_seg'] = False
+    config['data_gen']['anno_based_seg'] = False
     val_generator = get_generator.get_test_generator(config['data_gen'], 
                                                      config['generator_kwargs'], 
                                                      val_dataset.subjects_to_use)
-                                                     
