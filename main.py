@@ -15,13 +15,13 @@ print('done loading packages')
 with open('configuration.yml', 'r') as file:
     config = yaml.safe_load(file)
 
-time = datetime.now()
+time_start = datetime.now()
 # get datasets and dataloaders
 train_dataset, val_dataset = get_generator.get_dataset(config['data_gen'])
 train_dataloader, val_dataloader = get_generator.get_generator(train_dataset,
                                                                val_dataset,
                                                                config['generator_kwargs'])
-print('Data loader initialization took', datetime.now()-time, '.')
+print('Data loader initialization took', datetime.now()-time_start, '.')
 # load model
 model_config = config['model_kwargs']
 model_config['input_shape'] = train_dataset._get_X_shape()
@@ -47,5 +47,5 @@ train_loss, val_loss = train_model.train(train_dataloader,
                                          val_dataloader,
                                          config['fit']['n_epochs'])
 print('Training model for', config['fit']['n_epochs'],'epochs took', datetime.now()-time, '.')
-
+print('Total time', datetime.now()-time_start, '.')
 writer.close()

@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J test_multiple_workers
+#BSUB -J test_epoch_time_prefetch_1_worker
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
