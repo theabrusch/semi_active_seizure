@@ -8,8 +8,8 @@ data_gen:
   #
   gen_type: DataGenerator
   seed: *seed
-  #hdf5_path: /work3/theb/boston_scalp_new.hdf5
-  hdf5_path: data/hdf5/temple_seiz_sub.hdf5
+  hdf5_path: /work3/theb/boston_scalp_new.hdf5
+  #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
   protocol: train
   window_length: &win_len 2
   stride: &stride [2,1]
