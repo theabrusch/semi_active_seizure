@@ -1,6 +1,8 @@
 general:
   seed: &seed 4000
   run_test: True
+  #hdf5_path: /work3/theb/boston_scalp_new.hdf5
+  #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
 
 data_gen:
   #
@@ -8,17 +10,9 @@ data_gen:
   #
   gen_type: DataGenerator
   seed: *seed
-  hdf5_path: /work3/theb/boston_scalp_new.hdf5
-  #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
   protocol: train
-  window_length: &win_len 2
-  stride: &stride [2,1]
   signal_name: [EEG, TCP]
-  bckg_rate: &bckg_rate 20
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
-  anno_based_seg: False
-  prefetch_data_dir: False
-  prefetch_data_from_seg: True
   train_percent: 0.9
 
 generator_kwargs:
@@ -26,16 +20,11 @@ generator_kwargs:
   batch_size: 512
   val_batch_size: 512
 
-
 model_kwargs:
   #
   # Hyperparameters passed to the Model.build and __init__ methods
   #
   model_summary: True
-  model: &model BaselineCNN
-  dropoutprob: 0.2
-  padding: False
-
 
 fit:
   #
@@ -43,13 +32,10 @@ fit:
   #
   # Loss function
   loss: CrossEntropy 
-  weight: *bckg_rate
-
 
   # Optimization
   optimizer:
     optimizer: Adam
-    lr: 0.0001
     scheduler: None
 
   n_epochs: 10

@@ -13,7 +13,8 @@ class DataGenerator(Dataset):
                  signal_name,
                  window_length, 
                  seiz_classes,
-                 stride = None, 
+                 bckg_stride = None,
+                 seiz_stride = None, 
                  bckg_rate = None, 
                  anno_based_seg = False,
                  subjects_to_use = 'all', 
@@ -59,10 +60,14 @@ class DataGenerator(Dataset):
         self.hdf5_path = hdf5_path
         self.data_file = dc.File(hdf5_path, 'r')
         self.window_length = window_length
-        if stride is None:
+        if bckg_stride is None and seiz_stride is None:
             self.stride = self.window_length
+        elif seiz_stride is None:
+            self.stride = bckg_stride
+        elif bckg_stride is None:
+            self.stride = seiz_stride
         else:
-            self.stride = stride
+            self.stride = [bckg_stride, seiz_stride]
 
         self.subjects_to_use = subjects_to_use
         self.protocol = protocol
@@ -81,7 +86,7 @@ class DataGenerator(Dataset):
         # Define paths for saving the segmentation
         self.signal_name = signal_name
         dset = hdf5_path.split('/')[-1].split('.')[0]
-        stride_string = ''.join(str(stride).split(' '))
+        stride_string = ''.join(str(self.stride).split(' '))
         self.pickle_path = 'data/' + dset + '_' + protocol + \
                            '_winlen_' + str(window_length) + '_anno_seg_'\
                            + str(anno_based_seg)+'_stride_' + stride_string + '.pickle'
