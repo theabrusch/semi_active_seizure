@@ -34,10 +34,13 @@ def main(args):
     datagen['prefetch_data_dir'] = args.prefetch_data_dir
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
 
+    gen_args = config['generator_kwargs']
+    gen_args['num_workers'] = args.num_workers
+
     train_dataset, val_dataset = get_generator.get_dataset(datagen)
     train_dataloader, val_dataloader = get_generator.get_generator(train_dataset,
                                                                 val_dataset,
-                                                                config['generator_kwargs'])
+                                                                gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
 
     # load model
@@ -76,6 +79,7 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
+    parser.add_argument('--num_workers', type=float, default = 0)
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate', type=eval, default=None) # None or value
