@@ -54,6 +54,7 @@ def main(args):
     # train model
     optim_config = config['fit']['optimizer']
     optim_config['lr'] = args.lr
+    optim_config['weight_decay'] = args.weight_decay
     optimizer, scheduler = get_optim.get_optim(model.parameters(), optim_config)
 
     fit_config = config['fit']
@@ -114,6 +115,7 @@ if __name__ == '__main__':
     # Training parameters
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=3e-4)
+    parser.add_argument('--weight_decay', type = float, default=1e-3)
 
     args = parser.parse_args()
     main(args)
