@@ -78,10 +78,10 @@ if __name__ == '__main__':
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)
-    parser.add_argument('--bckg_rate', default=None) # None or value
+    parser.add_argument('--bckg_rate', type=eval, default=None) # None or value
     parser.add_argument('--anno_based_seg', type=bool, default=False)
-    parser.add_argument('--prefetch_data_dir', type=eval, default=False)
-    parser.add_argument('--prefetch_data_from_seg', type=eval, default=True)
+    parser.add_argument('--prefetch_data_dir', type=bool, default=False)
+    parser.add_argument('--prefetch_data_from_seg', type=bool, default=False)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     parser.add_argument('--padding', type=bool, default=False)       
 
     # Training parameters
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=3e-4)
 
     args = parser.parse_args()
