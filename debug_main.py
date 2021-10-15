@@ -6,6 +6,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--file_path', type = str)
 parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
+parser.add_argument('--num_workers', type=eval, default=0)
 parser.add_argument('--seiz_stride', type=eval, default=None)
 parser.add_argument('--bckg_rate', default=None) # None or value
 parser.add_argument('--anno_based_seg', type=bool, default=False)

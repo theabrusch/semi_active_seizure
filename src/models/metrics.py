@@ -30,7 +30,7 @@ def get_metrics(metric_names):
             metrics.append(sensitivity)
         elif metric == 'specificity':
             metrics.append(specificity)
-        elif metrics == 'accuracy':
+        elif metric == 'accuracy':
             metrics.append(accuracy)
         else:
             print('Metric', metric, 'not implemented.')

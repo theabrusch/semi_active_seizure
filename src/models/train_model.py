@@ -1,5 +1,6 @@
 import torch
 from datetime import date, datetime
+import numpy as np
 
 
 class model_train():
@@ -35,6 +36,7 @@ class model_train():
 
             num_batch = 1
             print('Epoch', epoch + 1, 'out of', epochs)
+            self.model.train()
             for batch in train_loader:
                 x = batch[0].float().to(self.device)
                 y = batch[1].long().to(self.device)
@@ -56,10 +58,11 @@ class model_train():
             print('Training loss:', train_loss[epoch])
 
             num_batch = 1
+            self.model.eval()
             for batch in val_loader:
                 x = batch[0].float().to(self.device)
                 y = batch[1].long().to(self.device)
-                out = self.model(x, training = False)
+                out = self.model(x)
                 loss = self.loss_fn(out, y)
 
                 running_val_loss += loss.detach().cpu()
@@ -76,5 +79,26 @@ class model_train():
         
         self.writer.flush()
         return train_loss, val_loss
-                    
+    
+    def eval(self, data_loader):
+        y_pred = None
+
+        self.model.eval()
+        for batch in data_loader:
+            x = batch[0].float().to(self.device)
+            out = self.model(x)
+            y_class = torch.argmax(out, axis = -1).cpu().numpy()
+
+            if y_pred is None:
+                y_pred = y_class
+            else:
+                y_pred = np.append(y_pred, y_class, axis = 0)
+        
+        return y_pred
+
+
+
+
+
+
 

@@ -43,9 +43,8 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
 def get_test_generator(data_gen, generator_kwargs, val_subj):
     if data_gen['gen_type'] == 'DataGenerator':
         print('Initialising validation dataset.')
-        val_dataset = datagenerator.DataGenerator(**data_gen, 
-                                                  subjects_to_use = val_subj,
-                                                  test = True)
+        val_dataset = datagenerator.TestGenerator(**data_gen, 
+                                                  subjects_to_use = val_subj)
         sampler = SequentialSampler(val_dataset)
         val_dataloader = DataLoader(val_dataset, 
                                     batch_size = generator_kwargs['val_batch_size'],

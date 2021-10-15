@@ -3,7 +3,7 @@ import argparse
 import yaml
 from prettytable import PrettyTable
 from src.data import get_generator
-from src.models import get_model, get_optim, get_loss, train_model
+from src.models import get_model, get_optim, get_loss, train_model, metrics
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
 
@@ -39,8 +39,8 @@ def main(args):
 
     train_dataset, val_dataset = get_generator.get_dataset(datagen)
     train_dataloader, val_dataloader = get_generator.get_generator(train_dataset,
-                                                                val_dataset,
-                                                                gen_args)
+                                                                    val_dataset,
+                                                                    gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
 
     # load model
@@ -65,12 +65,31 @@ def main(args):
                                         loss_fn = loss_fn, 
                                         writer = writer,
                                         scheduler = scheduler)
+    metric_names = ['sensitivity', 'specificity', 'accuracy']
+    metrics_compute = metrics.get_metrics(metric_names)
+
     time = datetime.now()
     train_loss, val_loss = model_train.train(train_dataloader,
                                             val_dataloader,
                                             args.epochs)
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
     print('Total time', datetime.now()-time_start, '.')
+
+    if config['general']['run_test']:
+        datagen['bckg_stride'] = None
+        datagen['seiz_stride'] = None
+        datagen['bckg_rate'] = None
+        datagen['anno_based_seg'] = False
+        datagen['prefetch_data_dir'] = True
+        datagen['prefetch_data_from_seg'] = False
+        test_loader = get_generator.get_test_generator(datagen, gen_args, val_dataset.subjects_to_use)
+        y_pred = model_train.eval(test_loader)
+        y_true = test_loader.dataset.labels_collect
+
+        for i in range(len(metric_names)):
+            met = metrics_compute[i](y_true, y_pred)
+            print(metric_names[i], met)
+
     writer.close()
 
 if __name__ == '__main__':
@@ -79,7 +98,7 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
-    parser.add_argument('--num_workers', type=float, default = 0)
+    parser.add_argument('--num_workers', type=int, default = 0)
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate', type=eval, default=None) # None or value
