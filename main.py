@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
-    parser.add_argument('--num_workers', type=float, default = 0)
+    parser.add_argument('--num_workers', type=int, default = 0)
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate', type=eval, default=None) # None or value
