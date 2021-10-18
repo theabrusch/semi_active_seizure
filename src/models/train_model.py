@@ -1,6 +1,7 @@
 import torch
 from datetime import date, datetime
 import numpy as np
+from src.models.metrics import sensitivity, specificity
 
 
 class model_train():
@@ -54,7 +55,7 @@ class model_train():
 
             train_loss[epoch] = running_train_loss/num_batch
             if self.writer is not None:
-                self.writer.add_scalar('Loss/train', train_loss[epoch], epoch)
+                self.writer.add_scalar('train/loss', train_loss[epoch], epoch)
             print('Training loss:', train_loss[epoch])
 
             num_batch = 1
@@ -66,11 +67,23 @@ class model_train():
                 loss = self.loss_fn(out, y)
 
                 running_val_loss += loss.detach().cpu()
+                if num_batch == 1:
+                    y_true = y.detach().cpu().numpy()
+                    y_pred = torch.argmax(out, axis = -1).detach().cpu().numpy()
+                else:
+                    y_true = np.append(y_true, y.detach().cpu().numpy(), axis = 0)
+                    y_pred = np.append(y_pred, torch.argmax(out, axis = -1).detach().cpu().numpy(), axis = 0)
                 num_batch += 1
             
+            sens = sensitivity(y_true, y_pred)
+            spec = specificity(y_true, y_pred)
+            if self.writer is not None:
+                self.writer.add_scalar('val/sens', sens, epoch)
+                self.writer.add_scalar('val/spec', spec, epoch)
+
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
-                self.writer.add_scalar('Loss/val', val_loss[epoch], epoch)
+                self.writer.add_scalar('val/loss', val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
             epoch_time = (datetime.now()-time).total_seconds()
             print('Epoch time', epoch_time)

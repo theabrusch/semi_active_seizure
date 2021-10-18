@@ -37,5 +37,3 @@ fit:
   optimizer:
     optimizer: Adam
     scheduler: None
-
-  n_epochs: 10
