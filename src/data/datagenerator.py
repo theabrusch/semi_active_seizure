@@ -404,7 +404,7 @@ class DataGenerator(Dataset):
                 start_win[win] = sw
                 end_win[win] = ew
             # set label to seizure if any seizure is present in the segment
-            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>0)
+            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples/2))
         if prefetch:
             return labels, samples
         else:
@@ -748,7 +748,7 @@ class TestGenerator(Dataset):
                 start_win[win] = sw
                 end_win[win] = ew
             # set label to seizure if any seizure is present in the segment
-            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>0)
+            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples/2))
         if prefetch:
             return labels, samples
         else:
