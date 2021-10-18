@@ -34,6 +34,32 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, seed, **kwargs):
 
     return train, val
 
+def train_val_test_split(hdf5_path, seed, **kwargs):
+    '''
+    Split dataset such that two subjects are in the
+    validation set and 1 subject in the test set.
+    Does not consider whether subjects contain seizures 
+    or not and therefore throws an error if the Temple
+    dataset is used. 
+    '''
+    dset = hdf5_path.split('/')[-1].split('.')[0]
+
+    if 'boston' in dset:
+        F = dc.File(hdf5_path, 'r')
+        subjs = F['train'].keys()
+
+        train, test_val = train_test_split(subjs, 
+                                            test_size = 3, 
+                                            random_state=seed)
+        val, test = train_test_split(test_val, 
+                                        test_size = 1, 
+                                        random_state=seed)
+
+    else:
+        raise TypeError('Train_val_test split is only implemented for the Boston dataset.')
+
+    return train, val, test
+
 def get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path=None):
     F = dc.File(hdf5_path, 'r')
     proto = F[protocol]

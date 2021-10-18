@@ -5,7 +5,10 @@ from torch import Generator
 
 def get_dataset(data_gen):
     if data_gen['gen_type'] == 'DataGenerator':
-        train, val = train_val_split.train_val_split(**data_gen)
+        if data_gen['train_val_test']:
+            train, val, test = train_val_split.train_val_test_split(**data_gen)
+        else:
+            train, val = train_val_split.train_val_split(**data_gen)
         print('Training subjects', train)
         print('Val subjects', val)
         print('Initialising training dataset.')
@@ -14,8 +17,10 @@ def get_dataset(data_gen):
         print('Initialising validation dataset.')
         val_dataset = datagenerator.DataGenerator(**data_gen, 
                                                   subjects_to_use = val)
-    
-    return train_dataset, val_dataset
+    if data_gen['train_val_test']:
+        return train_dataset, val_dataset, test
+    else:
+        return train_dataset, val_dataset
 
 def get_generator(train_dataset, val_dataset, generator_kwargs):
     train_weights = train_dataset.weights

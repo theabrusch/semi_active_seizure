@@ -33,11 +33,16 @@ def main(args):
     datagen['anno_based_seg'] = args.anno_based_seg
     datagen['prefetch_data_dir'] = args.prefetch_data_dir
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
+    datagen['train_val_test'] = args.train_val_test
 
     gen_args = config['generator_kwargs']
     gen_args['num_workers'] = args.num_workers
 
-    train_dataset, val_dataset = get_generator.get_dataset(datagen)
+    if args.train_val_test:
+        train_dataset, val_dataset, test = get_generator.get_dataset(datagen)
+    else:
+        train_dataset, val_dataset = get_generator.get_dataset(datagen)
+
     train_dataloader, val_dataloader = get_generator.get_generator(train_dataset,
                                                                     val_dataset,
                                                                     gen_args)
@@ -63,7 +68,7 @@ def main(args):
         fit_config['weight'] = train_dataset.bckg_rate
     else:
         fit_config['weight'] = None
-        
+
     loss_fn = get_loss.get_loss(**fit_config)
 
     model_train = train_model.model_train(model = model, 
@@ -88,7 +93,12 @@ def main(args):
         datagen['anno_based_seg'] = False
         datagen['prefetch_data_dir'] = True
         datagen['prefetch_data_from_seg'] = False
-        test_loader = get_generator.get_test_generator(datagen, gen_args, val_dataset.subjects_to_use)
+        
+        if args.train_val_test:
+            test_loader = get_generator.get_test_generator(datagen, gen_args, test)
+        else:
+            test_loader = get_generator.get_test_generator(datagen, gen_args, val_dataset.subjects_to_use)
+
         y_pred = model_train.eval(test_loader)
         y_true = test_loader.dataset.labels_collect
 
@@ -111,6 +121,7 @@ if __name__ == '__main__':
     parser.add_argument('--anno_based_seg', type=bool, default=False)
     parser.add_argument('--prefetch_data_dir', type=bool, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=bool, default=False)
+    parser.add_argument('--train_val_test', type=bool, default=False)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')

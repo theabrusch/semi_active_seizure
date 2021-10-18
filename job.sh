@@ -19,4 +19,4 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 main.py --file_path /work3/theb/boston_scalp_new.hdf5 --bckg_stride 1 --seiz_stride 1 --num_workers 0 --bckg_rate None  --lr 1e-5 --prefetch_data_from_seg True --epochs 90 --weight_decay 1e-2
+python3 main.py --file_path /work3/theb/boston_scalp_new.hdf5 --bckg_stride 1 --seiz_stride 1 --num_workers 0 --bckg_rate None  --lr 1e-5 --prefetch_data_from_seg True --epochs 90 --weight_decay 1e-2 --train_val_test True
