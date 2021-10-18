@@ -46,7 +46,7 @@ def train_val_test_split(hdf5_path, seed, **kwargs):
 
     if 'boston' in dset:
         F = dc.File(hdf5_path, 'r')
-        subjs = F['train'].keys()
+        subjs = list(F['train'].keys())
 
         train, test_val = train_test_split(subjs, 
                                             test_size = 3, 
