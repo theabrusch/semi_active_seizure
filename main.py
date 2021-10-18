@@ -58,7 +58,12 @@ def main(args):
     optimizer, scheduler = get_optim.get_optim(model.parameters(), optim_config)
 
     fit_config = config['fit']
-    fit_config['weight'] = train_dataset.bckg_rate
+
+    if args.use_weighted_loss:
+        fit_config['weight'] = train_dataset.bckg_rate
+    else:
+        fit_config['weight'] = None
+        
     loss_fn = get_loss.get_loss(**fit_config)
 
     model_train = train_model.model_train(model = model, 
@@ -113,6 +118,7 @@ if __name__ == '__main__':
     parser.add_argument('--padding', type=bool, default=False)       
 
     # Training parameters
+    parser.add_argument('--use_weighted_loss', type=bool, default=True)
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
