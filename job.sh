@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J no_background_rate
+#BSUB -J no_bckg_rate_weighted_loss
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -19,4 +19,5 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 main.py --file_path /work3/theb/boston_scalp_new.hdf5 --bckg_stride 1 --seiz_stride 1 --num_workers 0 --bckg_rate None  --lr 1e-5 --prefetch_data_from_seg True --epochs 90 --weight_decay 1e-2 --train_val_test True
+python3 main.py --file_path /work3/theb/boston_scalp_new.hdf5 --bckg_stride 0.5 --seiz_stride 0.5 --num_workers 0 --bckg_rate None  --lr 1e-5 --prefetch_data_from_seg True --epochs 30 --weight_decay 1e-2 --train_val_test True --use_weighted_loss True
+
