@@ -3,38 +3,44 @@ import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-def train_val_split(hdf5_path, train_percent, seiz_classes, seed, **kwargs):
+def train_val_split(hdf5_path, train_percent, val_subj, seiz_classes, seed, **kwargs):
     dset = hdf5_path.split('/')[-1].split('.')[0]
     pickle_path = 'data/' + dset + '_' + 'seiz_subjs.pickle'
     
     if seed == 'None':
         seed = None
 
-    # get subjects with seizure and without to ensure an equal split
-    try:
-        with open(pickle_path, 'rb') as fp:
-            seiz_subjs = pickle.load(fp)
-    except:
-        print('Extracting seizure subjects and non seizure subjects.')
-        seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_classes, pickle_path)
+    if val_subj is None:
+        # get subjects with seizure and without to ensure an equal split
+        try:
+            with open(pickle_path, 'rb') as fp:
+                seiz_subjs = pickle.load(fp)
+        except:
+            print('Extracting seizure subjects and non seizure subjects.')
+            seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_classes, pickle_path)
 
-    train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], 
-                                            train_size=train_percent, 
-                                            random_state=seed)
-    if len(seiz_subjs['non seiz']) > 0:
-        train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], 
-                                                        train_size=train_percent, 
-                                                        random_state=seed)
+        train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], 
+                                                train_size=train_percent, 
+                                                random_state=seed)
+        if len(seiz_subjs['non seiz']) > 0:
+            train_non_seiz, val_non_seiz = train_test_split(seiz_subjs['non seiz'], 
+                                                            train_size=train_percent, 
+                                                            random_state=seed)
+        else:
+            train_non_seiz = []
+            val_non_seiz = []
+
+        train = np.append(train_seiz, train_non_seiz)
+        val = np.append(val_seiz, val_non_seiz)
     else:
-        train_non_seiz = []
-        val_non_seiz = []
-
-    train = np.append(train_seiz, train_non_seiz)
-    val = np.append(val_seiz, val_non_seiz)
+        F = dc.File(hdf5_path, 'r')
+        subjs = list(F['train'].keys())
+        val = [subjs[i] for i in range(len(subjs)) if i in val_subj]
+        train = [subjs[i] for i in range(len(subjs)) if i not in val_subj]
 
     return train, val
 
-def train_val_test_split(hdf5_path, seed, **kwargs):
+def train_val_test_split(hdf5_path, seed, val_subj=None, **kwargs):
     '''
     Split dataset such that two subjects are in the
     validation set and 1 subject in the test set.
@@ -43,16 +49,22 @@ def train_val_test_split(hdf5_path, seed, **kwargs):
     dataset is used. 
     '''
     dset = hdf5_path.split('/')[-1].split('.')[0]
+    test_subj = val_subj
 
     if 'boston' in dset:
         F = dc.File(hdf5_path, 'r')
         subjs = list(F['train'].keys())
 
-        train, test_val = train_test_split(subjs, 
-                                            test_size = 3, 
-                                            random_state=seed)
-        val, test = train_test_split(test_val, 
-                                        test_size = 1, 
+        if test_subj is None:
+            train_val, test = train_test_split(subjs, 
+                                                test_size = 1, 
+                                                random_state=seed)
+        else:
+            test = [subjs[i] for i in range(len(subjs)) if i in test_subj]
+            train_val = [subjs[i] for i in range(len(subjs)) if i not in test_subj]
+
+        train, val = train_test_split(train_val, 
+                                        test_size = 2, 
                                         random_state=seed)
 
     else:

@@ -34,6 +34,7 @@ def main(args):
     datagen['prefetch_data_dir'] = args.prefetch_data_dir
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
     datagen['train_val_test'] = args.train_val_test
+    datagen['val_subj'] = args.val_subj
 
     gen_args = config['generator_kwargs']
     gen_args['num_workers'] = args.num_workers
@@ -121,7 +122,8 @@ if __name__ == '__main__':
     parser.add_argument('--anno_based_seg', type=bool, default=False)
     parser.add_argument('--prefetch_data_dir', type=bool, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=bool, default=False)
-    parser.add_argument('--train_val_test', type=bool, default=False)
+    parser.add_argument('--train_val_test', type=eval, default=False)
+    parser.add_argument('--val_subj', type = eval, default=None)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
