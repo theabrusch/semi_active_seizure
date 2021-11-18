@@ -120,7 +120,7 @@ if __name__ == '__main__':
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
-    parser.add_argument('--bckg_rate_train', type=eval, default=None)
+    parser.add_argument('--bckg_rate_train', type=eval, default=1)
     parser.add_argument('--anno_based_seg', type=bool, default=False)
     parser.add_argument('--prefetch_data_dir', type=bool, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=bool, default=False)
