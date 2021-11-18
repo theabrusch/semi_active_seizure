@@ -12,10 +12,10 @@ def get_dataset(data_gen):
         print('Training subjects', train)
         print('Val subjects', val)
         print('Initialising training dataset.')
-        train_dataset = datagenerator.DataGenerator(**data_gen, 
+        train_dataset = datagenerator.DataGenerator(**data_gen, bckg_rate=data_gen['bckg_rate_train'],
                                                     subjects_to_use = train)
         print('Initialising validation dataset.')
-        val_dataset = datagenerator.DataGenerator(**data_gen, 
+        val_dataset = datagenerator.DataGenerator(**data_gen, bckg_rate=data_gen['bckg_rate_val'],
                                                   subjects_to_use = val)
     if data_gen['train_val_test']:
         return train_dataset, val_dataset, test
