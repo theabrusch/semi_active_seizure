@@ -7,6 +7,7 @@ def get_dataset(data_gen):
     if data_gen['gen_type'] == 'DataGenerator':
         if data_gen['train_val_test']:
             train, val, test = train_val_split.train_val_test_split(**data_gen)
+            print('Test subject(s)', test)
         else:
             train, val = train_val_split.train_val_split(**data_gen)
         print('Training subjects', train)
