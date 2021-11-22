@@ -1,7 +1,7 @@
 import torch
 from datetime import date, datetime
 import numpy as np
-from src.models.metrics import sensitivity, specificity
+from src.models.metrics import sensitivity, specificity, f1_score
 
 
 class model_train():
@@ -77,9 +77,11 @@ class model_train():
             
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
+            f1 = f1_score(y_true, y_pred)
             if self.writer is not None:
                 self.writer.add_scalar('val/sens', sens, epoch)
                 self.writer.add_scalar('val/spec', spec, epoch)
+                self.writer.add_scalar('val/f1', f1, epoch)
 
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
