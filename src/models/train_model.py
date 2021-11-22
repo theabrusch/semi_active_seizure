@@ -1,14 +1,16 @@
 import torch
 from datetime import date, datetime
 import numpy as np
-from src.models.metrics import sensitivity, specificity
+from pathlib import Path
+from src.models.metrics import sensitivity, specificity, f1_score
 
 
 class model_train():
     '''
     Class for training pytorch model
     '''
-    def __init__(self, model, optimizer, loss_fn, writer = None, scheduler = None):
+    def __init__(self, model, optimizer, loss_fn, 
+                 choose_best = True, writer = None, scheduler = None):
         self.model = model
         self.optimizer = optimizer
         self.loss_fn = loss_fn
@@ -17,7 +19,7 @@ class model_train():
         self.model.to(self.device)
         self.loss_fn.to(self.device)
         self.writer = writer
-
+        self.choose_best = choose_best
 
     def train(self,
               train_loader,
@@ -29,6 +31,12 @@ class model_train():
 
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
+        f1_scores = torch.zeros(epochs)
+        checkpoint_path = 'models/checkpoints/' + str(datetime.now()) 
+        
+        if self.choose_best:
+            p = Path(checkpoint_path)
+            p.mkdir(parents=True, exist_ok=True)
         
         for epoch in range(epochs):
             time = datetime.now()
@@ -52,6 +60,11 @@ class model_train():
 
             if self.scheduler is not None:
                 self.scheduler.step()
+            
+            if self.choose_best:
+                model_check = checkpoint_path + '/epoch_' + str(epoch) + '.pt'
+                torch.save({'model_state_dict': self.model.state_dict()},
+                            model_check)
 
             train_loss[epoch] = running_train_loss/num_batch
             if self.writer is not None:
@@ -77,9 +90,12 @@ class model_train():
             
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
+            f1 = f1_score(y_true, y_pred)
+            f1_scores[epoch] = f1
             if self.writer is not None:
                 self.writer.add_scalar('val/sens', sens, epoch)
                 self.writer.add_scalar('val/spec', spec, epoch)
+                self.writer.add_scalar('val/f1', f1, epoch)
 
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
@@ -90,6 +106,12 @@ class model_train():
             if self.writer is not None:
                 self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
         
+        if self.choose_best:
+            best_epoch = torch.argmax(f1_scores)
+            best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
+            checkpoint = torch.load(best_model_path)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+
         self.writer.flush()
         return train_loss, val_loss
     
