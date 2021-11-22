@@ -121,19 +121,19 @@ if __name__ == '__main__':
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
     parser.add_argument('--bckg_rate_train', type=eval, default=1)
-    parser.add_argument('--anno_based_seg', type=bool, default=False)
-    parser.add_argument('--prefetch_data_dir', type=bool, default=False)
-    parser.add_argument('--prefetch_data_from_seg', type=bool, default=False)
+    parser.add_argument('--anno_based_seg', type=eval, default=False)
+    parser.add_argument('--prefetch_data_dir', type=eval, default=False)
+    parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
     parser.add_argument('--train_val_test', type=eval, default=False)
     parser.add_argument('--val_subj', type = eval, default=None)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
     parser.add_argument('--dropoutprob', type=float, default=0.4)
-    parser.add_argument('--padding', type=bool, default=False)       
+    parser.add_argument('--padding', type=eval, default=False)       
 
     # Training parameters
-    parser.add_argument('--use_weighted_loss', type=bool, default=True)
+    parser.add_argument('--use_weighted_loss', type=eval, default=True)
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
