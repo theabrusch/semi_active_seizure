@@ -7,3 +7,4 @@ logs/*
 runs/*
 */__pycache__/*
 *.pyc
+*.pt

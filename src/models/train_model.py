@@ -2,7 +2,8 @@ import torch
 from datetime import date, datetime
 import numpy as np
 from pathlib import Path
-from src.models.metrics import sensitivity, specificity, f1_score
+from src.models.metrics import sensitivity, specificity
+from sklearn.metrics import f1_score
 
 
 class model_train():
