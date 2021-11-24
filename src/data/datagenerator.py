@@ -13,6 +13,7 @@ class DataGenerator(Dataset):
                  signal_name,
                  window_length, 
                  seiz_classes,
+                 standardise = True,
                  bckg_stride = None,
                  seiz_stride = None, 
                  bckg_rate = None, 
@@ -76,6 +77,7 @@ class DataGenerator(Dataset):
         self.bckg_rate = bckg_rate
         self.anno_based_seg = anno_based_seg
         self.seiz_classes = seiz_classes
+        self.standardise = standardise
         
         if isinstance(self.stride, list) and not anno_based_seg:
             self.stride = self.stride[0]
@@ -214,9 +216,10 @@ class DataGenerator(Dataset):
         seg = sig[item['startseg']:item['endseg'],:]
 
         # Standardise with respect to record
-        mean = self.norm_coef[item['path']]['mean']
-        std = self.norm_coef[item['path']]['std']
-        seg = (seg-mean)/std
+        if self.standardise:
+            mean = self.norm_coef[item['path']]['mean']
+            std = self.norm_coef[item['path']]['std']
+            seg = (seg-mean)/std
         
         return seg.T
     
@@ -287,8 +290,8 @@ class DataGenerator(Dataset):
                     labels, samples = self._anno_based_segment(record, prefetch = True)
                 else:
                     labels, samples = self._record_based_segment(record, prefetch = True)
-
-                samples = (samples - mean)/std
+                if self.standardise:
+                    samples = (samples - mean)/std
                 pos_samples = labels == 1
                 neg_samples = labels == 0
 
