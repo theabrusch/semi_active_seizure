@@ -36,6 +36,7 @@ def main(args):
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
     datagen['train_val_test'] = args.train_val_test
     datagen['val_subj'] = args.val_subj
+    datagen['standardise'] = args.standardise
 
     gen_args = config['generator_kwargs']
     gen_args['num_workers'] = args.num_workers
@@ -106,6 +107,7 @@ def main(args):
 
         for i in range(len(metric_names)):
             met = metrics_compute[i](y_true, y_pred)
+            writer.add_scalar('test/' + metric_names[i], met)
             print(metric_names[i], met)
 
     writer.close()
@@ -126,6 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
     parser.add_argument('--train_val_test', type=eval, default=False)
     parser.add_argument('--val_subj', type = eval, default=None)
+    parser.add_argument('--standardise', type = eval, default=False)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')

@@ -108,7 +108,7 @@ class model_train():
                 self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
         
         if self.choose_best:
-            best_epoch = torch.argmax(f1_scores)
+            best_epoch = torch.argmax(f1_scores).item()
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
             checkpoint = torch.load(best_model_path)
             self.model.load_state_dict(checkpoint['model_state_dict'])
