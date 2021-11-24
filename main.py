@@ -106,6 +106,7 @@ def main(args):
 
         for i in range(len(metric_names)):
             met = metrics_compute[i](y_true, y_pred)
+            writer.add_scalar('test/' + metric_names[i], met)
             print(metric_names[i], met)
 
     writer.close()
