@@ -3,7 +3,7 @@ from datetime import date, datetime
 import numpy as np
 from pathlib import Path
 from src.models.metrics import sensitivity, specificity
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, confusion_matrix
 
 
 class model_train():
@@ -92,11 +92,18 @@ class model_train():
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
             f1 = f1_score(y_true, y_pred)
+            cm = confusion_matrix(y_true, y_pred, normalise = True)
+            tp, fn, fp, tn = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
+
             f1_scores[epoch] = f1
             if self.writer is not None:
                 self.writer.add_scalar('val/sens', sens, epoch)
                 self.writer.add_scalar('val/spec', spec, epoch)
                 self.writer.add_scalar('val/f1', f1, epoch)
+                self.writer.add_scalar('val/tp', tp, epoch)
+                self.writer.add_scalar('val/fn', fn, epoch)
+                self.writer.add_scalar('val/fn', fp, epoch)
+                self.writer.add_scalar('val/fn', tn, epoch)
 
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
