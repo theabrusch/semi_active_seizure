@@ -391,23 +391,43 @@ class DataGenerator(Dataset):
         stride_samples = int(self.stride*signal.fs)
 
         if prefetch:
-            samples = np.zeros((windows, channels, window_samples))
-            labels = np.zeros(windows)
+            samples = None
+            labels = None
         else:
-            labels = np.zeros(windows)
-            start_win = np.zeros(windows)
-            end_win = np.zeros(windows)
+            labels = None
+            start_win = None
+            end_win = None
 
         for win in range(windows):
             sw =int(win*stride_samples)
             ew = int(sw + window_samples)
-            if prefetch:
-                samples[win,:,:] = signal[sw:ew,:].T
-            else: 
-                start_win[win] = sw
-                end_win[win] = ew
-            # set label to seizure if any seizure is present in the segment
-            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples/2))
+            use_sample = False
+            if np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>window_samples*0.75:
+                lab = 1
+                use_sample = True
+            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>window_samples*0.95:
+                lab = 0
+                use_sample = True
+
+            if use_sample:
+                if prefetch:
+                    if labels is None:
+                        samples = signal[sw:ew,:].T
+                        labels = np.array([lab])
+                    else: 
+                        samples = np.append(samples, signal[sw:ew,:].T, axis = 0)
+                        labels = np.append(labels, np.array([lab]), axis = 0)
+                else: 
+                    if labels is None:
+                        start_win = np.array([sw])
+                        end_win = np.array([ew])
+                        labels = np.array([lab])
+                    else: 
+                        start_win = np.append(start_win, np.array([sw]), axis = 0)
+                        end_win = np.append(end_win, np.array([ew]), axis = 0)
+                        labels = np.append(labels, np.array([lab]), axis = 0)
+
+            
         if prefetch:
             return labels, samples
         else:
