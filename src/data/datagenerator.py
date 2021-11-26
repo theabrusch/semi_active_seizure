@@ -513,6 +513,7 @@ class TestGenerator(Dataset):
                  signal_name,
                  window_length, 
                  seiz_classes,
+                 standardise = False,
                  bckg_stride = None,
                  seiz_stride = None, 
                  bckg_rate = None, 
@@ -573,6 +574,7 @@ class TestGenerator(Dataset):
         self.prefetch_data_from_seg = prefetch_data_from_seg
         self.bckg_rate = bckg_rate
         self.seiz_classes = seiz_classes
+        self.standardise = standardise
     
         print('Starting prefetch of data directly from records.')
         self.segments, self.labels_collect, self.paths = self._prefetch()
@@ -640,7 +642,8 @@ class TestGenerator(Dataset):
                 path = np.empty(len(labels), dtype = str)
                 path[:] = self.protocol + '/' + subj + '/' + rec + '/' + sig
 
-                samples = (samples - mean)/std
+                if self.standardise:
+                    samples = (samples - mean)/std
 
                 if len(segments)>0:
                     segments= np.append(segments, samples, axis = 0)
