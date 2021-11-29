@@ -1,6 +1,30 @@
 from src.data import datagenerator, train_val_split
-from torch.utils.data import DataLoader, WeightedRandomSampler, SequentialSampler
+from torch.utils.data import DataLoader, Sampler, SequentialSampler
 from torch import Generator
+import numpy as np
+from sklearn.utils import shuffle
+from typing import Iterator
+
+class SeizSampler(Sampler):
+    """Samples elements sequentially, always in the same order.
+
+    Args:
+        data_source (Dataset): dataset to sample from
+    """
+
+    def __init__(self, dataset) -> None:
+        self.dataset = dataset
+        self.seiz_samples = list(range(self.dataset.seiz_samples))
+        self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
+        self.bckg_rate = int(self.dataset.bckg_rate*self.dataset.seiz_samples)
+
+    def __iter__(self) -> Iterator[int]:
+        # sample all seizure samples and a fixed number of background samples
+        samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
+        return iter(shuffle(samples))
+
+    def __len__(self) -> int:
+        return self.dataset.__len__()
 
 
 def get_dataset(data_gen):
@@ -24,24 +48,16 @@ def get_dataset(data_gen):
         return train_dataset, val_dataset
 
 def get_generator(train_dataset, val_dataset, generator_kwargs):
-    train_weights = train_dataset.weights
-    train_sampler = WeightedRandomSampler(train_weights, 
-                                          num_samples = train_dataset.__len__(), 
-                                          replacement = True)
+    train_sampler = SeizSampler(train_dataset)
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size = generator_kwargs['batch_size'], 
                                   sampler = train_sampler,
                                   num_workers = generator_kwargs['num_workers'],
                                   pin_memory = True)
-    val_weights = val_dataset.weights
-
     val_generator = Generator()
     seed = val_generator.seed()
     val_generator = val_generator.manual_seed(seed)
-    val_sampler = WeightedRandomSampler(val_weights, 
-                                        num_samples = val_dataset.__len__(), 
-                                        replacement = True,
-                                        generator = val_generator)
+    val_sampler = SeizSampler(val_dataset)
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size = generator_kwargs['val_batch_size'], 
                                 sampler = val_sampler,

@@ -132,13 +132,9 @@ class DataGenerator(Dataset):
         self.segments['seiz']['weight'] = seiz_weight
 
         # Create collected sample matrix
-        segments = self.segments['seiz'].append(self.segments['bckg'], 
+        samptemp = self.segments['seiz'].append(self.segments['bckg'], 
                                                 ignore_index = True)
-        if not test:
-            samptemp = shuffle(segments).reset_index()
-            self.weights = samptemp['weight']
-        else:
-            samptemp = segments
+
         if self.prefetch_data_from_seg:
             print('Starting prefetch of data from segmentation...')
             samples = self._prefetch_from_seg(samptemp)
@@ -163,7 +159,7 @@ class DataGenerator(Dataset):
         training. 
         '''
         item = self.samples[idx]
-        if self.prefetch_data_dir or self.prefetch_data_from_seg:
+        if self.prefetch_data_from_seg:
             # if data has been prefetched, simply take the 
             # sample
             sample = item[0]
