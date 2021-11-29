@@ -19,7 +19,6 @@ class DataGenerator(Dataset):
                  bckg_rate = None, 
                  anno_based_seg = False,
                  subjects_to_use = 'all', 
-                 prefetch_data_dir = False,
                  prefetch_data_from_seg = False,
                  test = False,
                  **kwargs):
@@ -50,9 +49,6 @@ class DataGenerator(Dataset):
         subjects_to_use: list or 'all'
             If list, the subjects in the list are included in the 
             dataset. If not a list, all subjects are included. 
-        prefetch_data_dir: bool
-            If True, the segmentation is computed from scratch and
-            the samples are prefetched and saved in memory. 
         prefetch_data_from_seg: bool
             If True, the data is prefetched from a precomputed 
             segmentation. 
@@ -72,7 +68,6 @@ class DataGenerator(Dataset):
 
         self.subjects_to_use = subjects_to_use
         self.protocol = protocol
-        self.prefetch_data_dir = prefetch_data_dir
         self.prefetch_data_from_seg = prefetch_data_from_seg
         self.bckg_rate = bckg_rate
         self.anno_based_seg = anno_based_seg
@@ -96,13 +91,6 @@ class DataGenerator(Dataset):
                               '_norm_coef.pickle'
         calc_norm_coef = False
 
-        if self.prefetch_data_dir and self.prefetch_data_from_seg:
-            warn_str = 'prefetch_data_dir and prefetch_data_from_seg' + \
-                       'cannot both be true. Setting prefetch_data_dir' + \
-                       'to False.'
-            warnings.warn(warn_str, UserWarning)
-            self.prefetch_data_from_seg = False
-
         # Check if the normalisation coefficients have been calculated and saved
         try:
             with open(self.norm_coef_path, 'rb') as fp:
@@ -110,26 +98,20 @@ class DataGenerator(Dataset):
         except:
             calc_norm_coef = True
 
-        # Check if the segmentation has been computed and saved
-        if not self.prefetch_data_dir:
-            try:
-                print('Trying to load segmentation from disk.')
-                with open(self.pickle_path, 'rb') as fp:
-                    self.segments = pickle.load(fp)
-                print('Succesfully loaded segmentation.')
-            except:
-                print('Segmentation not computed, starting computation of segmentation.')
-                self.segments = self._segment_data(calc_norm_coef)
-            if isinstance(subjects_to_use, list) or isinstance(subjects_to_use, np.ndarray):
-                self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
-                self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(subjects_to_use)]
-            self.bckg_samples = len(self.segments['bckg'])
-            self.seiz_samples = len(self.segments['seiz'])
-        else:
-            print('Starting prefetch of data directly from records.')
-            self.segments = self._prefetch()
-            self.bckg_samples = len(self.segments['bckg']['samples'])
-            self.seiz_samples = len(self.segments['seiz']['samples'])   
+
+        try:
+            print('Trying to load segmentation from disk.')
+            with open(self.pickle_path, 'rb') as fp:
+                self.segments = pickle.load(fp)
+            print('Succesfully loaded segmentation.')
+        except:
+            print('Segmentation not computed, starting computation of segmentation.')
+            self.segments = self._segment_data(calc_norm_coef)
+        if isinstance(subjects_to_use, list) or isinstance(subjects_to_use, np.ndarray):
+            self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
+            self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(subjects_to_use)]
+        self.bckg_samples = len(self.segments['bckg'])
+        self.seiz_samples = len(self.segments['seiz'])
 
         # Set the background rate to the 
         if self.bckg_rate == 'None' or self.bckg_rate is None:
@@ -146,33 +128,24 @@ class DataGenerator(Dataset):
         bckg_weight = 1/self.bckg_samples*self.bckg_rate
         seiz_weight = 1/self.seiz_samples
 
-        if not self.prefetch_data_dir:
-            self.segments['bckg']['weight'] = bckg_weight
-            self.segments['seiz']['weight'] = seiz_weight
+        self.segments['bckg']['weight'] = bckg_weight
+        self.segments['seiz']['weight'] = seiz_weight
 
-            # Create collected sample matrix
-            segments = self.segments['seiz'].append(self.segments['bckg'], 
-                                                   ignore_index = True)
-            if not test:
-                samptemp = shuffle(segments).reset_index()
-                self.weights = samptemp['weight']
-            else:
-                samptemp = segments
-            if self.prefetch_data_from_seg:
-                print('Starting prefetch of data from segmentation...')
-                samples = self._prefetch_from_seg(samptemp)
-            else:
-                samples = samptemp.to_records(index = False)
-            self.samples = samples
+        # Create collected sample matrix
+        segments = self.segments['seiz'].append(self.segments['bckg'], 
+                                                ignore_index = True)
+        if not test:
+            samptemp = shuffle(segments).reset_index()
+            self.weights = samptemp['weight']
         else:
-            weights = np.zeros(self.bckg_samples + self.seiz_samples)
-            weights[:self.seiz_samples] = seiz_weight
-            weights[self.seiz_samples::] = bckg_weight
-            samp = np.append(self.segments['seiz']['samples'], self.segments['bckg']['samples'], axis = 0)
-            lab = np.append(self.segments['seiz']['label'], self.segments['bckg']['label'], axis = 0)
-            self.samples = list(zip(samp, lab))
-            if not test:
-                self.samples, self.weights = shuffle(self.samples, weights)
+            samptemp = segments
+        if self.prefetch_data_from_seg:
+            print('Starting prefetch of data from segmentation...')
+            samples = self._prefetch_from_seg(samptemp)
+        else:
+            samples = samptemp.to_records(index = False)
+        self.samples = samples
+
 
     def __len__(self):
         '''
@@ -253,62 +226,6 @@ class DataGenerator(Dataset):
         # close data file since it is no longer needed
         self.data_file.close()
         return samples
-
-    
-    def _prefetch(self):
-        '''
-        If the segmentation has not already been computed, 
-        the prefetching can be done directly. 
-        Outputs
-        -------------------------------------------------
-        segments: dict
-            Dictionary with all samples. Divided into 
-            seizure and background. 
-        '''
-        protocol = self.data_file[self.protocol]
-
-        segments = dict() 
-        segments['seiz'] = dict()
-        segments['bckg'] = dict()
-        
-        i=0
-        for subj in self.subjects_to_use:
-            print('Segmenting data for subject', i + 1, 'out of', len(self.subjects_to_use))
-            i+=1
-            for rec in protocol[subj].keys():
-                record = protocol[subj][rec]
-
-                for sig in self.signal_name:
-                    if sig in record.keys():
-                        signal = record[sig]
-
-                # Calculate normalisation coefficients for each record
-                mean = np.mean(signal)
-                std = np.std(signal)
-                
-                if self.anno_based_seg:
-                    labels, samples = self._anno_based_segment(record, prefetch = True)
-                else:
-                    labels, samples = self._record_based_segment(record, prefetch = True)
-                if self.standardise:
-                    samples = (samples - mean)/std
-                pos_samples = labels == 1
-                neg_samples = labels == 0
-
-                if 'samples' in segments['seiz'].keys():
-                    segments['seiz']['samples'] = np.append(segments['seiz']['samples'], samples[pos_samples], axis = 0)
-                    segments['bckg']['samples'] = np.append(segments['bckg']['samples'], samples[neg_samples], axis = 0)
-                    segments['seiz']['label'] = np.append(segments['seiz']['label'], labels[pos_samples], axis = 0)
-                    segments['bckg']['label'] = np.append(segments['bckg']['label'], labels[neg_samples], axis = 0)
-                else:
-                    segments['seiz']['samples'] = samples[pos_samples]
-                    segments['bckg']['samples'] = samples[neg_samples]
-                    segments['seiz']['label'] = labels[pos_samples]
-                    segments['bckg']['label'] = labels[neg_samples]
-        
-        self.data_file.close()
-        return segments
-
     
     def _get_X_shape(self):
         temp = self.__getitem__(0)
