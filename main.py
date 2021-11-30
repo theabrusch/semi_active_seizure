@@ -49,7 +49,6 @@ def main(args):
     train_dataloader, val_dataloader = get_generator.get_generator(train_dataset,
                                                                     val_dataset,
                                                                     gen_args)
-    temp = next(iter(train_dataloader))
     print('Data loader initialization took', datetime.now()-time_start, '.')
 
     # load model
