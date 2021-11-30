@@ -92,7 +92,7 @@ class model_train():
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
             f1 = f1_score(y_true, y_pred)
-            cm = confusion_matrix(y_true, y_pred, normalise = True)
+            cm = confusion_matrix(y_true, y_pred, normalize = 'true')
             tp, fn, fp, tn = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
             f1_scores[epoch] = f1
