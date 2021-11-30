@@ -35,9 +35,6 @@ class model_train():
         f1_scores = torch.zeros(epochs)
         checkpoint_path = 'models/checkpoints/' + str(datetime.now()) 
         
-        if self.writer is not None:
-            self.writer.add_graph(self.model)
-        
         if self.choose_best:
             p = Path(checkpoint_path)
             p.mkdir(parents=True, exist_ok=True)
