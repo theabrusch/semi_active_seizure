@@ -135,10 +135,7 @@ if create_boston_small:
         
         #check for seizure records
         seiz_recs = train_val_split.get_seiz_recs(subject, seiz_classes=['seiz'])
-        if len(seiz_recs['seiz'])>1:
-            rec_seiz = np.random.choice(seiz_recs['seiz'], size = 2)
-        else:
-            rec_seiz = np.random.choice(seiz_recs['seiz'], size = 1)
+        rec_seiz = seiz_recs['seiz']
 
         rec_sample = rec_seiz
 

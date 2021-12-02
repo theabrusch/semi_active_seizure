@@ -12,16 +12,19 @@ class SeizSampler(Sampler):
         data_source (Dataset): dataset to sample from
     """
 
-    def __init__(self, dataset) -> None:
+    def __init__(self, dataset, seed = None) -> None:
         self.dataset = dataset
         self.seiz_samples = list(range(self.dataset.seiz_samples))
         self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
         self.bckg_rate = int(self.dataset.bckg_rate*self.dataset.seiz_samples)
+        self.seed = seed
 
     def __iter__(self) -> Iterator[int]:
         # sample all seizure samples and a fixed number of background samples
+        np.random.seed(self.seed)
         samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
-        return iter(shuffle(samples))
+        np.random.seed(None)
+        return iter(shuffle(samples, random_state = self.seed))
 
     def __len__(self) -> int:
         return self.dataset.__len__()
