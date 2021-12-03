@@ -16,6 +16,11 @@ def get_n_params(model):
         pp += nn
     return pp
 
+def get_trainable_params(model):
+    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+    params = sum([np.prod(p.size()) for p in model_parameters])
+    return params
+
 def conv_size(input_size, kernel, padding, stride=1):
     '''
     Return output shape after convolution based on input
@@ -89,7 +94,7 @@ class BaselineCNN(nn.Module):
 class AttentionModule(nn.Module):
     def __init__(self, input_shape):
         super(AttentionModule, self).__init__()
-        self.time_steps, self.channels = input_shape[0], input_shape[1]
+        self.time_steps, self.channels = input_shape[1], input_shape[0]
         # attention weights
         self.fc = nn.Linear(in_features = self.channels, 
                             out_features = self.channels)
@@ -106,9 +111,9 @@ class AttentionModule(nn.Module):
         return x
 
 class AttentionBiLSTM(nn.Module):
-    def __init__(self, input_shape, lstm_units, dense_units):
+    def __init__(self, input_shape, lstm_units, dense_units, **kwargs):
         super(AttentionBiLSTM, self).__init__()
-        self.time_steps, self.channels = input_shape[0], input_shape[1]
+        self.time_steps, self.channels = input_shape[1], input_shape[0]
         # attention layer
         self.att = AttentionModule(input_shape)
         # lstm
@@ -124,7 +129,7 @@ class AttentionBiLSTM(nn.Module):
                              out_features = 2)
         nn.init.xavier_uniform_(self.fc2.weight)
         self.fc2.bias.data.fill_(0.1)
-        
+
     def forward(self, x):
         x = self.att(x)
         x,_ = self.lstm(x)
