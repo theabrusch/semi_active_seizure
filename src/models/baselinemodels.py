@@ -131,6 +131,7 @@ class AttentionBiLSTM(nn.Module):
         self.fc2.bias.data.fill_(0.1)
 
     def forward(self, x):
+        x = torch.permute(x, (0,2,1))
         x = self.att(x)
         x,_ = self.lstm(x)
         x = self.fc1(x)
