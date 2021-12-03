@@ -130,7 +130,7 @@ class AttentionBiLSTM(nn.Module):
         nn.init.xavier_uniform_(self.fc2.weight)
         self.fc2.bias.data.fill_(0.1)
 
-    def forward(self, x):
+    def forward(self, x, training = False):
         x = torch.permute(x, (0,2,1))
         x = self.att(x)
         x,_ = self.lstm(x)
