@@ -115,7 +115,7 @@ if create_boston_sub:
 
 if create_boston_small:
     F = dc.File('/Users/theabrusch/Desktop/Speciale_data/boston_scalp_new.hdf5', 'r')
-    subF = dc.File('data/hdf5/boston_scalp_small.hdf5', 'w')
+    subF = dc.File('data/hdf5/boston_scalp_1subj.hdf5', 'w')
 
     new_train = subF.create_group('train')
     i = 0
