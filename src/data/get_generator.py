@@ -54,8 +54,7 @@ def get_dataset(data_gen):
 
 def get_generator(train_dataset, val_dataset, generator_kwargs):
     if generator_kwargs['use_train_seed']:
-        train_generator = Generator()
-        seed = train_generator.seed()
+        seed = int(np.random.uniform(0, 2**32))
     else:
         seed = None
     train_sampler = SeizSampler(train_dataset, seed = seed)
@@ -64,8 +63,7 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
                                   sampler = train_sampler,
                                   num_workers = generator_kwargs['num_workers'],
                                   pin_memory = True)
-    val_generator = Generator()
-    seed = val_generator.seed()
+    seed = int(np.random.uniform(0, 2**32))
     val_sampler = SeizSampler(val_dataset, seed = seed)
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size = generator_kwargs['val_batch_size'], 
