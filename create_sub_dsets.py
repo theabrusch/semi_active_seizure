@@ -120,7 +120,7 @@ if create_boston_small:
     new_train = subF.create_group('train')
     i = 0
     subjects = list(F['train'].keys())
-    subjs_to_use = np.random.choice(subjects, 2)
+    subjs_to_use = np.random.choice(subjects, 1)
     for subj in subjs_to_use:
         print('Copying subject', i, 'out of', len(subjs_to_use))
         i+=1
@@ -134,10 +134,10 @@ if create_boston_small:
             train_subj.attrs[att] = subject.attrs[att]
         
         #check for seizure records
-        seiz_recs = train_val_split.get_seiz_recs(subject, seiz_classes=['seiz'])
-        rec_seiz = seiz_recs['seiz']
+        #seiz_recs = train_val_split.get_seiz_recs(subject, seiz_classes=['seiz'])
+        #rec_seiz = seiz_recs['seiz']
 
-        rec_sample = rec_seiz
+        rec_sample = list(subject.keys())
 
         for rec in rec_sample:
             record = subject[rec]
