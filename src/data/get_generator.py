@@ -12,16 +12,19 @@ class SeizSampler(Sampler):
         data_source (Dataset): dataset to sample from
     """
 
-    def __init__(self, dataset) -> None:
+    def __init__(self, dataset, seed = None) -> None:
         self.dataset = dataset
         self.seiz_samples = list(range(self.dataset.seiz_samples))
         self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
         self.bckg_rate = int(self.dataset.bckg_rate*self.dataset.seiz_samples)
+        self.seed = seed
 
     def __iter__(self) -> Iterator[int]:
         # sample all seizure samples and a fixed number of background samples
+        np.random.seed(self.seed)
         samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
-        return iter(shuffle(samples))
+        np.random.seed(None)
+        return iter(shuffle(samples, random_state = self.seed))
 
     def __len__(self) -> int:
         return self.dataset.__len__()
@@ -50,16 +53,18 @@ def get_dataset(data_gen):
         return train_dataset, val_dataset
 
 def get_generator(train_dataset, val_dataset, generator_kwargs):
-    train_sampler = SeizSampler(train_dataset)
+    if generator_kwargs['use_train_seed']:
+        seed = int(np.random.uniform(0, 2**32))
+    else:
+        seed = None
+    train_sampler = SeizSampler(train_dataset, seed = seed)
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size = generator_kwargs['batch_size'], 
                                   sampler = train_sampler,
                                   num_workers = generator_kwargs['num_workers'],
                                   pin_memory = True)
-    val_generator = Generator()
-    seed = val_generator.seed()
-    val_generator = val_generator.manual_seed(seed)
-    val_sampler = SeizSampler(val_dataset)
+    seed = int(np.random.uniform(0, 2**32))
+    val_sampler = SeizSampler(val_dataset, seed = seed)
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size = generator_kwargs['val_batch_size'], 
                                 sampler = val_sampler,

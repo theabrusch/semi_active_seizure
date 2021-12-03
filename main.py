@@ -40,6 +40,7 @@ def main(args):
 
     gen_args = config['generator_kwargs']
     gen_args['num_workers'] = args.num_workers
+    gen_args['use_train_seed'] = args.use_train_seed
 
     if args.train_val_test:
         train_dataset, val_dataset, test = get_generator.get_dataset(datagen)
@@ -54,6 +55,8 @@ def main(args):
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
+    model_config['lstm_units'] = args.lstm_units
+    model_config['dense_units'] = args.dense_units
     model_config['dropoutprob'] = args.dropoutprob
     model_config['padding'] = args.padding
     model_config['input_shape'] = train_dataset._get_X_shape()
@@ -123,6 +126,7 @@ if __name__ == '__main__':
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
     parser.add_argument('--bckg_rate_train', type=eval, default=1)
+    parser.add_argument('--use_train_seed', type=eval, default=True)
     parser.add_argument('--anno_based_seg', type=eval, default=False)
     parser.add_argument('--prefetch_data_dir', type=eval, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
@@ -133,6 +137,8 @@ if __name__ == '__main__':
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
     parser.add_argument('--dropoutprob', type=float, default=0.4)
+    parser.add_argument('--lstm_units', type=eval, default=140)
+    parser.add_argument('--dense_units', type=eval, default=70)
     parser.add_argument('--padding', type=eval, default=False)       
 
     # Training parameters

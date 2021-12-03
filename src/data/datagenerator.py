@@ -13,6 +13,7 @@ class DataGenerator(Dataset):
                  signal_name,
                  window_length, 
                  seiz_classes,
+                 segments = None,
                  standardise = True,
                  bckg_stride = None,
                  seiz_stride = None, 
@@ -20,7 +21,6 @@ class DataGenerator(Dataset):
                  anno_based_seg = False,
                  subjects_to_use = 'all', 
                  prefetch_data_from_seg = False,
-                 test = False,
                  **kwargs):
         '''
         Wrapper for the Pytorch dataset that segments and samples the 
@@ -98,18 +98,21 @@ class DataGenerator(Dataset):
         except:
             calc_norm_coef = True
 
+        if segments is None:
+            try:
+                print('Trying to load segmentation from disk.')
+                with open(self.pickle_path, 'rb') as fp:
+                    self.segments = pickle.load(fp)
+                print('Succesfully loaded segmentation.')
+            except:
+                print('Segmentation not computed, starting computation of segmentation.')
+                self.segments = self._segment_data(calc_norm_coef)
+            if isinstance(subjects_to_use, list) or isinstance(subjects_to_use, np.ndarray):
+                self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
+                self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(subjects_to_use)]
+        else:
+            self.segments = segments
 
-        try:
-            print('Trying to load segmentation from disk.')
-            with open(self.pickle_path, 'rb') as fp:
-                self.segments = pickle.load(fp)
-            print('Succesfully loaded segmentation.')
-        except:
-            print('Segmentation not computed, starting computation of segmentation.')
-            self.segments = self._segment_data(calc_norm_coef)
-        if isinstance(subjects_to_use, list) or isinstance(subjects_to_use, np.ndarray):
-            self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(subjects_to_use)]
-            self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(subjects_to_use)]
         self.bckg_samples = len(self.segments['bckg'])
         self.seiz_samples = len(self.segments['seiz'])
 
