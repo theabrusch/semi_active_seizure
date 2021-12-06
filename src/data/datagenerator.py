@@ -662,7 +662,7 @@ class TestGenerator(Dataset):
 
         return segments
     
-    def _record_based_segment(self, record, sens, prefetch=False):
+    def _record_based_segment(self, record, prefetch=False):
         # Get annotation on sample basis
         one_hot_label = self._anno_to_one_hot(record)
         for sig in self.signal_name:
@@ -691,7 +691,7 @@ class TestGenerator(Dataset):
                 start_win[win] = sw
                 end_win[win] = ew
             # set label to seizure if any seizure is present in the segment
-            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples*sens))
+            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples*0.5))
         if prefetch:
             return labels, samples
         else:
