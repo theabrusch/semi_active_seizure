@@ -1,4 +1,4 @@
-Fri Dec  3 13:29:07 2021       
+Mon Dec  6 08:31:48 2021       
 +-----------------------------------------------------------------------------+
 | NVIDIA-SMI 495.44       Driver Version: 495.44       CUDA Version: 11.5     |
 |-------------------------------+----------------------+----------------------+
@@ -7,7 +7,7 @@ Fri Dec  3 13:29:07 2021
 |                               |                      |               MIG M. |
 |===============================+======================+======================|
 |   0  Tesla V100-PCIE...  On   | 00000000:58:00.0 Off |                    0 |
-| N/A   30C    P0    25W / 250W |      0MiB / 32510MiB |      0%      Default |
+| N/A   28C    P0    26W / 250W |      0MiB / 32510MiB |      0%      Default |
 |                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
                                                                                
@@ -19,7 +19,43 @@ Fri Dec  3 13:29:07 2021
 |  No running processes found                                                 |
 +-----------------------------------------------------------------------------+
 index, name, memory.total [MiB], memory.used [MiB], memory.free [MiB], temperature.gpu, pstate, utilization.gpu [%], utilization.memory [%]
-0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 30, P0, 0 %, 0 %
-0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 30, P0, 0 %, 0 %
-0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 30, P0, 0 %, 0 %
-0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 29, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 479 MiB, 32031 MiB, 29, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 725 MiB, 31785 MiB, 29, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 1083 MiB, 31427 MiB, 29, P0, 1 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 32, P0, 95 %, 7 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 32, P0, 82 %, 3 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 33, P0, 74 %, 4 %
