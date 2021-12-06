@@ -36,6 +36,7 @@ def main(args):
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
     datagen['train_val_test'] = args.train_val_test
     datagen['val_subj'] = args.val_subj
+    datagen['sens'] = args.sens
     datagen['standardise'] = args.standardise
 
     gen_args = config['generator_kwargs']
@@ -133,6 +134,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_val_test', type=eval, default=False)
     parser.add_argument('--val_subj', type = eval, default=None)
     parser.add_argument('--standardise', type = eval, default=False)
+    parser.add_argument('--sens', type = eval, default=0)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')

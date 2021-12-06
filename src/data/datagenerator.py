@@ -13,6 +13,7 @@ class DataGenerator(Dataset):
                  signal_name,
                  window_length, 
                  seiz_classes,
+                 sens,
                  segments = None,
                  standardise = True,
                  bckg_stride = None,
@@ -73,7 +74,7 @@ class DataGenerator(Dataset):
         self.anno_based_seg = anno_based_seg
         self.seiz_classes = seiz_classes
         self.standardise = standardise
-        
+        self.sens = sens
         if isinstance(self.stride, list) and not anno_based_seg:
             self.stride = self.stride[0]
             warnings.warn('The segmentation is not based on annotations '+\
@@ -318,7 +319,7 @@ class DataGenerator(Dataset):
             sw =int(win*stride_samples)
             ew = int(sw + window_samples)
             use_sample = False
-            if np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>window_samples*0.75:
+            if np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>window_samples*self.sens:
                 lab = 1
                 use_sample = True
             elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>window_samples*0.95:
@@ -661,7 +662,7 @@ class TestGenerator(Dataset):
 
         return segments
     
-    def _record_based_segment(self, record, prefetch=False):
+    def _record_based_segment(self, record, sens, prefetch=False):
         # Get annotation on sample basis
         one_hot_label = self._anno_to_one_hot(record)
         for sig in self.signal_name:
@@ -690,7 +691,7 @@ class TestGenerator(Dataset):
                 start_win[win] = sw
                 end_win[win] = ew
             # set label to seizure if any seizure is present in the segment
-            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples/2))
+            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples*sens))
         if prefetch:
             return labels, samples
         else:
