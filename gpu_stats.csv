@@ -1,4 +1,4 @@
-Tue Nov 30 11:22:01 2021       
+Mon Dec  6 08:31:48 2021       
 +-----------------------------------------------------------------------------+
 | NVIDIA-SMI 495.44       Driver Version: 495.44       CUDA Version: 11.5     |
 |-------------------------------+----------------------+----------------------+
@@ -6,8 +6,8 @@ Tue Nov 30 11:22:01 2021
 | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
 |                               |                      |               MIG M. |
 |===============================+======================+======================|
-|   0  Tesla V100-SXM2...  On   | 00000000:3A:00.0 Off |                    0 |
-| N/A   27C    P0    41W / 300W |      0MiB / 32510MiB |      0%      Default |
+|   0  Tesla V100-PCIE...  On   | 00000000:58:00.0 Off |                    0 |
+| N/A   28C    P0    26W / 250W |      0MiB / 32510MiB |      0%      Default |
 |                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
                                                                                
@@ -19,125 +19,43 @@ Tue Nov 30 11:22:01 2021
 |  No running processes found                                                 |
 +-----------------------------------------------------------------------------+
 index, name, memory.total [MiB], memory.used [MiB], memory.free [MiB], temperature.gpu, pstate, utilization.gpu [%], utilization.memory [%]
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 0 MiB, 32510 MiB, 27, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 330 MiB, 32180 MiB, 27, P0, 1 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 600 MiB, 31910 MiB, 28, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 952 MiB, 31558 MiB, 28, P0, 0 %, 0 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 25060 MiB, 7450 MiB, 33, P0, 100 %, 17 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 25060 MiB, 7450 MiB, 43, P0, 87 %, 59 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 25060 MiB, 7450 MiB, 46, P0, 100 %, 12 %
-0, Tesla V100-SXM2-32GB, 32510 MiB, 23558 MiB, 8952 MiB, 35, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 0 MiB, 32510 MiB, 28, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 479 MiB, 32031 MiB, 29, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 725 MiB, 31785 MiB, 29, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 1083 MiB, 31427 MiB, 29, P0, 1 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 32, P0, 95 %, 7 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 30, P0, 0 %, 0 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 32, P0, 82 %, 3 %
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3607 MiB, 28903 MiB, 33, P0, 74 %, 4 %
