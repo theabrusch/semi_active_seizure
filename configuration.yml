@@ -35,5 +35,5 @@ fit:
 
   # Optimization
   optimizer:
-    optimizer: Adam
+    optimizer: RMSprop
     scheduler: None
