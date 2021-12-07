@@ -114,7 +114,7 @@ class model_train():
             if self.writer is not None:
                 self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
         
-        if self.choose_best:
+        if self.choose_best and epochs>0:
             best_epoch = torch.argmax(f1_scores).item()
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
             checkpoint = torch.load(best_model_path)

@@ -32,7 +32,6 @@ def main(args):
     datagen['bckg_rate_val'] = args.bckg_rate_val
     datagen['bckg_rate_train'] = args.bckg_rate_train
     datagen['anno_based_seg'] = args.anno_based_seg
-    datagen['prefetch_data_dir'] = args.prefetch_data_dir
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
     datagen['train_val_test'] = args.train_val_test
     datagen['val_subj'] = args.val_subj
@@ -40,7 +39,6 @@ def main(args):
     datagen['standardise'] = args.standardise
 
     gen_args = config['generator_kwargs']
-    gen_args['num_workers'] = args.num_workers
     gen_args['use_train_seed'] = args.use_train_seed
 
     if args.train_val_test:
@@ -122,14 +120,12 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
-    parser.add_argument('--num_workers', type=int, default = 0)
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)
     parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
     parser.add_argument('--bckg_rate_train', type=eval, default=1)
     parser.add_argument('--use_train_seed', type=eval, default=True)
     parser.add_argument('--anno_based_seg', type=eval, default=False)
-    parser.add_argument('--prefetch_data_dir', type=eval, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
     parser.add_argument('--train_val_test', type=eval, default=False)
     parser.add_argument('--val_subj', type = eval, default=None)

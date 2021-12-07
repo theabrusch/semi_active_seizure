@@ -11,6 +11,7 @@ class DataGenerator(Dataset):
                  hdf5_path, 
                  protocol, 
                  signal_name,
+                 subjects_to_use,
                  norm_coef = None,
                  segments = None,
                  standardise = True,
@@ -35,8 +36,10 @@ class DataGenerator(Dataset):
         self.hdf5_path = hdf5_path
         self.protocol = protocol
         self.signal_name = signal_name
+        self.standardise = standardise
         self.data_file = dc.File(hdf5_path, 'r')
         self.bckg_rate = bckg_rate
+        self.subjects_to_use = subjects_to_use
         self.prefetch_data_from_seg = prefetch_data_from_seg
     
         # Check if the normalisation coefficients have been calculated and saved

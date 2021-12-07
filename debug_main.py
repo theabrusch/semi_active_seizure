@@ -24,7 +24,7 @@ parser.add_argument('--padding', type=eval, default=False)
 
 # Training parameters
 parser.add_argument('--use_weighted_loss', type=bool, default=True)
-parser.add_argument('--epochs', type=int, default=10)
+parser.add_argument('--epochs', type=int, default=0)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
 
