@@ -84,7 +84,7 @@ def get_test_generator(data_gen, generator_kwargs, val_subj):
         print('Initialising validation dataset.')
         val_dataset = datagenerator.TestGenerator(**data_gen, 
                                                   subjects_to_use = val_subj)
-        print('Number of seizure segments in test set:', val_dataset.seiz_samples)
+        print('Number of seizure segments in test set:', (val_dataset.labels_collect==1).sum())
         sampler = SequentialSampler(val_dataset)
         val_dataloader = DataLoader(val_dataset, 
                                     batch_size = generator_kwargs['val_batch_size'],

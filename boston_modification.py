@@ -26,7 +26,6 @@ for split in F:
             record = F[split][subj][rec]
             rec_channels[rec] = 0 
             recdur += record.duration
-            recordsss += 1
             if 'EEG' in record.keys():
                 chNames = record['EEG'].attrs['chNames']
                 for ch in chNames:
@@ -36,18 +35,18 @@ for split in F:
                     else:
                         channels[ch] = 1
             anno_dur_rec = 0 
+            seiz_rec = 0
             for anno in record['Annotations']:
                 if anno['Name'] == 'seiz':
                     anno_dur += anno['Duration']
                     seiz_rec = 1
-        if rec_channels[rec] > 21:
-            dur23 += recdur
-            dur17 += recdur
-            records += recordsss
-            if seiz_rec:
-                seiz_rec_tot += record.duration
-        elif rec_channels[rec] > 16:
-            dur17 += recdur
+            if rec_channels[rec] > 21:
+                dur23 += record.duration
+                dur17 += record.duration
+                if seiz_rec:
+                    seiz_rec_tot += record.duration
+            elif rec_channels[rec] > 16:
+                dur17 += record.duration
 
 channels_common = []
 single_ref_ch1 = []

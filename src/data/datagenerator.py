@@ -37,6 +37,7 @@ class DataGenerator(Dataset):
         self.signal_name = signal_name
         self.data_file = dc.File(hdf5_path, 'r')
         self.bckg_rate = bckg_rate
+        self.prefetch_data_from_seg = prefetch_data_from_seg
     
         # Check if the normalisation coefficients have been calculated and saved
         if standardise:
@@ -518,19 +519,6 @@ class SegmentData():
         except:
             self.calc_norm_coef = True
 
-        try:
-            print('Trying to load segmentation from disk.')
-            with open(self.pickle_path, 'rb') as fp:
-                self.segments = pickle.load(fp)
-            if isinstance(self.subjects_to_use, list) or isinstance(self.subjects_to_use, np.ndarray):
-                self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(self.subjects_to_use)]
-                self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(self.subjects_to_use)]
-            print('Succesfully loaded segmentation.')
-        except:
-            print('Segmentation not computed.')
-
-        return self.segments
-
     def segment_data(self):
         '''
         Build pandas DataFrame containing pointers to the different
@@ -539,7 +527,7 @@ class SegmentData():
         try:
             print('Trying to load segmentation from disk.')
             with open(self.pickle_path, 'rb') as fp:
-                self.segments = pickle.load(fp)
+                segments = pickle.load(fp)
         except:
             protocol = self.data_file[self.protocol]
 
@@ -598,12 +586,13 @@ class SegmentData():
                     pickle.dump(self.norm_coef, fp)
             else: 
                 self.norm_coef = None
-            
-            if isinstance(self.subjects_to_use, list) or isinstance(self.subjects_to_use, np.ndarray):
-                self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(self.subjects_to_use)]
-                self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(self.subjects_to_use)]
+        
+        self.segments = segments
+        if isinstance(self.subjects_to_use, list) or isinstance(self.subjects_to_use, np.ndarray):
+            self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(self.subjects_to_use)]
+            self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(self.subjects_to_use)]
 
-        return segments, self.norm_coef
+        return self.segments, self.norm_coef
     
     def _record_based_segment(self, record):
         # Get annotation on sample basis
