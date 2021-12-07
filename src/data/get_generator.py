@@ -40,12 +40,18 @@ def get_dataset(data_gen):
         print('Training subjects', train)
         print('Val subjects', val)
         print('Initialising training dataset.')
+        datasegment = datagenerator.SegmentData(**data_gen,
+                                                subjects_to_use = train)
+        segment, norm_coef = datasegment.segment_data()
         train_dataset = datagenerator.DataGenerator(**data_gen, bckg_rate=data_gen['bckg_rate_train'],
-                                                    subjects_to_use = train)
+                                                    segments = segment, norm_coef = norm_coef)
         print('Number of seizure segments in training set:', train_dataset.seiz_samples)
         print('Initialising validation dataset.')
+        datasegment = datagenerator.SegmentData(**data_gen,
+                                                subjects_to_use = val)
+        segment, norm_coef = datasegment.segment_data()
         val_dataset = datagenerator.DataGenerator(**data_gen, bckg_rate=data_gen['bckg_rate_val'],
-                                                  subjects_to_use = val)
+                                                  segments = segment, norm_coef=norm_coef)
         print('Number of seizure segments in validation set', val_dataset.seiz_samples)
     if data_gen['train_val_test']:
         return train_dataset, val_dataset, test

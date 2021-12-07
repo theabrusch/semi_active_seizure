@@ -7,30 +7,55 @@ rereference = False
 create_new_file = True
 create_bckg_anno = False
 
-F = dc.File('data/hdf5/boston_scalp_mod.hdf5', 'r+')
+F = dc.File('/Users/theabrusch/Desktop/repos/artsd_data_repo/data/interim/boston_scalp.hdf5', 'r+')
 record = F['train']['chb01/03']
 sig = record['EEG']
+dur23 = 0
+dur17 = 0
+records = 0 
+anno_dur = 0 
+seiz_rec_tot = 0 
 
 channels = dict()
-
+rec_channels = dict()
 for split in F:
     for subj in F[split]:
+        recdur = 0
+        recordsss = 0 
         for rec in F[split][subj]:
             record = F[split][subj][rec]
+            rec_channels[rec] = 0 
+            recdur += record.duration
+            recordsss += 1
             if 'EEG' in record.keys():
                 chNames = record['EEG'].attrs['chNames']
                 for ch in chNames:
+                    rec_channels[rec] += 1
                     if ch in channels.keys():
                         channels[ch] += 1
                     else:
                         channels[ch] = 1
+            anno_dur_rec = 0 
+            for anno in record['Annotations']:
+                if anno['Name'] == 'seiz':
+                    anno_dur += anno['Duration']
+                    seiz_rec = 1
+        if rec_channels[rec] > 21:
+            dur23 += recdur
+            dur17 += recdur
+            records += recordsss
+            if seiz_rec:
+                seiz_rec_tot += record.duration
+        elif rec_channels[rec] > 16:
+            dur17 += recdur
+
 channels_common = []
 single_ref_ch1 = []
 single_ref_ch2 = []
 
 
 for ch in channels:
-    if channels[ch] > 656:
+    if channels[ch] > 639:
         channels_common.append(ch)
         ch1 = ch.split('-')[0]
         ch2 = ch.split('-')[1]
