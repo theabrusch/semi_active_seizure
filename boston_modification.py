@@ -1,36 +1,61 @@
 from dataapi import data_collection as dc
 import numpy as np
 import pandas as pd
+from torch.utils.data.dataset import T
 
-select_channels = False
+select_channels = True
 rereference = False
-create_new_file = True
-create_bckg_anno = False
+create_new_file = False
+create_bckg_anno = True
 
-F = dc.File('data/hdf5/boston_scalp_mod.hdf5', 'r+')
-record = F['train']['chb01/03']
+F = dc.File('/Users/theabrusch/Desktop/repos/artsd_data_repo/data/interim/boston_scalp.hdf5', 'r+')
+record = F['train']['chb01/01']
 sig = record['EEG']
+dur23 = 0
+dur17 = 0
+records = 0 
+anno_dur = 0 
+seiz_rec_tot = 0 
 
 channels = dict()
-
+rec_channels = dict()
 for split in F:
     for subj in F[split]:
+        recdur = 0
+        recordsss = 0 
         for rec in F[split][subj]:
             record = F[split][subj][rec]
+            rec_channels[rec] = 0 
+            recdur += record.duration
             if 'EEG' in record.keys():
                 chNames = record['EEG'].attrs['chNames']
                 for ch in chNames:
+                    rec_channels[rec] += 1
                     if ch in channels.keys():
                         channels[ch] += 1
                     else:
                         channels[ch] = 1
+            anno_dur_rec = 0 
+            seiz_rec = 0
+            for anno in record['Annotations']:
+                if anno['Name'] == 'seiz':
+                    anno_dur += anno['Duration']
+                    seiz_rec = 1
+            if rec_channels[rec] > 21:
+                dur23 += record.duration
+                dur17 += record.duration
+                if seiz_rec:
+                    seiz_rec_tot += record.duration
+            elif rec_channels[rec] > 16:
+                dur17 += record.duration
+
 channels_common = []
 single_ref_ch1 = []
 single_ref_ch2 = []
 
 
 for ch in channels:
-    if channels[ch] > 656:
+    if channels[ch] > 639:
         channels_common.append(ch)
         ch1 = ch.split('-')[0]
         ch2 = ch.split('-')[1]
@@ -40,6 +65,7 @@ for ch in channels:
 records = F.get_children(object_type = dc.Record, get_obj=False)
 common_channel_recs = []
 mis_channel_recs = []
+channels_common = ['P4-O2', 'FP2-F4', 'P7-O1', 'C4-P4', 'F7-T7', 'C3-P3', 'FP1-F7', 'F8-T8', 'FZ-CZ', 'CZ-PZ', 'F3-C3', 'T7-P7', 'P8-O2', 'FP1-F3', 'F4-C4', 'FP2-F8', 'P3-O1']
 
 for rec in records:
     record = F[rec]
@@ -49,7 +75,7 @@ for rec in records:
         for ch in chNames:
             if ch in channels_common:
                 ch_rec.append(ch)
-        if len(ch_rec) == 18:
+        if len(ch_rec) == len(channels_common):
             common_channel_recs.append(rec)
         else:
             mis_channel_recs.append(rec)
