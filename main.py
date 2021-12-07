@@ -63,9 +63,10 @@ def main(args):
 
     # train model
     optim_config = config['fit']['optimizer']
+    optim_config['model'] = args.model_type
     optim_config['lr'] = args.lr
     optim_config['weight_decay'] = args.weight_decay
-    optimizer, scheduler = get_optim.get_optim(model.parameters(), optim_config)
+    optimizer, scheduler = get_optim.get_optim(model, optim_config)
 
     fit_config = config['fit']
 
