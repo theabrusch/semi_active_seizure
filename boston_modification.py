@@ -1,14 +1,15 @@
 from dataapi import data_collection as dc
 import numpy as np
 import pandas as pd
+from torch.utils.data.dataset import T
 
-select_channels = False
+select_channels = True
 rereference = False
-create_new_file = True
-create_bckg_anno = False
+create_new_file = False
+create_bckg_anno = True
 
 F = dc.File('/Users/theabrusch/Desktop/repos/artsd_data_repo/data/interim/boston_scalp.hdf5', 'r+')
-record = F['train']['chb01/03']
+record = F['train']['chb01/01']
 sig = record['EEG']
 dur23 = 0
 dur17 = 0
@@ -64,6 +65,7 @@ for ch in channels:
 records = F.get_children(object_type = dc.Record, get_obj=False)
 common_channel_recs = []
 mis_channel_recs = []
+channels_common = ['P4-O2', 'FP2-F4', 'P7-O1', 'C4-P4', 'F7-T7', 'C3-P3', 'FP1-F7', 'F8-T8', 'FZ-CZ', 'CZ-PZ', 'F3-C3', 'T7-P7', 'P8-O2', 'FP1-F3', 'F4-C4', 'FP2-F8', 'P3-O1']
 
 for rec in records:
     record = F[rec]
@@ -73,7 +75,7 @@ for rec in records:
         for ch in chNames:
             if ch in channels_common:
                 ch_rec.append(ch)
-        if len(ch_rec) == 18:
+        if len(ch_rec) == len(channels_common):
             common_channel_recs.append(rec)
         else:
             mis_channel_recs.append(rec)
