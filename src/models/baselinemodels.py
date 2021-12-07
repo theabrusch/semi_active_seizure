@@ -46,15 +46,15 @@ class BaselineCNN(nn.Module):
         ch_dim = input_shape[0]
 
         if padding:
-            padding = [(0,5), (int(ch_dim/2),10), (5,5), (5,5)]
+            padding = [(0,5), (int(ch_dim/2),0), (5,5), (5,5)]
         else:
             padding = [(0,0), (int(ch_dim/2),0), (0,0), (0,0)]
 
         h, w = conv_size(input_shape, (1, 10), padding[0], stride = 1)
-        h, w = conv_size((h,w), (ch_dim,20), padding[1], stride = 1)
-        h, w = conv_size((h,w), (2,2), 0, stride=(2,2))
+        h, w = conv_size((h,w), (ch_dim,1), padding[1], stride = 1)
+        h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
         h, w = conv_size((h,w), (10,10), padding[2], stride=1)
-        h, w = conv_size((h,w), (2,2), 0, stride=(2,2))
+        h, w = conv_size((h,w), (1,2), 0, stride=(1,2))
         h, w = conv_size((h,w), (10,10), padding[3], stride=1)
         
         self.convblock = nn.Sequential(
@@ -64,7 +64,7 @@ class BaselineCNN(nn.Module):
             #n.Dropout(dropoutprob),
             #nn.BatchNorm2d(20),
             nn.Conv2d(in_channels = 20, out_channels = 20, 
-                      kernel_size=(ch_dim, 20), padding = padding[1]),
+                      kernel_size=(ch_dim, 1), padding = padding[1]),
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(20),
