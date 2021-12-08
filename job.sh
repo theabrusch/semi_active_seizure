@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J rep_pink
+#BSUB -J bckg_rate_10
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
