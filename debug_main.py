@@ -28,8 +28,8 @@ parser.add_argument('--epochs', type=int, default=1)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
 
-args = parser.parse_args(['--file_path','data/hdf5/boston_scalp_small.hdf5', '--window_length', '2',
-                          '--bckg_stride', '1', '--seiz_stride', '1',
+args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5', '--window_length', '23',
+                          '--bckg_stride', '23', '--seiz_stride', '23',
                           '--anno_based_seg', 'False', '--model_type', 'AttBiLSTM',
                           '--train_val_test', 'False'])
 main(args)

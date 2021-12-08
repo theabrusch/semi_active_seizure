@@ -646,12 +646,14 @@ class SegmentData():
                 signal = record[sig]
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
+        one_hot_label[:,0] = 1
 
         for anno in annos:
             anno_start = (anno['Start'] - record.start_time)*signal.fs
             anno_end = anno_start+anno['Duration']*signal.fs
             if anno['Name'].lower() in self.seiz_classes:
                 one_hot_label[round(anno_start):round(anno_end),1] = 1
+                one_hot_label[round(anno_start):round(anno_end),0] = 0
             else:
                 one_hot_label[round(anno_start):round(anno_end),0] = 1
         
