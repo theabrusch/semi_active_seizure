@@ -1,1 +1,1 @@
-rsync -Pav -a ~/Desktop/Speciale_data/ --rsh=ssh theb@login1.gbar.dtu.dk:/work3/theb/
+rsync -Pav -a ~/Desktop/Speciale_data/hdf5/ --rsh=ssh theb@login1.gbar.dtu.dk:/work3/theb/
