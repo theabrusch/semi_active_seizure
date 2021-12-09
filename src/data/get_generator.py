@@ -24,7 +24,7 @@ class SeizSampler(Sampler):
         np.random.seed(self.seed)
         samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
         np.random.seed(None)
-        return iter(shuffle(samples, random_state = self.seed))
+        return iter(shuffle(samples))
 
     def __len__(self) -> int:
         return self.dataset.__len__()

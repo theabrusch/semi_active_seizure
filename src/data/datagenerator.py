@@ -407,7 +407,7 @@ class TestGenerator(Dataset):
             end_win = np.zeros(windows)
 
         for win in range(windows):
-            sw =int(win*stride_samples)
+            sw =int(win * stride_samples)
             ew = int(sw + window_samples)
             if prefetch:
                 samples[win,:,:] = signal[sw:ew,:].T
@@ -415,7 +415,7 @@ class TestGenerator(Dataset):
                 start_win[win] = sw
                 end_win[win] = ew
             # set label to seizure if any seizure is present in the segment
-            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>(window_samples*0.5))
+            labels[win] = int(np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>0)
         if prefetch:
             return labels, samples
         else:
@@ -430,12 +430,14 @@ class TestGenerator(Dataset):
                 signal = record[sig]
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
+        one_hot_label[:, 0] = 1
 
         for anno in annos:
             anno_start = (anno['Start'] - record.start_time)*signal.fs
             anno_end = anno_start+anno['Duration']*signal.fs
             if anno['Name'].lower() in self.seiz_classes:
                 one_hot_label[round(anno_start):round(anno_end),1] = 1
+                one_hot_label[:, 0] = 0
             else:
                 one_hot_label[round(anno_start):round(anno_end),0] = 1
         

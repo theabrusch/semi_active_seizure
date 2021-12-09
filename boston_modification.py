@@ -3,12 +3,12 @@ import numpy as np
 import pandas as pd
 from torch.utils.data.dataset import T
 
-select_channels = True
+select_channels = False
 rereference = False
 create_new_file = False
 create_bckg_anno = True
 
-F = dc.File('/Users/theabrusch/Desktop/repos/artsd_data_repo/data/interim/boston_scalp.hdf5', 'r+')
+F = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5', 'r')
 record = F['train']['chb01/01']
 sig = record['EEG']
 dur23 = 0

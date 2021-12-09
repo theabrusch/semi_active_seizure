@@ -8,6 +8,13 @@ lines = file.readlines()
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5'
 
 f = dc.File(file_name, 'r')
+total_dur = 0
+
+for subj in f['train'].keys():
+    subject = f['train'][subj]
+    dur = np.sum(subject.attrs['time']['Duration'])
+    total_dur += dur
+
 annotations = f.get_children(object_type=dc.Annotations)
 seiz = 0
 
