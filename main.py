@@ -39,6 +39,7 @@ def main(args):
     datagen['standardise'] = args.standardise
 
     gen_args = config['generator_kwargs']
+    gen_args['batch_size'] = args.batch_size
     gen_args['use_train_seed'] = args.use_train_seed
 
     if args.train_val_test:
@@ -63,6 +64,7 @@ def main(args):
 
     # train model
     optim_config = config['fit']['optimizer']
+    optim_config['optimizer'] = args.optimizer
     optim_config['model'] = args.model_type
     optim_config['lr'] = args.lr
     optim_config['weight_decay'] = args.weight_decay
@@ -77,11 +79,18 @@ def main(args):
 
     loss_fn = get_loss.get_loss(**fit_config)
 
+    if not datagen['train_val_test']:
+        # if validation set is the same as test set, then use the final model
+        choose_best = False
+    else:
+        choose_best = True
+
     model_train = train_model.model_train(model = model, 
                                         optimizer = optimizer, 
                                         loss_fn = loss_fn, 
                                         writer = writer,
-                                        scheduler = scheduler)
+                                        scheduler = scheduler,
+                                        choose_best = choose_best)
     metric_names = ['sensitivity', 'specificity', 'accuracy']
     metrics_compute = metrics.get_metrics(metric_names)
 
@@ -89,6 +98,7 @@ def main(args):
     train_loss, val_loss = model_train.train(train_dataloader,
                                             val_dataloader,
                                             args.epochs)
+                                            
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
     print('Total time', datetime.now()-time_start, '.')
 
@@ -132,6 +142,7 @@ if __name__ == '__main__':
     parser.add_argument('--val_subj', type = eval, default=None)
     parser.add_argument('--standardise', type = eval, default=False)
     parser.add_argument('--sens', type = eval, default=0)
+    parser.add_argument('--batch_size', type=eval, default=512)
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
@@ -141,6 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--padding', type=eval, default=False)       
 
     # Training parameters
+    parser.add_argument('--optimizer', type = eval, default = 'RMSprop')
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=3e-4)
