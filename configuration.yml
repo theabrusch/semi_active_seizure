@@ -17,8 +17,8 @@ data_gen:
 
 generator_kwargs:
   seed: *seed
-  batch_size: 30
-  val_batch_size: 30
+  batch_size: 512
+  val_batch_size: 512
 
 model_kwargs:
   #
