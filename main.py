@@ -5,6 +5,8 @@ from prettytable import PrettyTable
 from src.data import get_generator
 from src.models import get_model, get_optim, get_loss, train_model, metrics
 from datetime import datetime
+from src.models.metrics import sensitivity, specificity, accuracy
+from sklearn.metrics import f1_score, confusion_matrix, precision_score
 from torch.utils.tensorboard import SummaryWriter
 
 print('done loading packages')
@@ -37,6 +39,7 @@ def main(args):
     datagen['val_subj'] = args.val_subj
     datagen['sens'] = args.sens
     datagen['standardise'] = args.standardise
+    datagen['use_train_seed'] = args.use_train_seed
 
     gen_args = config['generator_kwargs']
     gen_args['batch_size'] = args.batch_size
@@ -52,6 +55,7 @@ def main(args):
                                                                     gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
 
+    temp = next(iter(train_dataloader))
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
@@ -103,25 +107,32 @@ def main(args):
     print('Total time', datetime.now()-time_start, '.')
 
     if config['general']['run_test']:
-        datagen['bckg_stride'] = None
-        datagen['seiz_stride'] = None
-        datagen['bckg_rate'] = None
-        datagen['anno_based_seg'] = False
-        datagen['prefetch_data_dir'] = True
-        datagen['prefetch_data_from_seg'] = False
-        
         if args.train_val_test:
+            datagen['bckg_stride'] = None
+            datagen['seiz_stride'] = None
+            datagen['bckg_rate'] = None
+            datagen['anno_based_seg'] = False
+            datagen['prefetch_data_dir'] = True
+            datagen['prefetch_data_from_seg'] = False
             test_loader = get_generator.get_test_generator(datagen, gen_args, test)
         else:
-            test_loader = get_generator.get_test_generator(datagen, gen_args, val_dataset.subjects_to_use)
+            test_loader = val_dataloader
+            #test_loader = get_generator.get_test_generator(datagen, gen_args, val_dataset.subjects_to_use)
 
-        y_pred = model_train.eval(test_loader)
-        y_true = test_loader.dataset.labels_collect
+        y_pred, y_true = model_train.eval(test_loader)
 
-        for i in range(len(metric_names)):
-            met = metrics_compute[i](y_true, y_pred)
-            writer.add_scalar('test/' + metric_names[i], met)
-            print(metric_names[i], met)
+        # calculate metrics
+        sens = sensitivity(y_true, y_pred)
+        spec = specificity(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+        prec = precision_score(y_true, y_pred)
+        acc = accuracy(y_true, y_pred)
+
+        writer.add_scalar('test/sensitivity', sens)
+        writer.add_scalar('test/specificity', spec)
+        writer.add_scalar('test/f1', f1)
+        writer.add_scalar('test/precision', prec)
+        writer.add_scalar('test/accuracy', acc)
 
     writer.close()
 

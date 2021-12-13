@@ -12,6 +12,7 @@ class DataGenerator(Dataset):
                  protocol, 
                  signal_name,
                  subjects_to_use,
+                 use_train_seed = False,
                  norm_coef = None,
                  segments = None,
                  standardise = True,
@@ -70,10 +71,18 @@ class DataGenerator(Dataset):
         self.segments['seiz']['weight'] = seiz_weight
 
         # Create collected sample matrix
-        samptemp = self.segments['seiz'].append(self.segments['bckg'], 
-                                                ignore_index = True)
+        if not use_train_seed:
+            # store all of the segments, such that the background segments
+            # can be resampled every epoch
+            samptemp = self.segments['seiz'].append(self.segments['bckg'], 
+                                                    ignore_index = True)
+        else:
+            # only store the samples that we are actually using.
+            bckg_tot = int(self.bckg_rate*self.seiz_samples)
+            samptemp = self.segments['seiz'].append(self.segments['bckg'].sample(n = bckg_tot), 
+                                                    ignore_index = True)
 
-        if self.prefetch_data_from_seg:
+        if self.prefetch_data_from_seg:                
             print('Starting prefetch of data from segmentation...')
             samples = self._prefetch_from_seg(samptemp)
         else:
@@ -512,41 +521,48 @@ class SegmentData():
         stride_string = ''.join(str(self.stride).split(' '))
         self.pickle_path = 'data/' + dset + '_' + protocol + \
                            '_winlen_' + str(window_length) + '_anno_seg_'\
-                           + str(anno_based_seg)+'_stride_' + stride_string + '.pickle'
+                           + str(anno_based_seg)+'_stride_' + stride_string 
         self.norm_coef_path = 'data/' + dset + '_' + protocol + \
                               '_norm_coef.pickle'
-        self.calc_norm_coef = False
-
-        # Check if the normalisation coefficients have been calculated and saved
-        try:
-            with open(self.norm_coef_path, 'rb') as fp:
-                self.norm_coef = pickle.load(fp)
-        except:
+        if self.standardise:
             self.calc_norm_coef = True
+        else:
+            self.calc_norm_coef = False
 
     def segment_data(self):
         '''
         Build pandas DataFrame containing pointers to the different
         segments to sample when generating data. 
         '''
-        try:
-            print('Trying to load segmentation from disk.')
-            with open(self.pickle_path, 'rb') as fp:
-                segments = pickle.load(fp)
-        except:
-            protocol = self.data_file[self.protocol]
+        protocol = self.data_file[self.protocol]
 
-            segments = dict() 
-            segments['seiz'] = pd.DataFrame()
-            segments['bckg'] = pd.DataFrame()
-            labels = ['bckg', 'seiz']
+        segments = dict() 
+        segments['seiz'] = pd.DataFrame()
+        segments['bckg'] = pd.DataFrame()
+        labels = ['bckg', 'seiz']
 
-            if self.calc_norm_coef:
-                self.norm_coef = dict()
-            
-            i=0
-            for subj in protocol.keys():
-                print('Segmenting data for subject', i + 1, 'out of', len(protocol.keys()))
+        if self.calc_norm_coef:
+            self.norm_coef = dict()
+        else:
+            self.norm_coef = None
+        
+        i=0
+        if self.subjects_to_use == 'all':
+            subjects = list(protocol.keys())
+        else:
+            subjects = self.subjects_to_use
+
+        for subj in subjects:
+            print('Segmenting data for subject', i + 1, 'out of', len(subjects))
+            subj_path = self.pickle_path + '_' + subj + '.pickle'
+            try:
+                with open(subj_path, 'rb') as fp:
+                    subj_seg = pickle.load(fp)
+            except:
+                subj_seg = dict()
+                subj_seg['seiz'] = pd.DataFrame()
+                subj_seg['bckg'] = pd.DataFrame()
+                subj_seg['norm_coef'] = dict()
                 i+=1
                 for rec in protocol[subj].keys():
                     record = protocol[subj][rec]
@@ -557,9 +573,8 @@ class SegmentData():
                     path = self.protocol + '/' + subj + '/' + rec + '/' + signal_name
 
                     # Calculate normalisation coefficients for each record
-                    if self.calc_norm_coef:
-                        mean = np.mean(signal)
-                        std = np.std(signal)
+                    mean = np.mean(signal)
+                    std = np.std(signal)
                     
                     if self.anno_based_seg:
                         labels, start_win, end_win = self._anno_based_segment(record)
@@ -572,30 +587,24 @@ class SegmentData():
                     seg_rec['path'] = path
                     seg_rec['subj'] = subj
                     seg_rec['rec'] = subj + '/' + rec
-                    if self.calc_norm_coef:
-                        self.norm_coef[path] = dict()
-                        self.norm_coef[path]['mean'] = mean
-                        self.norm_coef[path]['std'] = std
+                    subj_seg['norm_coef'][path] = dict()
+                    subj_seg['norm_coef'][path]['mean'] = mean
+                    subj_seg['norm_coef'][path]['std'] = std
 
                     seg_rec_pos = seg_rec[seg_rec['label'] == 1]
                     seg_rec_neg = seg_rec[seg_rec['label'] == 0]
-                    segments['seiz'] = segments['seiz'].append(seg_rec_pos)
-                    segments['bckg'] = segments['bckg'].append(seg_rec_neg)
+                    subj_seg['seiz'] = subj_seg['seiz'].append(seg_rec_pos)
+                    subj_seg['bckg'] = subj_seg['bckg'].append(seg_rec_neg)
 
-            # save segmentation as pickle for future use
-            with open(self.pickle_path, 'wb') as fp:
-                pickle.dump(segments, fp)
-            
+                with open(subj_path, 'wb') as fp:
+                    pickle.dump(subj_seg, fp)
+
             if self.calc_norm_coef:
-                with open(self.norm_coef_path, 'wb') as fp:
-                    pickle.dump(self.norm_coef, fp)
-            else: 
-                self.norm_coef = None
+                self.norm_coef.update(subj_seg['norm_coef'])
+            segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
+            segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
         
         self.segments = segments
-        if isinstance(self.subjects_to_use, list) or isinstance(self.subjects_to_use, np.ndarray):
-            self.segments['bckg'] = self.segments['bckg'][self.segments['bckg']['subj'].isin(self.subjects_to_use)]
-            self.segments['seiz'] = self.segments['seiz'][self.segments['seiz']['subj'].isin(self.subjects_to_use)]
 
         return self.segments, self.norm_coef
     

@@ -1,7 +1,6 @@
 import numpy as np
 import sklearn
 
-
 def sensitivity(y_true, y_pred):
     TP = ((y_true == 1) & (y_pred == 1)).sum()
     FN = ((y_true == 1) & (y_pred == 0)).sum()
