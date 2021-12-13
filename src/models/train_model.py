@@ -102,10 +102,10 @@ class model_train():
                 self.writer.add_scalar('val/spec', spec, epoch)
                 self.writer.add_scalar('val/f1', f1, epoch)
                 self.writer.add_scalar('val/precision', prec, epoch)
-                self.writer.add_scalar('val_raw/tp', tp, epoch)
-                self.writer.add_scalar('val_raw/fn', fn, epoch)
-                self.writer.add_scalar('val_raw/fn', fp, epoch)
-                self.writer.add_scalar('val_raw/fn', tn, epoch)
+                self.writer.add_scalar('val_raw/true_pos', tp, epoch)
+                self.writer.add_scalar('val_raw/false_neg', fn, epoch)
+                self.writer.add_scalar('val_raw/false_pos', fp, epoch)
+                self.writer.add_scalar('val_raw/true_neg', tn, epoch)
 
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:

@@ -52,6 +52,7 @@ def main(args):
                                                                     gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
 
+    temp = next(iter(train_dataloader))
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
