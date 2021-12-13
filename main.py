@@ -6,7 +6,7 @@ from src.data import get_generator
 from src.models import get_model, get_optim, get_loss, train_model, metrics
 from datetime import datetime
 from src.models.metrics import sensitivity, specificity, accuracy
-from sklearn.metrics import f1_score, confusion_matrix, precision_score
+from sklearn.metrics import f1_score, precision_score
 from torch.utils.tensorboard import SummaryWriter
 
 print('done loading packages')
@@ -18,7 +18,9 @@ def params_to_tb(writer, args):
     writer.add_text("args", t.get_html_string(), global_step=0)
 
 def main(args):
-    writer = SummaryWriter('../runs/'+ args.model_type + str(datetime.now()))
+    writer = SummaryWriter('../runs/'+ args.model_type +\
+                           '_'+ str(datetime.now()) + '_' + \
+                            args.job_name)
     params_to_tb(writer, args)
     with open('configuration.yml', 'r') as file:
         config = yaml.safe_load(file)
@@ -138,7 +140,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-
+    # job name
+    parser.add_argument('--job_name', type = str, default='nojobname')
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
