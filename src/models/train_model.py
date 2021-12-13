@@ -127,6 +127,7 @@ class model_train():
     
     def eval(self, data_loader):
         y_pred = None
+        y_true = None
 
         self.model.eval()
         for batch in data_loader:
@@ -136,10 +137,12 @@ class model_train():
 
             if y_pred is None:
                 y_pred = y_class
+                y_true = batch[1]
             else:
                 y_pred = np.append(y_pred, y_class, axis = 0)
+                y_true = np.append(y_true, batch[1], axis = 0)
         
-        return y_pred
+        return y_pred, y_true
 
 
 

@@ -13,7 +13,7 @@ parser.add_argument('--anno_based_seg', type=eval, default=False)
 parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
 parser.add_argument('--train_val_test', type=eval, default=False)
 parser.add_argument('--val_subj', type = eval, default=None)
-parser.add_argument('--standardise', type = eval, default=False)
+parser.add_argument('--standardise', type = eval, default=True)
 parser.add_argument('--sens', type = eval, default=0)
 parser.add_argument('--batch_size', type=eval, default=512)
 
@@ -33,6 +33,6 @@ parser.add_argument('--weight_decay', type = float, default=1e-3)
 
 args = parser.parse_args(['--file_path','data/hdf5/boston_scalp_small.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',
-                          '--anno_based_seg', 'False', '--model_type', 'AttBiLSTM',
+                          '--anno_based_seg', 'False', '--model_type', 'BaselineCNN',
                           '--train_val_test', 'False', '--prefetch_data_from_seg', 'True'])
 main(args)

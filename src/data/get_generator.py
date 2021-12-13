@@ -15,15 +15,21 @@ class SeizSampler(Sampler):
     def __init__(self, dataset, seed = None) -> None:
         self.dataset = dataset
         self.seiz_samples = list(range(self.dataset.seiz_samples))
-        self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
         self.bckg_rate = int(self.dataset.bckg_rate*self.dataset.seiz_samples)
+
+        if not seed:
+            self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
+        else:
+            self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.bckg_rate))
+            
         self.seed = seed
 
     def __iter__(self) -> Iterator[int]:
         # sample all seizure samples and a fixed number of background samples
-        np.random.seed(self.seed)
-        samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
-        np.random.seed(None)
+        if self.seed:
+            samples = np.append(self.seiz_samples, self.bckg_samples)
+        else:
+            samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
         return iter(shuffle(samples))
 
     def __len__(self) -> int:
@@ -47,12 +53,22 @@ def get_dataset(data_gen):
                                                     bckg_rate=data_gen['bckg_rate_train'],
                                                     segments = segment, norm_coef = norm_coef)
         print('Number of seizure segments in training set:', train_dataset.seiz_samples)
+        
         print('Initialising validation dataset.')
+        data_gen['use_train_seed'] = True
+        if not data_gen['train_val_test']:
+            # track test set during training
+            data_gen['bckg_stride'] = None
+            data_gen['seiz_stride'] = None
+            data_gen['bckg_rate'] = None
+            data_gen['anno_based_seg'] = False
+        else:
+            data_gen['bckg_rate'] = data_gen['bckg_rate_val']
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = val)
         segment, norm_coef = datasegment.segment_data()
         val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=val,
-                                                  bckg_rate=data_gen['bckg_rate_val'],
+                                                  #bckg_rate=data_gen['bckg_rate_val'],
                                                   segments = segment, norm_coef=norm_coef)
         print('Number of seizure segments in validation set', val_dataset.seiz_samples)
     if data_gen['train_val_test']:
@@ -61,17 +77,12 @@ def get_dataset(data_gen):
         return train_dataset, val_dataset
 
 def get_generator(train_dataset, val_dataset, generator_kwargs):
-    if generator_kwargs['use_train_seed']:
-        seed = int(np.random.uniform(0, 2**32))
-    else:
-        seed = None
-    train_sampler = SeizSampler(train_dataset, seed = seed)
+    train_sampler = SeizSampler(train_dataset, seed = generator_kwargs['use_train_seed'])
     train_dataloader = DataLoader(train_dataset, 
                                   batch_size = generator_kwargs['batch_size'], 
                                   sampler = train_sampler,
                                   pin_memory = True)
-    seed = int(np.random.uniform(0, 2**32))
-    val_sampler = SeizSampler(val_dataset, seed = seed)
+    val_sampler = SeizSampler(val_dataset, seed = True)
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size = generator_kwargs['val_batch_size'], 
                                 sampler = val_sampler,
