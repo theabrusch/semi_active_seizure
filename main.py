@@ -152,7 +152,7 @@ if __name__ == '__main__':
     parser.add_argument('--padding', type=eval, default=False)       
 
     # Training parameters
-    parser.add_argument('--optimizer', type = eval, default = 'RMSprop')
+    parser.add_argument('--optimizer', type = str, default = 'RMSprop')
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
     parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--lr', type=float, default=3e-4)
