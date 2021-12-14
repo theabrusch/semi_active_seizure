@@ -65,8 +65,7 @@ def main(args):
         test_datagen['seiz_stride'] = None
         test_datagen['bckg_rate'] = None
         test_datagen['anno_based_seg'] = False
-        test_datagen['prefetch_data_dir'] = True
-        test_datagen['prefetch_data_from_seg'] = False
+        test_datagen['prefetch_data_from_seg'] = True
         test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
     else:
         test_loader = val_dataloader

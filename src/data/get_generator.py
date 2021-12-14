@@ -90,12 +90,16 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
 
     return train_dataloader, val_dataloader
 
-def get_test_generator(data_gen, generator_kwargs, val_subj):
+def get_test_generator(data_gen, generator_kwargs, test_subj):
     if data_gen['gen_type'] == 'DataGenerator':
-        print('Initialising validation dataset.')
-        val_dataset = datagenerator.TestGenerator(**data_gen, 
-                                                  subjects_to_use = val_subj)
-        print('Number of seizure segments in test set:', (val_dataset.labels_collect==1).sum())
+        print('Initialising test dataset.')
+        datasegment = datagenerator.SegmentData(**data_gen,
+                                                subjects_to_use = test_subj)
+        segment, norm_coef = datasegment.segment_data()
+        val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=test_subj,
+                                                  #bckg_rate=data_gen['bckg_rate_val'],
+                                                  segments = segment, norm_coef=norm_coef)
+        print('Number of seizure segments in test set:', (val_dataset.seiz_samples))
         sampler = SequentialSampler(val_dataset)
         val_dataloader = DataLoader(val_dataset, 
                                     batch_size = generator_kwargs['val_batch_size'],
