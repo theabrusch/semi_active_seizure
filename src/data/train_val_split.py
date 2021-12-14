@@ -4,14 +4,14 @@ import numpy as np
 import warnings
 from sklearn.model_selection import train_test_split
 
-def train_val_split(hdf5_path, train_percent, val_subj, seiz_classes, seed, **kwargs):
+def train_val_split(hdf5_path, train_percent, seiz_classes, seed, test_subj = None, **kwargs):
     dset = hdf5_path.split('/')[-1].split('.')[0]
     pickle_path = 'data/' + dset + '_' + 'seiz_subjs.pickle'
     
     if seed == 'None':
         seed = None
 
-    if val_subj is None:
+    if test_subj is None:
         # get subjects with seizure and without to ensure an equal split
         try:
             with open(pickle_path, 'rb') as fp:
@@ -36,8 +36,8 @@ def train_val_split(hdf5_path, train_percent, val_subj, seiz_classes, seed, **kw
     else:
         F = dc.File(hdf5_path, 'r')
         subjs = list(F['train'].keys())
-        val = [subjs[i] for i in range(len(subjs)) if i in val_subj]
-        train = [subjs[i] for i in range(len(subjs)) if i not in val_subj]
+        val = [subjs[i] for i in range(len(subjs)) if i in test_subj]
+        train = [subjs[i] for i in range(len(subjs)) if i not in test_subj]
         if len(val) == 0:
             TypeError('Length of validation set:', len(val))
     return train, val
