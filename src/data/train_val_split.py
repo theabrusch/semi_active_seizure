@@ -1,6 +1,7 @@
 from dataapi import data_collection as dc
 import pickle
 import numpy as np
+import warnings
 from sklearn.model_selection import train_test_split
 
 def train_val_split(hdf5_path, train_percent, val_subj, seiz_classes, seed, **kwargs):
@@ -37,10 +38,11 @@ def train_val_split(hdf5_path, train_percent, val_subj, seiz_classes, seed, **kw
         subjs = list(F['train'].keys())
         val = [subjs[i] for i in range(len(subjs)) if i in val_subj]
         train = [subjs[i] for i in range(len(subjs)) if i not in val_subj]
-
+        if len(val) == 0:
+            TypeError('Length of validation set:', len(val))
     return train, val
 
-def train_val_test_split(hdf5_path, seed, val_subj=None, **kwargs):
+def train_val_test_split(hdf5_path, seed, test_subj = None, val_subj=None, **kwargs):
     '''
     Split dataset such that two subjects are in the
     validation set and 1 subject in the test set.
@@ -49,23 +51,44 @@ def train_val_test_split(hdf5_path, seed, val_subj=None, **kwargs):
     dataset is used. 
     '''
     dset = hdf5_path.split('/')[-1].split('.')[0]
-    test_subj = val_subj
 
     if 'boston' in dset:
         F = dc.File(hdf5_path, 'r')
         subjs = list(F['train'].keys())
+        F.close()
 
         if test_subj is None:
-            train_val, test = train_test_split(subjs, 
-                                                test_size = 1, 
-                                                random_state=seed)
+            if val_subj is None:
+                train_val, test = train_test_split(subjs, 
+                                                    test_size = 1, 
+                                                    random_state=seed)
+                train, val = train_test_split(train_val, 
+                                              test_size = 2, 
+                                              random_state=seed)       
+            else:
+                val = [subjs[i] for i in range(len(subjs)) if i in val_subj]
+                train_test = [subjs[i] for i in range(len(subjs)) if i not in val_subj]
+                train, test = train_test_split(train_test, 
+                                              test_size = 1, 
+                                              random_state=seed)      
         else:
-            test = [subjs[i] for i in range(len(subjs)) if i in test_subj]
-            train_val = [subjs[i] for i in range(len(subjs)) if i not in test_subj]
 
-        train, val = train_test_split(train_val, 
-                                        test_size = 2, 
-                                        random_state=seed)
+            if val_subj is None:
+                test = [subjs[i] for i in range(len(subjs)) if i in test_subj]
+                train_val = [subjs[i] for i in range(len(subjs)) if i not in test_subj]
+                train, val = train_test_split(train_val, 
+                                              test_size = 2, 
+                                              random_state=seed)
+            else:
+                overlap = [i in test_subj for i in val_subj]
+                if any(overlap):
+                    warnings.warn('There is an overlap between test and validation set.')
+                test = [subjs[i] for i in range(len(subjs)) if i in test_subj]
+                val = [subjs[i] for i in range(len(subjs)) if i in val_subj]
+                train = [subjs[i] for i in range(len(subjs)) if i not in test_subj and i not in val_subj]
+        
+        if len(test) == 0 or len(val) == 0:
+            TypeError('Length of test set:', len(test), '. Length of validation set:', len(val))
 
     else:
         raise TypeError('Train_val_test split is only implemented for the Boston dataset.')

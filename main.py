@@ -39,6 +39,7 @@ def main(args):
     datagen['prefetch_data_from_seg'] = args.prefetch_data_from_seg
     datagen['train_val_test'] = args.train_val_test
     datagen['val_subj'] = args.val_subj
+    datagen['test_subj'] = args.test_subj
     datagen['sens'] = args.sens
     datagen['standardise'] = args.standardise
     datagen['use_train_seed'] = args.use_train_seed
@@ -56,8 +57,20 @@ def main(args):
                                                                     val_dataset,
                                                                     gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
+    
+    # Get test loader
+    if args.train_val_test:
+        test_datagen = datagen.copy()
+        test_datagen['bckg_stride'] = None
+        test_datagen['seiz_stride'] = None
+        test_datagen['bckg_rate'] = None
+        test_datagen['anno_based_seg'] = False
+        test_datagen['prefetch_data_dir'] = True
+        test_datagen['prefetch_data_from_seg'] = False
+        test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
+    else:
+        test_loader = val_dataloader
 
-    temp = next(iter(train_dataloader))
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
@@ -88,8 +101,10 @@ def main(args):
     if not datagen['train_val_test']:
         # if validation set is the same as test set, then use the final model
         choose_best = False
+        track_test = False
     else:
         choose_best = True
+        track_test = True
 
     model_train = train_model.model_train(model = model, 
                                         optimizer = optimizer, 
@@ -97,30 +112,18 @@ def main(args):
                                         writer = writer,
                                         scheduler = scheduler,
                                         choose_best = choose_best)
-    metric_names = ['sensitivity', 'specificity', 'accuracy']
-    metrics_compute = metrics.get_metrics(metric_names)
 
     time = datetime.now()
-    train_loss, val_loss = model_train.train(train_dataloader,
-                                            val_dataloader,
-                                            args.epochs)
+    train_loss, val_loss = model_train.train(train_loader = train_dataloader,
+                                            val_loader = val_dataloader,
+                                            track_test = track_test,
+                                            test_loader = test_loader,
+                                            epochs = args.epochs)
                                             
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
     print('Total time', datetime.now()-time_start, '.')
 
     if config['general']['run_test']:
-        if args.train_val_test:
-            datagen['bckg_stride'] = None
-            datagen['seiz_stride'] = None
-            datagen['bckg_rate'] = None
-            datagen['anno_based_seg'] = False
-            datagen['prefetch_data_dir'] = True
-            datagen['prefetch_data_from_seg'] = False
-            test_loader = get_generator.get_test_generator(datagen, gen_args, test)
-        else:
-            test_loader = val_dataloader
-            #test_loader = get_generator.get_test_generator(datagen, gen_args, val_dataset.subjects_to_use)
-
         y_pred, y_true = model_train.eval(test_loader)
 
         # calculate metrics
@@ -130,11 +133,11 @@ def main(args):
         prec = precision_score(y_true, y_pred)
         acc = accuracy(y_true, y_pred)
 
-        writer.add_scalar('test/sensitivity', sens)
-        writer.add_scalar('test/specificity', spec)
-        writer.add_scalar('test/f1', f1)
-        writer.add_scalar('test/precision', prec)
-        writer.add_scalar('test/accuracy', acc)
+        writer.add_scalar('test_final/sensitivity', sens)
+        writer.add_scalar('test_final/specificity', spec)
+        writer.add_scalar('test_final/f1', f1)
+        writer.add_scalar('test_final/precision', prec)
+        writer.add_scalar('test_final/accuracy', acc)
 
     writer.close()
 
@@ -154,6 +157,7 @@ if __name__ == '__main__':
     parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
     parser.add_argument('--train_val_test', type=eval, default=False)
     parser.add_argument('--val_subj', type = eval, default=None)
+    parser.add_argument('--test_subj', type = eval, default=None)
     parser.add_argument('--standardise', type = eval, default=False)
     parser.add_argument('--sens', type = eval, default=0)
     parser.add_argument('--batch_size', type=eval, default=512)
