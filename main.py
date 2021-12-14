@@ -50,14 +50,19 @@ def main(args):
 
     if args.train_val_test:
         train_dataset, val_dataset, test = get_generator.get_dataset(datagen)
+        split_text = 'Train subjects: ' + str(train_dataset.subjects_to_use) + \
+                 '. Validation subjects: ' + str(val_dataset.subjects_to_use) + \
+                  '. Test subjects: ' + str(test) + '.'
     else:
         train_dataset, val_dataset = get_generator.get_dataset(datagen)
+        split_text = 'Train subjects: ' + str(train_dataset.subjects_to_use) + \
+                 '. Validation subjects: ' + str(val_dataset.subjects_to_use)+ '.'
 
     train_dataloader, val_dataloader = get_generator.get_generator(train_dataset,
                                                                     val_dataset,
                                                                     gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
-    
+    writer.add_text('Split', split_text, global_step = 0)
     # Get test loader
     if args.train_val_test:
         test_datagen = datagen.copy()
