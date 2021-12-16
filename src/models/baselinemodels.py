@@ -60,22 +60,19 @@ class BaselineCNN(nn.Module):
         self.convblock = nn.Sequential(
             nn.Conv2d(in_channels = 1, out_channels = 20, 
                       kernel_size = (1,10), padding = padding[0]),
-            #nn.ELU(),
-            #n.Dropout(dropoutprob),
-            #nn.BatchNorm2d(20),
             nn.Conv2d(in_channels = 20, out_channels = 20, 
                       kernel_size=(ch_dim, 1), padding = padding[1]),
+            nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(20),
-            nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.Conv2d(in_channels = 20, out_channels = 40, 
                       kernel_size = (10, 10), padding = padding[2]),
+            nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(40),
-            nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
-            nn.Conv2d(in_channels = 40, out_channels=80, 
+            nn.Conv2d(in_channels = 40, out_channels = 80, 
                       kernel_size = (10, 10), padding = padding[3])
         )
         self.flatten = nn.Flatten()
