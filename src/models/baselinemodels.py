@@ -48,7 +48,7 @@ class BaselineCNN(nn.Module):
         if padding:
             padding = [(0,5), (int(ch_dim/2),0), (5,5), (5,5)]
         else:
-            padding = [(0,0), (int(ch_dim/2),0), (0,0), (0,0)]
+            padding = [(0,0), (int(ch_dim/2),0), (5,0), (5,0)]
 
         h, w = conv_size(input_shape, (1, 10), padding[0], stride = 1)
         h, w = conv_size((h,w), (ch_dim,1), padding[1], stride = 1)
