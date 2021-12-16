@@ -56,14 +56,7 @@ def get_dataset(data_gen):
         
         print('Initialising validation dataset.')
         data_gen['use_train_seed'] = True
-        if not data_gen['train_val_test']:
-            # track test set during training
-            data_gen['bckg_stride'] = None
-            data_gen['seiz_stride'] = None
-            data_gen['bckg_rate'] = None
-            data_gen['anno_based_seg'] = False
-        else:
-            data_gen['bckg_rate'] = data_gen['bckg_rate_val']
+        data_gen['bckg_rate'] = data_gen['bckg_rate_val']
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = val)
         segment, norm_coef = datasegment.segment_data()
