@@ -72,7 +72,7 @@ class BaselineCNN(nn.Module):
             nn.ELU(),
             nn.Dropout(dropoutprob),
             nn.BatchNorm2d(40),
-            nn.Conv2d(in_channels = 40, out_channels=80, 
+            nn.Conv2d(in_channels = 40, out_channels = 80, 
                       kernel_size = (10, 10), padding = padding[3])
         )
         self.flatten = nn.Flatten()
