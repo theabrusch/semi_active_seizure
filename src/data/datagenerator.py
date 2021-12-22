@@ -123,9 +123,12 @@ class DataGenerator(Dataset):
 
         # Standardise with respect to record
         if self.standardise:
-            mean = self.norm_coef[item['path']]['mean']
-            std = self.norm_coef[item['path']]['std']
+            mean = np.mean(seg)
+            std = np.std(seg)
             seg = (seg-mean)/std
+            #mean = self.norm_coef[item['path']]['mean']
+            #std = self.norm_coef[item['path']]['std']
+            #seg = (seg-mean)/std
         
         return seg.T
     
