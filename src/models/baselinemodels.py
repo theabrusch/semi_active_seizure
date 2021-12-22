@@ -76,11 +76,13 @@ class BaselineCNN(nn.Module):
                       kernel_size = (10, 10), padding = padding[3])
         )
         self.flatten = nn.Flatten()
+        self.batchnorm = nn.BatchNorm2d(80)
         self.dropout = nn.Dropout(dropoutprob)
         self.fc = nn.Linear(in_features=h*w*80, out_features=2)
     
     def forward(self,x, training=True):
         x = self.convblock(x.unsqueeze(1))
+        x = self.batchnorm(x)
         x = F.elu(x)
         x = self.dropout(x)
         x = self.flatten(x)
