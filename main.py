@@ -63,17 +63,19 @@ def main(args):
                                                                     gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
     writer.add_text('Split', split_text, global_step = 0)
+
     # Get test loader
-    if args.train_val_test:
-        test_datagen = datagen.copy()
-        test_datagen['bckg_stride'] = None
-        test_datagen['seiz_stride'] = None
-        test_datagen['bckg_rate'] = None
-        test_datagen['anno_based_seg'] = False
-        test_datagen['prefetch_data_from_seg'] = True
-        test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
+    test_datagen = datagen.copy()
+    test_datagen['bckg_stride'] = None
+    test_datagen['seiz_stride'] = None
+    test_datagen['bckg_rate'] = None
+    test_datagen['anno_based_seg'] = False
+    test_datagen['prefetch_data_from_seg'] = True
+    
+    if not args.train_val_test:
+        test_loader = get_generator.get_test_generator(test_datagen, gen_args, val_dataset.subjects_to_use)
     else:
-        test_loader = val_dataloader
+        test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
 
     # load model
     model_config = config['model_kwargs']
