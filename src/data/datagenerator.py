@@ -544,10 +544,7 @@ class SegmentData():
             self.norm_coef = None
         
         i=0
-        if self.subjects_to_use == 'all':
-            subjects = list(protocol.keys())
-        else:
-            subjects = self.subjects_to_use
+        subjects = self.subjects_to_use
 
         for subj in subjects:
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))

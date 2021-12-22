@@ -37,5 +37,5 @@ parser.add_argument('--weight_decay', type = float, default=1e-3)
 args = parser.parse_args(['--file_path','data/hdf5/boston_scalp_sub.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',
                           '--anno_based_seg', 'False', '--model_type', 'BaselineCNN',
-                          '--train_val_test', 'True', '--prefetch_data_from_seg', 'False'])
+                          '--train_val_test', 'False', '--prefetch_data_from_seg', 'False'])
 main(args)
