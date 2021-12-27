@@ -43,6 +43,7 @@ def main(args):
     datagen['sens'] = args.sens
     datagen['standardise'] = args.standardise
     datagen['use_train_seed'] = args.use_train_seed
+    datagen['subj_strat'] = args.subj_strat
 
     gen_args = config['generator_kwargs']
     gen_args['batch_size'] = args.batch_size
@@ -63,17 +64,20 @@ def main(args):
                                                                     gen_args)
     print('Data loader initialization took', datetime.now()-time_start, '.')
     writer.add_text('Split', split_text, global_step = 0)
+
     # Get test loader
-    if args.train_val_test:
-        test_datagen = datagen.copy()
-        test_datagen['bckg_stride'] = None
-        test_datagen['seiz_stride'] = None
-        test_datagen['bckg_rate'] = None
-        test_datagen['anno_based_seg'] = False
-        test_datagen['prefetch_data_from_seg'] = True
-        test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
+    test_datagen = datagen.copy()
+    test_datagen['bckg_stride'] = None
+    test_datagen['seiz_stride'] = None
+    test_datagen['bckg_rate'] = None
+    test_datagen['anno_based_seg'] = False
+    test_datagen['prefetch_data_from_seg'] = True
+    test_datagen['use_train_seed'] = False
+
+    if not args.train_val_test:
+        test_loader = get_generator.get_test_generator(test_datagen, gen_args, val_dataset.subjects_to_use)
     else:
-        test_loader = val_dataloader
+        test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
 
     # load model
     model_config = config['model_kwargs']
@@ -157,6 +161,7 @@ if __name__ == '__main__':
     parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
     parser.add_argument('--bckg_rate_train', type=eval, default=1)
     parser.add_argument('--use_train_seed', type=eval, default=True)
+    parser.add_argument('--subj_strat', type=eval, default=False)
     parser.add_argument('--anno_based_seg', type=eval, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
     parser.add_argument('--train_val_test', type=eval, default=False)

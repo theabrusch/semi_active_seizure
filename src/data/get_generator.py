@@ -47,6 +47,7 @@ def get_dataset(data_gen):
         print('Val subjects', val)
         print('Initialising training dataset.')
         datasegment = datagenerator.SegmentData(**data_gen,
+                                                bckg_rate=data_gen['bckg_rate_train'],
                                                 subjects_to_use = train)
         segment, norm_coef = datasegment.segment_data()
         train_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=train,

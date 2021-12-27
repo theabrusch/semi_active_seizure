@@ -12,7 +12,6 @@ class DataGenerator(Dataset):
                  protocol, 
                  signal_name,
                  subjects_to_use,
-                 use_train_seed = False,
                  norm_coef = None,
                  segments = None,
                  standardise = True,
@@ -69,19 +68,9 @@ class DataGenerator(Dataset):
 
         self.segments['bckg']['weight'] = bckg_weight
         self.segments['seiz']['weight'] = seiz_weight
-
-        # Create collected sample matrix
-        if not use_train_seed:
-            # store all of the segments, such that the background segments
-            # can be resampled every epoch
-            samptemp = self.segments['seiz'].append(self.segments['bckg'], 
+        
+        samptemp = self.segments['seiz'].append(self.segments['bckg'], 
                                                     ignore_index = True)
-        else:
-            # only store the samples that we are actually using.
-            bckg_tot = int(self.bckg_rate*self.seiz_samples)
-            samptemp = self.segments['seiz'].append(self.segments['bckg'].sample(n = bckg_tot), 
-                                                    ignore_index = True)
-
         if self.prefetch_data_from_seg:                
             print('Starting prefetch of data from segmentation...')
             samples = self._prefetch_from_seg(samptemp)
@@ -134,9 +123,12 @@ class DataGenerator(Dataset):
 
         # Standardise with respect to record
         if self.standardise:
-            mean = self.norm_coef[item['path']]['mean']
-            std = self.norm_coef[item['path']]['std']
+            mean = np.mean(seg)
+            std = np.std(seg)
             seg = (seg-mean)/std
+            #mean = self.norm_coef[item['path']]['mean']
+            #std = self.norm_coef[item['path']]['std']
+            #seg = (seg-mean)/std
         
         return seg.T
     
@@ -461,6 +453,9 @@ class SegmentData():
                  window_length, 
                  seiz_classes,
                  sens,
+                 bckg_rate,
+                 subj_strat = False,
+                 use_train_seed = False,
                  standardise = True,
                  bckg_stride = None,
                  seiz_stride = None, 
@@ -492,8 +487,12 @@ class SegmentData():
         '''
 
         self.hdf5_path = hdf5_path
+        self.use_train_seed = use_train_seed
         self.data_file = dc.File(hdf5_path, 'r')
         self.window_length = window_length
+        self.bckg_rate = bckg_rate
+        self.subj_strat = subj_strat
+
         if bckg_stride is None and seiz_stride is None:
             self.stride = self.window_length
         elif seiz_stride is None:
@@ -547,13 +546,11 @@ class SegmentData():
             self.norm_coef = None
         
         i=0
-        if self.subjects_to_use == 'all':
-            subjects = list(protocol.keys())
-        else:
-            subjects = self.subjects_to_use
+        subjects = self.subjects_to_use
 
         for subj in subjects:
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
+            i+=1
             subj_path = self.pickle_path + '_' + subj + '.pickle'
             try:
                 with open(subj_path, 'rb') as fp:
@@ -601,10 +598,21 @@ class SegmentData():
 
             if self.calc_norm_coef:
                 self.norm_coef.update(subj_seg['norm_coef'])
+            
             segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
-            segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
+            if self.use_train_seed and self.subj_strat:
+                seiz_samples = len(subj_seg['seiz'])
+                bckg_tot = int(self.bckg_rate*seiz_samples)
+                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n=bckg_tot))
+            else:
+                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
         
         self.segments = segments
+
+        if self.use_train_seed and not self.subj_strat:
+            seiz_samples = len(self.segments['seiz'])
+            bckg_tot = int(self.bckg_rate*seiz_samples)
+            self.segments['bckg'] = self.segments['bckg'].sample(n = bckg_tot)
 
         return self.segments, self.norm_coef
     
