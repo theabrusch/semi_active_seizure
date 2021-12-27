@@ -550,6 +550,7 @@ class SegmentData():
 
         for subj in subjects:
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
+            i+=1
             subj_path = self.pickle_path + '_' + subj + '.pickle'
             try:
                 with open(subj_path, 'rb') as fp:
