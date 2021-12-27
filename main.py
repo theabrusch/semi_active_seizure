@@ -43,6 +43,7 @@ def main(args):
     datagen['sens'] = args.sens
     datagen['standardise'] = args.standardise
     datagen['use_train_seed'] = args.use_train_seed
+    datagen['subj_strat'] = args.subj_strat
 
     gen_args = config['generator_kwargs']
     gen_args['batch_size'] = args.batch_size
@@ -160,6 +161,7 @@ if __name__ == '__main__':
     parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
     parser.add_argument('--bckg_rate_train', type=eval, default=1)
     parser.add_argument('--use_train_seed', type=eval, default=True)
+    parser.add_argument('--subj_strat', type=eval, default=False)
     parser.add_argument('--anno_based_seg', type=eval, default=False)
     parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
     parser.add_argument('--train_val_test', type=eval, default=False)

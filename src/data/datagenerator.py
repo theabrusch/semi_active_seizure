@@ -454,6 +454,7 @@ class SegmentData():
                  seiz_classes,
                  sens,
                  bckg_rate,
+                 subj_strat = False,
                  use_train_seed = False,
                  standardise = True,
                  bckg_stride = None,
@@ -490,6 +491,7 @@ class SegmentData():
         self.data_file = dc.File(hdf5_path, 'r')
         self.window_length = window_length
         self.bckg_rate = bckg_rate
+        self.subj_strat = subj_strat
 
         if bckg_stride is None and seiz_stride is None:
             self.stride = self.window_length
@@ -597,14 +599,19 @@ class SegmentData():
                 self.norm_coef.update(subj_seg['norm_coef'])
             
             segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
-            if not self.use_train_seed:
-                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
-            else:
+            if self.use_train_seed and self.subj_strat:
                 seiz_samples = len(subj_seg['seiz'])
                 bckg_tot = int(self.bckg_rate*seiz_samples)
-                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n = bckg_tot))
+                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n=bckg_tot))
+            else:
+                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
         
         self.segments = segments
+
+        if self.use_train_seed and not self.subj_strat:
+            seiz_samples = len(self.segments['seiz'])
+            bckg_tot = int(self.bckg_rate*seiz_samples)
+            self.segments['bckg'] = self.segments['bckg'].sample(n = bckg_tot)
 
         return self.segments, self.norm_coef
     
