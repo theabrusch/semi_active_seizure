@@ -18,7 +18,7 @@ def params_to_tb(writer, args):
     writer.add_text("args", t.get_html_string(), global_step=0)
 
 def main(args):
-    writer = SummaryWriter('../runs/'+ args.model_type +\
+    writer = SummaryWriter('../runs/expset/'+ args.model_type +\
                            '_'+ str(datetime.now()) + '_' + \
                             args.job_name)
     params_to_tb(writer, args)
