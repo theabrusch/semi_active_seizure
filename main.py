@@ -115,11 +115,11 @@ def main(args):
         track_test = True
 
     model_train = train_model.model_train(model = model, 
-                                        optimizer = optimizer, 
-                                        loss_fn = loss_fn, 
-                                        writer = writer,
-                                        scheduler = scheduler,
-                                        choose_best = choose_best)
+                                            optimizer = optimizer, 
+                                            loss_fn = loss_fn, 
+                                            writer = writer,
+                                            scheduler = scheduler,
+                                            choose_best = choose_best)
 
     time = datetime.now()
     train_loss, val_loss = model_train.train(train_loader = train_dataloader,
