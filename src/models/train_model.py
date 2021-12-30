@@ -157,6 +157,10 @@ class model_train():
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
             checkpoint = torch.load(best_model_path)
             self.model.load_state_dict(checkpoint['model_state_dict'])
+        else:
+            model_check = checkpoint_path + '/final_model' + '.pt'
+            torch.save({'model_state_dict': self.model.state_dict()},
+                        model_check)
 
         self.writer.flush()
         return train_loss, val_loss
