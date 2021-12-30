@@ -109,7 +109,7 @@ def main(args):
     if not datagen['train_val_test']:
         # if validation set is the same as test set, then use the final model
         choose_best = False
-        track_test = False
+        track_test = True
     else:
         choose_best = True
         track_test = True
