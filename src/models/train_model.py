@@ -35,11 +35,9 @@ class model_train():
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
         f1_scores = torch.zeros(epochs)
-        checkpoint_path = 'models/checkpoints/' + str(datetime.now()) 
-        
-        if self.choose_best:
-            p = Path(checkpoint_path)
-            p.mkdir(parents=True, exist_ok=True)
+        checkpoint_path = 'models/checkpoints/' + str(datetime.now())        
+        p = Path(checkpoint_path)
+        p.mkdir(parents=True, exist_ok=True)
         
         for epoch in range(epochs):
             time = datetime.now()
