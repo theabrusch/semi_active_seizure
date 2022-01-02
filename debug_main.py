@@ -11,7 +11,7 @@ parser.add_argument('--seiz_stride', type=eval, default=None)
 parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
 parser.add_argument('--bckg_rate_train', type=eval, default=1)
 parser.add_argument('--use_train_seed', type=eval, default=True)
-parser.add_argument('--subj_strat', type=eval, default=True)
+parser.add_argument('--subj_strat', type=eval, default=False)
 parser.add_argument('--anno_based_seg', type=eval, default=False)
 parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
 parser.add_argument('--train_val_test', type=eval, default=False)
@@ -23,6 +23,7 @@ parser.add_argument('--batch_size', type=eval, default=512)
 
 # model
 parser.add_argument('--model_type', type=str, default='BaselineCNN')
+parser.add_argument('--glob_avg_pool', type=eval, default=False)
 parser.add_argument('--dropoutprob', type=float, default=0.4)
 parser.add_argument('--lstm_units', type=eval, default=140)
 parser.add_argument('--dense_units', type=eval, default=70)
@@ -34,6 +35,7 @@ parser.add_argument('--use_weighted_loss', type=eval, default=True)
 parser.add_argument('--epochs', type=int, default=10)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
+
 
 args = parser.parse_args(['--file_path','data/hdf5/boston_scalp_sub.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',

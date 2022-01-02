@@ -2,9 +2,17 @@ import numpy as np
 import pyedflib
 from dataapi import data_collection as dc
 
-file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5'
+file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz.hdf5'
 
 f = dc.File(file_name, 'r')
+
+annos = f.get_children(object_type=dc.Annotations)
+anno_names = []
+
+for anno in annos:
+    for an in anno:
+        if an['Name'] not in anno_names:
+            anno_names.append(an['Name'])
 
 seiz_subjs = []
 seiz_dur = 0

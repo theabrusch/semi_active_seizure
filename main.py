@@ -85,6 +85,7 @@ def main(args):
     model_config['lstm_units'] = args.lstm_units
     model_config['dense_units'] = args.dense_units
     model_config['dropoutprob'] = args.dropoutprob
+    model_config['glob_avg_pool'] = args.glob_avg_pool
     model_config['padding'] = args.padding
     model_config['input_shape'] = train_dataset._get_X_shape()
     model = get_model.get_model(model_config)
@@ -115,11 +116,11 @@ def main(args):
         track_test = True
 
     model_train = train_model.model_train(model = model, 
-                                        optimizer = optimizer, 
-                                        loss_fn = loss_fn, 
-                                        writer = writer,
-                                        scheduler = scheduler,
-                                        choose_best = choose_best)
+                                            optimizer = optimizer, 
+                                            loss_fn = loss_fn, 
+                                            writer = writer,
+                                            scheduler = scheduler,
+                                            choose_best = choose_best)
 
     time = datetime.now()
     train_loss, val_loss = model_train.train(train_loader = train_dataloader,
@@ -173,6 +174,7 @@ if __name__ == '__main__':
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
+    parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
     parser.add_argument('--lstm_units', type=eval, default=140)
     parser.add_argument('--dense_units', type=eval, default=70)

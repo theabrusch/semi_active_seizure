@@ -21,10 +21,10 @@ for file in csv_files:
 run_description = ['Stride 1s', 'Stride 0.05s', 'Stride 0.5s',
                    'Stride 0.1s', 'Stride 0.5s']
 
-test_sens = np.zeros((60,9))
+test_sens = np.zeros((60,10))
 test_sens_names = []
 test_spec_subjs = []
-test_spec = np.zeros((60,9))
+test_spec = np.zeros((60,10))
 test_spec_names = []
 test_sens_subjs = []
 i=0
@@ -51,8 +51,8 @@ for file in csv_files:
 subj6_sens_idx = [i for i in range(len(test_sens_subjs)) if test_sens_subjs[i] == '6']
 subj6_spec_idx = [ i for i in range(len(test_sens_subjs)) if test_spec_subjs[i] == '6']
 
-sens_6 = test_sens[:,subj6_sens_idx[:-1]]
-spec_6 = test_spec[:,subj6_spec_idx[:-1]]
+sens_6 = test_sens[:,subj6_sens_idx[:-2]]
+spec_6 = test_spec[:,subj6_spec_idx[:-2]]
 plt.plot(sens_6)
 plt.ylim([0,1])
 plt.xlim([-2, 60])
@@ -67,6 +67,26 @@ plt.xlim([-2, 60])
 plt.ylabel('Test specificity', fontsize = 12)
 plt.xlabel('Epoch', fontsize = 12)
 plt.legend(run_description[:-1], loc = 'lower left', fontsize = 10)
+plt.show()
+
+# unbalanced 
+sens_6_unbal = test_sens[:,[subj6_sens_idx[0], subj6_sens_idx[2], subj6_sens_idx[4], subj6_sens_idx[5]]]
+spec_6_unbal = test_spec[:,[subj6_sens_idx[0], subj6_sens_idx[2], subj6_sens_idx[4], subj6_sens_idx[5]]]
+# stride 1
+plt.plot(sens_6_unbal[:,[0, 3, 1, 2]])
+plt.ylim([0,1])
+plt.ylabel('Test sensitivity', fontsize = 12)
+plt.xlabel('Epoch', fontsize = 12)
+plt.legend(['Stride 1s, balanced', 'Stride 1s, unbalanced',
+            'Stride 0.5s, balanced', 'Stride 0.5s, unbalanced'], loc = 'upper left', fontsize = 10)
+plt.show()
+
+plt.plot(spec_6_unbal[:,[0, 3, 1, 2]])
+plt.ylim([0,1])
+plt.ylabel('Test specificity', fontsize = 12)
+plt.xlabel('Epoch', fontsize = 12)
+plt.legend(['Stride 1s, balanced', 'Stride 1s, unbalanced',
+            'Stride 0.5s, balanced', 'Stride 0.5s, unbalanced'], loc = 'lower left', fontsize = 10)
 plt.show()
 
 subj4_sens_idx = [subj == '4' for subj in test_sens_subjs]
