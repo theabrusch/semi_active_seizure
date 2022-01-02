@@ -40,9 +40,9 @@ def conv_size(input_size, kernel, padding, stride=1):
 
 class BaselineCNN(nn.Module):
 
-    def __init__(self, input_shape, dropoutprob = 0.2, padding=True, **kwargs):
+    def __init__(self, input_shape, dropoutprob = 0.2, padding=True, 
+                 glob_avg_pool = True, **kwargs):
         super(BaselineCNN, self).__init__() 
-
         ch_dim = input_shape[0]
 
         if padding:
@@ -73,20 +73,24 @@ class BaselineCNN(nn.Module):
             nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.Dropout(dropoutprob),
             nn.Conv2d(in_channels = 40, out_channels = 80, 
-                      kernel_size = (10, 10), padding = padding[3])
+                      kernel_size = (10, 10), padding = padding[3]),
+            nn.BatchNorm2d(80),
+            nn.Dropout(dropoutprob),
+            nn.ELU()
         )
-        self.flatten = nn.Flatten()
-        self.batchnorm = nn.BatchNorm2d(80)
-        self.dropout = nn.Dropout(dropoutprob)
-        self.fc = nn.Linear(in_features=h*w*80, out_features=2)
+
+        if not glob_avg_pool:
+            self.final_layer = nn.Sequential(nn.Flatten(),
+                                             nn.Linear(in_features=h*w*80, out_features=2))
+        else:
+            self.final_layer = nn.Sequential(nn.AvgPool2d(kernel_size=(h,w),
+                                                          stride = (h,w)),
+                                             nn.Flatten(),
+                                             nn.Linear(in_features=80, out_features=2))
     
-    def forward(self,x, training=True):
+    def forward(self, x, training=True):
         x = self.convblock(x.unsqueeze(1))
-        x = self.batchnorm(x)
-        x = F.elu(x)
-        x = self.dropout(x)
-        x = self.flatten(x)
-        x = self.fc(x)
+        x = self.final_layer(x)
         out = F.softmax(x, dim = 1)
         return out
     
