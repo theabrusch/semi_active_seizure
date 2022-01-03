@@ -87,6 +87,10 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
 def get_test_generator(data_gen, generator_kwargs, test_subj):
     if data_gen['gen_type'] == 'DataGenerator':
         print('Initialising test dataset.')
+        dset = data_gen['hdf5_path'].split('/')[-1].split('.')[0]
+        if 'temple' in dset:
+            data_gen['protocol'] = 'test'
+            test_subj = 'all'
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = test_subj)
         segment, norm_coef = datasegment.segment_data()

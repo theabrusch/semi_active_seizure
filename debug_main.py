@@ -8,7 +8,7 @@ parser.add_argument('--file_path', type = str)
 parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
 parser.add_argument('--seiz_stride', type=eval, default=None)
-parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
+parser.add_argument('--bckg_rate_val', type=eval, default=1) # None or value
 parser.add_argument('--bckg_rate_train', type=eval, default=1)
 parser.add_argument('--use_train_seed', type=eval, default=True)
 parser.add_argument('--subj_strat', type=eval, default=False)
@@ -37,7 +37,7 @@ parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
 
 
-args = parser.parse_args(['--file_path','data/hdf5/boston_scalp_sub.hdf5', '--window_length', '2',
+args = parser.parse_args(['--file_path','data/hdf5/temple_seiz_small_1.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',
                           '--anno_based_seg', 'False', '--model_type', 'BaselineCNN',
                           '--train_val_test', 'False', '--prefetch_data_from_seg', 'False'])

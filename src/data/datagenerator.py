@@ -546,7 +546,10 @@ class SegmentData():
             self.norm_coef = None
         
         i=0
-        subjects = self.subjects_to_use
+        if not isinstance(self.subjects_to_use, list) and not isinstance(self.subjects_to_use, np.ndarray):
+            subjects = protocol.keys() 
+        else:
+            subjects = self.subjects_to_use
 
         for subj in subjects:
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
@@ -560,7 +563,6 @@ class SegmentData():
                 subj_seg['seiz'] = pd.DataFrame()
                 subj_seg['bckg'] = pd.DataFrame()
                 subj_seg['norm_coef'] = dict()
-                i+=1
                 for rec in protocol[subj].keys():
                     record = protocol[subj][rec]
                     for sig in self.signal_name:
@@ -673,7 +675,7 @@ class SegmentData():
             if anno['Name'].lower() in self.seiz_classes:
                 one_hot_label[round(anno_start):round(anno_end),1] = 1
                 one_hot_label[round(anno_start):round(anno_end),0] = 0
-            else:
+            elif anno['Name'].lower() == 'bckg':
                 one_hot_label[round(anno_start):round(anno_end),0] = 1
         
         return one_hot_label
@@ -699,40 +701,43 @@ class SegmentData():
                 anno_stride = stride[1]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 1
-            else:
+            elif anno['Name'].lower() == 'bckg':
                 anno_stride = stride[0]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 0
-
-            stride_samples = anno_stride*signal.fs
-            if windows%1 != 0:
-                if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
-                    anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
-                if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
-                    windows = int(np.ceil(windows))
+            else:
+                lab = None
+            
+            if lab is not None:
+                stride_samples = anno_stride*signal.fs
+                if windows%1 != 0:
+                    if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
+                        anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
+                    if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
+                        windows = int(np.ceil(windows))
+                    else:
+                        windows = int(windows)
                 else:
                     windows = int(windows)
-            else:
-                windows = int(windows)
 
-            if windows <= 0:
-                print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
-                label = np.array([])
-            else:
-                label = np.zeros(windows)
-                label[:] = lab
+                if windows <= 0:
+                    print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
+                    label = np.array([])
+                else:
+                    label = np.zeros(windows)
+                    label[:] = lab
+                
+                sw = anno_start + np.array([win*stride_samples for win in range(windows)])
+                ew = sw + window_samples
             
-            sw = anno_start + np.array([win*stride_samples for win in range(windows)])
-            ew = sw + window_samples
-        
-            if i == 0:
-                start_win = sw
-                end_win = ew
-                labels = label
-            else:
-                start_win = np.append(start_win, sw)
-                end_win = np.append(end_win, ew)
-                labels = np.append(labels, label)
-            i+=1
+                if i == 0:
+                    start_win = sw
+                    end_win = ew
+                    labels = label
+                else:
+                    start_win = np.append(start_win, sw)
+                    end_win = np.append(end_win, ew)
+                    labels = np.append(labels, label)
+                i+=1
 
         return labels, start_win, end_win
