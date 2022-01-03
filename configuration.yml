@@ -36,4 +36,5 @@ fit:
   # Optimization
   optimizer:
     optimizer: RMSprop
-    scheduler: None
+    scheduler: MultistepLR
+    milestones: [100,150]
