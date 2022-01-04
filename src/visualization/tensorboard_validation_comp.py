@@ -105,3 +105,13 @@ plt.ylabel('F1 score', fontsize = 12)
 plt.xlabel('Epoch', fontsize = 12)
 plt.legend(['Validation score', 'Test score', 'Best val. F1 score'], loc = 'upper right', fontsize = 10)
 plt.show()
+
+
+plt.plot(subj_14['f1'][:,1])
+plt.ylim([0,0.05])
+plt.xlim([-2, 150])
+plt.vlines(step_14, 0, 1, colors = 'black', zorder = 3)
+plt.ylabel('F1 score', fontsize = 12)
+plt.xlabel('Epoch', fontsize = 12)
+plt.legend(['Test score', 'Best val. F1 score'], loc = 'upper right', fontsize = 10)
+plt.show()

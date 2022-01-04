@@ -602,7 +602,7 @@ class SegmentData():
                 self.norm_coef.update(subj_seg['norm_coef'])
             
             segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
-            if self.use_train_seed and self.subj_strat:
+            if not self.bckg_rate is None and self.use_train_seed and self.subj_strat:
                 seiz_samples = len(subj_seg['seiz'])
                 bckg_tot = int(self.bckg_rate*seiz_samples)
                 segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n=bckg_tot))
@@ -611,7 +611,7 @@ class SegmentData():
         
         self.segments = segments
 
-        if self.use_train_seed and not self.subj_strat:
+        if not self.bckg_rate is None and self.use_train_seed and not self.subj_strat:
             seiz_samples = len(self.segments['seiz'])
             bckg_tot = int(self.bckg_rate*seiz_samples)
             self.segments['bckg'] = self.segments['bckg'].sample(n = bckg_tot)
