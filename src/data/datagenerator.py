@@ -9,7 +9,6 @@ import warnings
 class DataGenerator(Dataset):
     def __init__(self, 
                  hdf5_path, 
-                 protocol, 
                  signal_name,
                  subjects_to_use,
                  norm_coef = None,
@@ -24,8 +23,6 @@ class DataGenerator(Dataset):
         hdf5_path: str
             Path to hdf5 file that should be used to build the
             generator. 
-        protocol: str
-            Train or test
         signal_name: str
             Name of the signal to segment for training. 
         prefetch_data_from_seg: bool
@@ -34,7 +31,6 @@ class DataGenerator(Dataset):
         '''
 
         self.hdf5_path = hdf5_path
-        self.protocol = protocol
         self.signal_name = signal_name
         self.standardise = standardise
         self.data_file = dc.File(hdf5_path, 'r')
@@ -171,7 +167,6 @@ class DataGenerator(Dataset):
 class TestGenerator(Dataset):
     def __init__(self, 
                  hdf5_path, 
-                 protocol, 
                  signal_name,
                  window_length, 
                  seiz_classes,
@@ -190,8 +185,6 @@ class TestGenerator(Dataset):
         hdf5_path: str
             Path to hdf5 file that should be used to build the
             generator. 
-        protocol: str
-            Train or test
         signal_name: str
             Name of the signal to segment for training. 
         window_length: float
@@ -231,7 +224,6 @@ class TestGenerator(Dataset):
             self.stride = [bckg_stride, seiz_stride]
         self.signal_name = signal_name
         self.subjects_to_use = subjects_to_use
-        self.protocol = protocol
         self.prefetch_data_dir = prefetch_data_dir
         self.prefetch_data_from_seg = prefetch_data_from_seg
         self.bckg_rate = bckg_rate
@@ -281,7 +273,6 @@ class TestGenerator(Dataset):
             Dictionary with all samples. Divided into 
             seizure and background. 
         '''
-        protocol = self.data_file[self.protocol]
 
         segments = []
         
@@ -289,8 +280,8 @@ class TestGenerator(Dataset):
         for subj in self.subjects_to_use:
             print('Segmenting data for subject', i + 1, 'out of', len(self.subjects_to_use))
             i+=1
-            for rec in protocol[subj].keys():
-                record = protocol[subj][rec]
+            for rec in self.data_file[subj].keys():
+                record = self.data_file[subj][rec]
 
                 for sig in self.signal_name:
                     if sig in record.keys():
@@ -302,7 +293,7 @@ class TestGenerator(Dataset):
                 
                 labels, samples = self._record_based_segment(record, prefetch = True)
                 path = np.empty(len(labels), dtype = str)
-                path[:] = self.protocol + '/' + subj + '/' + rec + '/' + sig
+                path[:] =  subj + '/' + rec + '/' + sig
 
                 if self.standardise:
                     samples = (samples - mean)/std
@@ -448,7 +439,6 @@ class SegmentData():
     
     def __init__(self, 
                  hdf5_path, 
-                 protocol, 
                  signal_name,
                  window_length, 
                  seiz_classes,
@@ -468,8 +458,6 @@ class SegmentData():
         hdf5_path: str
             Path to hdf5 file that should be used to build the
             generator. 
-        protocol: str
-            Train or test
         signal_name: str
             Name of the signal to segment for training. 
         window_length: float
@@ -503,7 +491,6 @@ class SegmentData():
             self.stride = [bckg_stride, seiz_stride]
 
         self.subjects_to_use = subjects_to_use
-        self.protocol = protocol
         self.anno_based_seg = anno_based_seg
         self.seiz_classes = seiz_classes
         self.standardise = standardise
@@ -518,10 +505,10 @@ class SegmentData():
         self.signal_name = signal_name
         dset = hdf5_path.split('/')[-1].split('.')[0]
         stride_string = ''.join(str(self.stride).split(' '))
-        self.pickle_path = 'data/' + dset + '_' + protocol + \
+        self.pickle_path = 'data/' + dset  + \
                            '_winlen_' + str(window_length) + '_anno_seg_'\
                            + str(anno_based_seg)+'_stride_' + stride_string 
-        self.norm_coef_path = 'data/' + dset + '_' + protocol + \
+        self.norm_coef_path = 'data/' + dset + \
                               '_norm_coef.pickle'
         if self.standardise:
             self.calc_norm_coef = True
@@ -533,8 +520,6 @@ class SegmentData():
         Build pandas DataFrame containing pointers to the different
         segments to sample when generating data. 
         '''
-        protocol = self.data_file[self.protocol]
-
         segments = dict() 
         segments['seiz'] = pd.DataFrame()
         segments['bckg'] = pd.DataFrame()
@@ -547,14 +532,15 @@ class SegmentData():
         
         i=0
         if not isinstance(self.subjects_to_use, list) and not isinstance(self.subjects_to_use, np.ndarray):
-            subjects = protocol.keys() 
+            subjects = self.data_file.get_children(object_type=dc.Subject, get_obj = False)
         else:
             subjects = self.subjects_to_use
 
         for subj in subjects:
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
             i+=1
-            subj_path = self.pickle_path + '_' + subj + '.pickle'
+            subj_name = subj.split('/')[-1]
+            subj_path = self.pickle_path + '_' + subj_name + '.pickle'
             try:
                 with open(subj_path, 'rb') as fp:
                     subj_seg = pickle.load(fp)
@@ -563,13 +549,13 @@ class SegmentData():
                 subj_seg['seiz'] = pd.DataFrame()
                 subj_seg['bckg'] = pd.DataFrame()
                 subj_seg['norm_coef'] = dict()
-                for rec in protocol[subj].keys():
-                    record = protocol[subj][rec]
+                for rec in self.data_file[subj].keys():
+                    record = self.data_file[subj][rec]
                     for sig in self.signal_name:
                         if sig in record.keys():
                             signal = record[sig]
                             signal_name = sig
-                    path = self.protocol + '/' + subj + '/' + rec + '/' + signal_name
+                    path =  subj + '/' + rec + '/' + signal_name
 
                     # Calculate normalisation coefficients for each record
                     mean = np.mean(signal)
