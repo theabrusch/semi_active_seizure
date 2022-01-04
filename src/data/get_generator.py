@@ -4,6 +4,7 @@ from torch import Generator
 import numpy as np
 from sklearn.utils import shuffle
 from typing import Iterator
+from dataapi import data_collection as dc
 
 class SeizSampler(Sampler):
     """Samples elements sequentially, always in the same order.
@@ -88,6 +89,9 @@ def get_test_generator(data_gen, generator_kwargs, test_subj):
     if data_gen['gen_type'] == 'DataGenerator':
         print('Initialising test dataset.')
         dset = data_gen['hdf5_path'].split('/')[-1].split('.')[0]
+        if  'temple' in dset and data_gen['protocol'] == 'train':
+            F = dc.File(data_gen['hdf5_path'], 'r')
+            test_subj = F['test'].get_children(object_type = dc.Subject, get_obj = False)
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = test_subj)
         segment, norm_coef = datasegment.segment_data()
