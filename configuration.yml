@@ -1,5 +1,5 @@
 general:
-  seed: &seed 10
+  seed: &seed 20
   run_test: True
   #hdf5_path: /work3/theb/boston_scalp_new.hdf5
   #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
@@ -12,7 +12,7 @@ data_gen:
   seed: *seed
   protocol: all
   signal_name: [EEG, TCP]
-  seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']
+  seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
   train_percent: 0.70
 
 generator_kwargs:
@@ -37,4 +37,4 @@ fit:
   optimizer:
     optimizer: RMSprop
     scheduler: MultistepLR
-    milestones: [100,150]
+    milestones: [50,120,150]
