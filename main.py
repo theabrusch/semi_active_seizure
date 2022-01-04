@@ -93,6 +93,8 @@ def main(args):
     # train model
     optim_config = config['fit']['optimizer']
     optim_config['optimizer'] = args.optimizer
+    optim_config['scheduler'] = args.scheduler
+    optim_config['milestones'] = args.milestones
     optim_config['model'] = args.model_type
     optim_config['lr'] = args.lr
     optim_config['weight_decay'] = args.weight_decay
@@ -182,8 +184,10 @@ if __name__ == '__main__':
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
+    parser.add_argument('--scheduler', type = eval, default = None)
+    parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
-    parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--epochs', type=int, default=150)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
 
