@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J temple_test_nostri_fulldat
+#BSUB -J temple_test_highwd
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -21,6 +21,6 @@ source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
 nvidia-smi > ./gpu_stats.csv
 nvidia-smi --query-gpu=index,gpu_name,memory.total,memory.used,memory.free,temperature.gpu,pstate,utilization.gpu,utilization.memory --format=csv -l 10 >> ./gpu_stats.csv &
-python3 main.py --job_name temple_test_nostri_fulldat --file_path /work3/theb/temple_seiz.hdf5 --window_length 2 --bckg_stride 2 --seiz_stride 2 --bckg_rate_val None --bckg_rate_train None --lr 1e-4 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test False --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --optimizer RMSprop --use_weighted_loss True
+python3 main.py --job_name temple_test_lowwd --file_path /work3/theb/temple_seiz.hdf5 --window_length 2 --bckg_stride 2 --seiz_stride 0.5 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 200 --weight_decay 1e-1 --train_val_test False --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --optimizer RMSprop --use_weighted_loss True 
 pkill nvidia-smi
 
