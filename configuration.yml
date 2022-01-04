@@ -10,10 +10,10 @@ data_gen:
   #
   gen_type: DataGenerator
   seed: *seed
-  protocol: train
+  protocol: all
   signal_name: [EEG, TCP]
   seiz_classes: ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
-  train_percent: 0.90
+  train_percent: 0.70
 
 generator_kwargs:
   seed: *seed

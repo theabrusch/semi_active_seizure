@@ -23,4 +23,6 @@ dependencies:
     - torch==1.9.1
     - pyyaml
     - scikit-learn
+    - PrettyTable
+    - tensorboard
 

@@ -4,9 +4,9 @@ import numpy as np
 import warnings
 from sklearn.model_selection import train_test_split
 
-def train_val_split(hdf5_path, train_percent, seiz_classes, seed, test_subj = None, **kwargs):
+def train_val_split(hdf5_path, train_percent, seiz_classes, protocol, seed, test_subj = None, **kwargs):
     dset = hdf5_path.split('/')[-1].split('.')[0]
-    pickle_path = 'data/' + dset + '_' + 'seiz_subjs.pickle'
+    pickle_path = 'data/' + dset + '_' + 'seiz_subjs_new.pickle'
     
     if seed == 'None':
         seed = None
@@ -18,7 +18,7 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, seed, test_subj = No
                 seiz_subjs = pickle.load(fp)
         except:
             print('Extracting seizure subjects and non seizure subjects.')
-            seiz_subjs = get_seiz_subjs(hdf5_path, 'train', seiz_classes, pickle_path)
+            seiz_subjs = get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path)
 
         train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], 
                                                 train_size=train_percent, 
@@ -42,7 +42,8 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, seed, test_subj = No
             TypeError('Length of validation set:', len(val))
     return train, val
 
-def train_val_test_split(hdf5_path, seed, test_subj = None, val_subj=None, **kwargs):
+def train_val_test_split(hdf5_path, seed, seiz_classes, test_subj = None, val_subj=None,
+                         train_percent = 0.7, val_percent = 0.2,  **kwargs):
     '''
     Split dataset such that two subjects are in the
     validation set and 1 subject in the test set.
@@ -51,10 +52,10 @@ def train_val_test_split(hdf5_path, seed, test_subj = None, val_subj=None, **kwa
     dataset is used. 
     '''
     dset = hdf5_path.split('/')[-1].split('.')[0]
+    F = dc.File(hdf5_path, 'r')
 
     if 'boston' in dset:
-        F = dc.File(hdf5_path, 'r')
-        subjs = list(F['train'].keys())
+        subjs = F.get_children(object_type=dc.Subject, get_obj = False)
         F.close()
 
         if test_subj is None:
@@ -91,24 +92,59 @@ def train_val_test_split(hdf5_path, seed, test_subj = None, val_subj=None, **kwa
             TypeError('Length of test set:', len(test), '. Length of validation set:', len(val))
 
     else:
-        raise TypeError('Train_val_test split is only implemented for the Boston dataset.')
+        pickle_path = 'data/' + dset + '_' + 'seiz_subjs_new.pickle'
+        try:
+            with open(pickle_path, 'rb') as fp:
+                seiz_subjs = pickle.load(fp)
+        except:
+            print('Extracting seizure subjects and non seizure subjects.')
+            seiz_subjs = get_seiz_subjs(hdf5_path, 'all', seiz_classes, pickle_path)
+
+        train_seiz, val_test_seiz = train_test_split(seiz_subjs['seiz'], 
+                                                    train_size=train_percent, 
+                                                    random_state=seed)
+        if len(seiz_subjs['non seiz']) > 0:
+            train_non_seiz, val_test_non_seiz = train_test_split(seiz_subjs['non seiz'], 
+                                                                train_size=train_percent, 
+                                                                random_state=seed)
+        else:
+            train_non_seiz = []
+            val_test_non_seiz = []
+        val_percent = val_percent/(1-train_percent)
+        val_seiz, test_seiz = train_test_split(val_test_seiz, 
+                                                train_size=val_percent, 
+                                                random_state=seed)
+        if len(val_test_non_seiz) > 0:
+            val_non_seiz, test_non_seiz = train_test_split(val_test_non_seiz, 
+                                                            train_size=val_percent, 
+                                                            random_state=seed)
+        else:
+            val_non_seiz = []
+            test_non_seiz = []
+        train = np.append(train_seiz, train_non_seiz)
+        val = np.append(val_seiz, val_non_seiz)
+        test = np.append(test_seiz, test_non_seiz)
 
     return train, val, test
 
 def get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path=None):
     F = dc.File(hdf5_path, 'r')
-    proto = F[protocol]
+    if not protocol == 'all': 
+        proto = F[protocol]
+        subjects = proto.get_children(object_type = dc.Subject, get_obj = False)
+    else:
+        subjects = F.get_children(object_type = dc.Subject, get_obj = False)
     seiz_subjs = dict()
     seiz_subjs['seiz'] = []
     seiz_subjs['non seiz'] = []
 
     i = 1
-    for subj in proto.keys():
-        print('Subject', i, 'out of', len(proto.keys()))
+    for subj in subjects:
+        print('Subject', i, 'out of', len(subjects))
         i+=1
         seiz = 0
-        for rec in proto[subj].keys():
-            annos = proto[subj][rec]['Annotations']
+        for rec in F[subj].keys():
+            annos = F[subj][rec]['Annotations']
             for anno in annos:
                 if anno['Name'].lower() in seiz_classes:
                     seiz = 1
