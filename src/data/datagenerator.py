@@ -545,14 +545,20 @@ class SegmentData():
             subjects = self.subjects_to_use
 
         for subj in subjects:
+            if i == 7:
+                print('hej')
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
             i+=1
             subj_name = subj.split('/')[-1]
             subj_path = self.pickle_path + '_' + subj_name + '.pickle'
+            compute_subj = False
             try:
                 with open(subj_path, 'rb') as fp:
                     subj_seg = pickle.load(fp)
             except:
+                compute_subj = True
+            
+            if compute_subj:
                 subj_seg = dict()
                 subj_seg['seiz'] = pd.DataFrame()
                 subj_seg['bckg'] = pd.DataFrame()
@@ -640,16 +646,16 @@ class SegmentData():
             elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>window_samples*0.95:
                 lab = 0
                 use_sample = True
-            
-            if lab == 0:
-                seiz_type  = 'bckg'
-            else:
-                class_types = np.unique(classes[sw:ew])
-                if len(class_types) > 1 and 'bckg' in class_types:
-                    class_types = [cl for cl in class_types if cl != 'bckg']
-                seiz_type = class_types[0]
 
             if use_sample:
+                if lab == 0:
+                    seiz_type  = 'bckg'
+                else:
+                    class_types = np.unique(classes[sw:ew])
+                    if len(class_types) > 1 and 'bckg' in class_types:
+                        class_types = [cl for cl in class_types if cl != 'bckg']
+                    seiz_type = class_types[0]
+
                 if labels is None:
                     start_win = np.array([sw])
                     end_win = np.array([ew])
@@ -685,11 +691,11 @@ class SegmentData():
             anno_start = (anno['Start'] - record.start_time)*signal.fs
             anno_end = anno_start+anno['Duration']*signal.fs
             if anno['Name'].lower() in self.seiz_classes:
-                one_hot_label[round(anno_start):round(anno_end),1] = 1
-                one_hot_label[round(anno_start):round(anno_end),0] = 0
+                one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),1] = 1
+                one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 0
             elif anno['Name'].lower() == 'bckg':
-                one_hot_label[round(anno_start):round(anno_end),0] = 1
-            seiz_types[round(anno_start):round(anno_end)] = anno['Name'].lower()
+                one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 1
+            seiz_types[int(np.floor(anno_start)):int(np.ceil(anno_end))] = anno['Name'].lower()
         
         return one_hot_label, seiz_types
 
