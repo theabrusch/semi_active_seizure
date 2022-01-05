@@ -136,7 +136,7 @@ def main(args):
     print('Total time', datetime.now()-time_start, '.')
 
     if config['general']['run_test']:
-        y_pred, y_true = model_train.eval(test_loader)
+        y_pred, y_true, seiz_types = model_train.eval(test_loader, return_seiz_type = True)
 
         # calculate metrics
         sens = sensitivity(y_true, y_pred)
@@ -150,6 +150,20 @@ def main(args):
         writer.add_scalar('test_final/f1', f1)
         writer.add_scalar('test_final/precision', prec)
         writer.add_scalar('test_final/accuracy', acc)
+
+        # calculate metrics for different seizure types
+        import numpy as np
+        uni_seiz_types = np.unique(seiz_types)
+        t = PrettyTable(['Seizure type', 'Sensitivity'])        
+        for seiz in uni_seiz_types:
+            if seiz != 'bckg':
+                idx = seiz_types == seiz
+                y_true_temp = y_true[idx]
+                y_pred_temp = y_pred[idx]
+                sens_temp = sensitivity(y_true_temp, y_pred_temp)
+                t.add_row([seiz, sens_temp])
+
+        writer.add_text("Seizure specific performance", t.get_html_string(), global_step=0)
 
     writer.close()
 

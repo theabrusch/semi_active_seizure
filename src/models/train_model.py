@@ -163,12 +163,14 @@ class model_train():
         self.writer.flush()
         return train_loss, val_loss
     
-    def eval(self, data_loader):
+    def eval(self, data_loader, return_seiz_type = False):
         y_pred = None
-        y_true = None
 
         self.model.eval()
+        i = 1
         for batch in data_loader:
+            print('Batch', i, 'out of',  data_loader.__len__())
+            i+=1
             x = batch[0].float().to(self.device)
             out = self.model(x)
             y_class = torch.argmax(out, axis = -1).cpu().numpy()
@@ -176,11 +178,18 @@ class model_train():
             if y_pred is None:
                 y_pred = y_class
                 y_true = batch[1]
+                if len(batch) > 2:
+                    seiz_type = batch[2]
             else:
                 y_pred = np.append(y_pred, y_class, axis = 0)
                 y_true = np.append(y_true, batch[1], axis = 0)
-        
-        return y_pred, y_true
+                if len(batch) > 2:
+                    seiz_type = np.append(seiz_type, batch[2], axis = 0)
+        if return_seiz_type:
+            return y_pred, y_true, seiz_type
+        else:
+            return y_pred, y_true
+
 
 
 

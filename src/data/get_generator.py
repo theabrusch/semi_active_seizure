@@ -96,7 +96,7 @@ def get_test_generator(data_gen, generator_kwargs, test_subj):
                                                 subjects_to_use = test_subj)
         segment, norm_coef = datasegment.segment_data()
         val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=test_subj,
-                                                  #bckg_rate=data_gen['bckg_rate_val'],
+                                                  return_seiz_type = True,
                                                   segments = segment, norm_coef=norm_coef)
         print('Number of seizure segments in test set:', (val_dataset.seiz_samples))
         sampler = SequentialSampler(val_dataset)

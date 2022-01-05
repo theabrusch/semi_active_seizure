@@ -11,6 +11,7 @@ class DataGenerator(Dataset):
                  hdf5_path, 
                  signal_name,
                  subjects_to_use,
+                 return_seiz_type = False,
                  norm_coef = None,
                  segments = None,
                  standardise = True,
@@ -37,6 +38,7 @@ class DataGenerator(Dataset):
         self.bckg_rate = bckg_rate
         self.subjects_to_use = subjects_to_use
         self.prefetch_data_from_seg = prefetch_data_from_seg
+        self.return_seiz_type = return_seiz_type
     
         # Check if the normalisation coefficients have been calculated and saved
         if standardise:
@@ -97,13 +99,18 @@ class DataGenerator(Dataset):
             # sample
             sample = item[0]
             label = int(item[1])
+            seiz_type = item[2]
         else:
             # if data has not been prefetched, get the sample
             # using the start and end of the segment
             label = int(item['label'])
             sample = self._get_segment(item)
+            seiz_type = item['seiz_types']
 
-        return sample, label
+        if self.return_seiz_type:
+            return sample, label, seiz_type
+        else:
+            return sample, label
     
     def _get_segment(self, item):
         '''
@@ -153,7 +160,8 @@ class DataGenerator(Dataset):
             item = seg.loc[i,:]
             sample = self._get_segment(item)
             label = item['label']
-            samples.append((sample, label))
+            seiz_type = item['seiz_types']
+            samples.append((sample, label, seiz_type))
         
         # close data file since it is no longer needed
         self.data_file.close()
@@ -562,13 +570,14 @@ class SegmentData():
                     std = np.std(signal)
                     
                     if self.anno_based_seg:
-                        labels, start_win, end_win = self._anno_based_segment(record)
+                        labels, start_win, end_win, seiz_types = self._anno_based_segment(record)
                     else:
-                        labels, start_win, end_win = self._record_based_segment(record)
+                        labels, start_win, end_win, seiz_types = self._record_based_segment(record)
                         
                     seg_rec = pd.DataFrame({'startseg': start_win.astype(int), 
                                             'endseg': end_win.astype(int), 
-                                            'label': labels})
+                                            'label': labels, 
+                                            'seiz_types': seiz_types})
                     seg_rec['path'] = path
                     seg_rec['subj'] = subj
                     seg_rec['rec'] = subj + '/' + rec
@@ -606,7 +615,7 @@ class SegmentData():
     
     def _record_based_segment(self, record):
         # Get annotation on sample basis
-        one_hot_label = self._anno_to_one_hot(record)
+        one_hot_label, classes = self._anno_to_one_hot(record)
         for sig in self.signal_name:
             if sig in record.keys():
                 signal = record[sig]
@@ -631,18 +640,28 @@ class SegmentData():
             elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>window_samples*0.95:
                 lab = 0
                 use_sample = True
+            
+            if lab == 0:
+                seiz_type  = 'bckg'
+            else:
+                class_types = np.unique(classes[sw:ew])
+                if len(class_types) > 1 and 'bckg' in class_types:
+                    class_types = [cl for cl in class_types if cl != 'bckg']
+                seiz_type = class_types[0]
 
             if use_sample:
                 if labels is None:
                     start_win = np.array([sw])
                     end_win = np.array([ew])
                     labels = np.array([lab])
+                    seiz_types = np.array([seiz_type])
                 else: 
                     start_win = np.append(start_win, np.array([sw]), axis = 0)
                     end_win = np.append(end_win, np.array([ew]), axis = 0)
                     labels = np.append(labels, np.array([lab]), axis = 0)
+                    seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
 
-        return labels, start_win, end_win
+        return labels, start_win, end_win, seiz_types
     
     def _anno_to_one_hot(self, record):
         '''
@@ -653,6 +672,7 @@ class SegmentData():
                 signal = record[sig]
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
+        seiz_types = np.empty(len(signal), object)
         one_hot_label[:,0] = 1
 
         for anno in annos:
@@ -663,8 +683,9 @@ class SegmentData():
                 one_hot_label[round(anno_start):round(anno_end),0] = 0
             elif anno['Name'].lower() == 'bckg':
                 one_hot_label[round(anno_start):round(anno_end),0] = 1
+            seiz_types[round(anno_start):round(anno_end)] = anno['Name'].lower()
         
-        return one_hot_label
+        return one_hot_label, seiz_types
 
     def _anno_based_segment(self, record):
         for sig in self.signal_name:
@@ -691,39 +712,39 @@ class SegmentData():
                 anno_stride = stride[0]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 0
-            else:
-                lab = None
             
-            if lab is not None:
-                stride_samples = anno_stride*signal.fs
-                if windows%1 != 0:
-                    if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
-                        anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
-                    if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
-                        windows = int(np.ceil(windows))
-                    else:
-                        windows = int(windows)
+            stride_samples = anno_stride*signal.fs
+            if windows%1 != 0:
+                if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
+                    anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
+                if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
+                    windows = int(np.ceil(windows))
                 else:
                     windows = int(windows)
+            else:
+                windows = int(windows)
 
-                if windows <= 0:
-                    print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
-                    label = np.array([])
-                else:
-                    label = np.zeros(windows)
-                    label[:] = lab
-                
-                sw = anno_start + np.array([win*stride_samples for win in range(windows)])
-                ew = sw + window_samples
+            if windows <= 0:
+                print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
+                label = np.array([])
+            else:
+                label = np.zeros(windows)
+                label[:] = lab
+                seiz_type = [anno['Name']]*windows
             
-                if i == 0:
-                    start_win = sw
-                    end_win = ew
-                    labels = label
-                else:
-                    start_win = np.append(start_win, sw)
-                    end_win = np.append(end_win, ew)
-                    labels = np.append(labels, label)
-                i+=1
+            sw = anno_start + np.array([win*stride_samples for win in range(windows)])
+            ew = sw + window_samples
+        
+            if i == 0:
+                start_win = sw
+                end_win = ew
+                labels = label
+                seiz_types = np.array(seiz_type)
+            else:
+                start_win = np.append(start_win, sw)
+                end_win = np.append(end_win, ew)
+                labels = np.append(labels, label)
+                seiz_types = np.append(seiz_types, seiz_type)
+            i+=1
 
-        return labels, start_win, end_win
+        return labels, start_win, end_win, seiz_types
