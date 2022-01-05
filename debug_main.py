@@ -42,6 +42,6 @@ parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
 
 args = parser.parse_args(['--file_path','data/hdf5/temple_seiz_small_3.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',
-                          '--anno_based_seg', 'False', '--model_type', 'BaselineCNN',
+                          '--anno_based_seg', 'True', '--model_type', 'BaselineCNN',
                           '--train_val_test', 'True', '--prefetch_data_from_seg', 'False'])
 main(args)

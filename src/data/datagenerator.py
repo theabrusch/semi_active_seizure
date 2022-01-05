@@ -727,6 +727,7 @@ class SegmentData():
             if windows <= 0:
                 print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
                 label = np.array([])
+                seiz_type = np.array([])
             else:
                 label = np.zeros(windows)
                 label[:] = lab
