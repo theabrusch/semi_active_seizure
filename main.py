@@ -44,6 +44,7 @@ def main(args):
     datagen['standardise'] = args.standardise
     datagen['use_train_seed'] = args.use_train_seed
     datagen['subj_strat'] = args.subj_strat
+    datagen['protocol'] = args.protocol
 
     gen_args = config['generator_kwargs']
     gen_args['batch_size'] = args.batch_size
@@ -173,6 +174,8 @@ if __name__ == '__main__':
     parser.add_argument('--standardise', type = eval, default=False)
     parser.add_argument('--sens', type = eval, default=0)
     parser.add_argument('--batch_size', type=eval, default=512)
+    # protocol(s) to use for training
+    parser.add_argument('--protocol', type=eval, default='all')
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
