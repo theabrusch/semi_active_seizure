@@ -20,7 +20,7 @@ parser.add_argument('--test_subj', type = eval, default=None)
 parser.add_argument('--standardise', type = eval, default=False)
 parser.add_argument('--sens', type = eval, default=0)
 parser.add_argument('--batch_size', type=eval, default=512)
-parser.add_argument('--protocol', type=str, default='train')
+parser.add_argument('--protocol', type=str, default='all')
 
 # model
 parser.add_argument('--model_type', type=str, default='BaselineCNN')
@@ -33,13 +33,15 @@ parser.add_argument('--padding', type=eval, default=False)
 # Training parameters
 parser.add_argument('--optimizer', type = str, default = 'RMSprop')
 parser.add_argument('--use_weighted_loss', type=eval, default=True)
-parser.add_argument('--epochs', type=int, default=10)
+parser.add_argument('--epochs', type=int, default=0)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
+parser.add_argument('--scheduler', type = eval, default = None)
+parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
 
 
-args = parser.parse_args(['--file_path','data/hdf5/temple_seiz_small_1.hdf5', '--window_length', '2',
+args = parser.parse_args(['--file_path','data/hdf5/temple_seiz_small_3.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',
                           '--anno_based_seg', 'False', '--model_type', 'BaselineCNN',
-                          '--train_val_test', 'False', '--prefetch_data_from_seg', 'False'])
+                          '--train_val_test', 'True', '--prefetch_data_from_seg', 'False'])
 main(args)

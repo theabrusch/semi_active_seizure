@@ -4,13 +4,12 @@ import numpy as np
 import warnings
 from sklearn.model_selection import train_test_split
 
-def train_val_split(hdf5_path, train_percent, seiz_classes, protocol, seed, test_subj = None, **kwargs):
+def train_val_split(hdf5_path, train_percent, seiz_classes, 
+                    protocol, seed, test_subj = None, excl_seiz_classes = [], **kwargs):
     dset = hdf5_path.split('/')[-1].split('.')[0]
-    pickle_path = 'data/' + dset + '_' + 'seiz_subjs_new.pickle'
-    
+    pickle_path = 'data/' + dset + '_' + 'seiz_subjs_excl_seiz' + str(excl_seiz_classes) + '.pickle'
     if seed == 'None':
         seed = None
-
     if test_subj is None:
         # get subjects with seizure and without to ensure an equal split
         try:
@@ -18,7 +17,9 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, protocol, seed, test
                 seiz_subjs = pickle.load(fp)
         except:
             print('Extracting seizure subjects and non seizure subjects.')
-            seiz_subjs = get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path)
+            seiz_subjs = get_seiz_subjs(hdf5_path, protocol, 
+                                        seiz_classes, excl_seiz_classes, 
+                                        pickle_path)
 
         train_seiz, val_seiz = train_test_split(seiz_subjs['seiz'], 
                                                 train_size=train_percent, 
@@ -127,7 +128,7 @@ def train_val_test_split(hdf5_path, seed, seiz_classes, test_subj = None, val_su
 
     return train, val, test
 
-def get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path=None):
+def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz_classes, pickle_path=None):
     F = dc.File(hdf5_path, 'r')
     if not protocol == 'all': 
         proto = F[protocol]
@@ -143,15 +144,19 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, pickle_path=None):
         print('Subject', i, 'out of', len(subjects))
         i+=1
         seiz = 0
+        excl_seiz = 0
         for rec in F[subj].keys():
             annos = F[subj][rec]['Annotations']
             for anno in annos:
                 if anno['Name'].lower() in seiz_classes:
                     seiz = 1
-        if seiz == 1:
-            seiz_subjs['seiz'].append(subj)
-        else:
-            seiz_subjs['non seiz'].append(subj)
+                elif anno['Name'].lower() in excl_seiz_classes:
+                    excl_seiz = 1
+        if excl_seiz == 0:
+            if seiz == 1:
+                seiz_subjs['seiz'].append(subj)
+            else:
+                seiz_subjs['non seiz'].append(subj)
     if pickle_path is not None:
         with open(pickle_path, 'wb') as fp:
             pickle.dump(seiz_subjs, fp)
