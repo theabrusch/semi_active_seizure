@@ -728,13 +728,14 @@ class SegmentData():
                 print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
                 label = np.array([])
                 seiz_type = np.array([])
+                sw = np.array([])
+                ew = np.array([])
             else:
                 label = np.zeros(windows)
                 label[:] = lab
                 seiz_type = [anno['Name']]*windows
-            
-            sw = anno_start + np.array([win*stride_samples for win in range(windows)])
-            ew = sw + window_samples
+                sw = anno_start + np.array([win*stride_samples for win in range(windows)])
+                ew = sw + window_samples
         
             if i == 0:
                 start_win = sw
