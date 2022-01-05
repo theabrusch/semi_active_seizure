@@ -35,7 +35,7 @@ def train_val_split(hdf5_path, train_percent, seiz_classes, protocol, seed, test
         val = np.append(val_seiz, val_non_seiz)
     else:
         F = dc.File(hdf5_path, 'r')
-        subjs = list(F['train'].keys())
+        subjs = F.get_children(object_type=dc.Subject, get_obj = False)
         val = [subjs[i] for i in range(len(subjs)) if i in test_subj]
         train = [subjs[i] for i in range(len(subjs)) if i not in test_subj]
         if len(val) == 0:

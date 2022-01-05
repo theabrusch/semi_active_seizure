@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
-    parser.add_argument('--scheduler', type = eval, default = None)
+    parser.add_argument('--scheduler', type = str, default = None)
     parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
     parser.add_argument('--epochs', type=int, default=150)
