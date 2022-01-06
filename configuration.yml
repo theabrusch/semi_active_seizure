@@ -12,7 +12,7 @@ data_gen:
   seed: *seed
   protocol: all
   signal_name: [EEG, TCP]
-  seiz_classes: ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
+  seiz_classes: ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
   excl_seiz_classes: []
   train_percent: 0.70
   val_percent: 0.2

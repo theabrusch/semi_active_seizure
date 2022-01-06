@@ -646,7 +646,7 @@ class SegmentData():
             if np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>window_samples*self.sens:
                 lab = 1
                 use_sample = True
-            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>window_samples*0.95:
+            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>0:
                 lab = 0
                 use_sample = True
 
@@ -764,4 +764,5 @@ class SegmentData():
                     labels = np.append(labels, label)
                     seiz_types = np.append(seiz_types, seiz_type)
                 i+=1
+                
         return labels, start_win, end_win, seiz_types
