@@ -123,8 +123,6 @@ class DataGenerator(Dataset):
         '''
         sig = self.data_file[item['path']]
         seg = sig[item['startseg']:item['endseg'],:]
-        if np.shape(seg)[0] == 0:
-            print('hej')
         # Standardise with respect to record
         if self.standardise:
             mean = np.mean(seg)
@@ -546,8 +544,6 @@ class SegmentData():
             subjects = self.subjects_to_use
 
         for subj in subjects:
-            if subj == '/train/00005426':
-                print('hej')
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
             i+=1
             subj_name = subj.split('/')[-1]
@@ -565,8 +561,6 @@ class SegmentData():
                 subj_seg['bckg'] = pd.DataFrame()
                 subj_seg['norm_coef'] = dict()
                 for rec in self.data_file[subj].keys():
-                    if rec == 's010_t000':
-                        print('hej')
                     record = self.data_file[subj][rec]
                     for sig in self.signal_name:
                         if sig in record.keys():
@@ -764,5 +758,5 @@ class SegmentData():
                     labels = np.append(labels, label)
                     seiz_types = np.append(seiz_types, seiz_type)
                 i+=1
-                
+
         return labels, start_win, end_win, seiz_types
