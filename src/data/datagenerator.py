@@ -123,7 +123,8 @@ class DataGenerator(Dataset):
         '''
         sig = self.data_file[item['path']]
         seg = sig[item['startseg']:item['endseg'],:]
-
+        if np.shape(seg)[0] == 0:
+            print('hej')
         # Standardise with respect to record
         if self.standardise:
             mean = np.mean(seg)
@@ -545,7 +546,7 @@ class SegmentData():
             subjects = self.subjects_to_use
 
         for subj in subjects:
-            if i == 7:
+            if subj == '/train/00005426':
                 print('hej')
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
             i+=1
@@ -564,6 +565,8 @@ class SegmentData():
                 subj_seg['bckg'] = pd.DataFrame()
                 subj_seg['norm_coef'] = dict()
                 for rec in self.data_file[subj].keys():
+                    if rec == 's010_t000':
+                        print('hej')
                     record = self.data_file[subj][rec]
                     for sig in self.signal_name:
                         if sig in record.keys():
@@ -667,12 +670,6 @@ class SegmentData():
                     labels = np.append(labels, np.array([lab]), axis = 0)
                     seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
 
-        if labels is None:
-            labels = np.array([])
-            start_win = np.array([])
-            end_win = np.array([])
-            seiz_types = np.array([])
-
         return labels, start_win, end_win, seiz_types
     
     def _anno_to_one_hot(self, record):
@@ -690,12 +687,12 @@ class SegmentData():
         for anno in annos:
             anno_start = (anno['Start'] - record.start_time)*signal.fs
             anno_end = anno_start+anno['Duration']*signal.fs
+            seiz_types[int(np.floor(anno_start)):int(np.ceil(anno_end))] = anno['Name'].lower()
             if anno['Name'].lower() in self.seiz_classes:
                 one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),1] = 1
                 one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 0
             elif anno['Name'].lower() == 'bckg':
                 one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 1
-            seiz_types[int(np.floor(anno_start)):int(np.ceil(anno_end))] = anno['Name'].lower()
         
         return one_hot_label, seiz_types
 
@@ -715,50 +712,56 @@ class SegmentData():
         for anno in annos:
             anno_start = int((anno['Start'] - record.start_time)*signal.fs)
             window_samples = self.window_length*signal.fs
-
+            use_anno = False
             if anno['Name'].lower() in self.seiz_classes:
                 anno_stride = stride[1]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 1
+                use_anno = True
             elif anno['Name'].lower() == 'bckg':
                 anno_stride = stride[0]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 0
+                use_anno = True
             
-            stride_samples = anno_stride*signal.fs
-            if windows%1 != 0:
-                if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
-                    anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
-                if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
-                    windows = int(np.ceil(windows))
+            if use_anno:
+                stride_samples = anno_stride*signal.fs
+                if windows%1 != 0:
+                    if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
+                        anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
+                    if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
+                        windows = int(np.ceil(windows))
+                    else:
+                        windows = int(np.floor(windows))
                 else:
                     windows = int(windows)
-            else:
-                windows = int(windows)
 
-            if windows <= 0:
-                print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
-                label = np.array([])
-                seiz_type = np.array([])
-                sw = np.array([])
-                ew = np.array([])
-            else:
-                label = np.zeros(windows)
-                label[:] = lab
-                seiz_type = [anno['Name']]*windows
-                sw = anno_start + np.array([win*stride_samples for win in range(windows)])
-                ew = sw + window_samples
-        
-            if i == 0:
-                start_win = sw
-                end_win = ew
-                labels = label
-                seiz_types = np.array(seiz_type)
-            else:
-                start_win = np.append(start_win, sw)
-                end_win = np.append(end_win, ew)
-                labels = np.append(labels, label)
-                seiz_types = np.append(seiz_types, seiz_type)
-            i+=1
-
+                if windows <= 0:
+                    print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
+                    label = np.array([])
+                    seiz_type = np.array([])
+                    sw = np.array([])
+                    ew = np.array([])
+                else:
+                    label = np.zeros(windows)
+                    label[:] = lab
+                    seiz_type = [anno['Name']]*windows
+                    sw = anno_start + np.array([win*stride_samples for win in range(windows)])
+                    ew = sw + window_samples
+                    if ew[-1] > record.duration*signal.fs:
+                        print('hej')
+                        del sw[-1]
+                        del ew[-1]
+            
+                if i == 0:
+                    start_win = sw
+                    end_win = ew
+                    labels = label
+                    seiz_types = np.array(seiz_type)
+                else:
+                    start_win = np.append(start_win, sw)
+                    end_win = np.append(end_win, ew)
+                    labels = np.append(labels, label)
+                    seiz_types = np.append(seiz_types, seiz_type)
+                i+=1
         return labels, start_win, end_win, seiz_types

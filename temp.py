@@ -3,10 +3,9 @@ import pyedflib
 from dataapi import data_collection as dc
 
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
-file_name = 'data/hdf5/temple_seiz_small_1.hdf5'
 f = dc.File(file_name, 'r')
 
-annos = f.get_children(object_type=dc.Annotations, get_obj = False)
+annos = f.get_children(object_type=dc.Annotations, get_obj = True)
 anno_names = []
 
 protocol = f['train']
