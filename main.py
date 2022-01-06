@@ -121,7 +121,7 @@ def main(args):
         choose_best = False
         track_test = True
     else:
-        choose_best = True
+        choose_best = False
         track_test = True
 
     model_train = train_model.model_train(model = model, 
