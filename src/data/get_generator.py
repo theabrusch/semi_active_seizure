@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.utils import shuffle
 from typing import Iterator
 from dataapi import data_collection as dc
+from prettytable import PrettyTable
 
 class SeizSampler(Sampler):
     """Samples elements sequentially, always in the same order.
@@ -36,8 +37,19 @@ class SeizSampler(Sampler):
     def __len__(self) -> int:
         return self.dataset.__len__()
 
+def add_seiztypes_to_summary(seizure_types, summarywriter, name):
+    uni_seiz_types = np.unique(seizure_types)
+    n_total = len(seizure_types)
+    t = PrettyTable(['Seizure type', 'Number', 'Percent (%)'])
+    for seiz in uni_seiz_types:
+        n_seiz = (seizure_types == seiz).sum()
+        t.add_row([seiz, n_seiz, n_seiz*100/n_total])
+    t.add_row(['Total', n_total, 100])
+    text_name = name + '_seizure_counts'
+    summarywriter.add_text(text_name, t.get_html_string(), global_step=0)
 
-def get_dataset(data_gen):
+
+def get_dataset(data_gen, summarywriter):
     if data_gen['gen_type'] == 'DataGenerator':
         if data_gen['train_val_test']:
             train, val, test = train_val_split.train_val_test_split(**data_gen)
@@ -54,8 +66,10 @@ def get_dataset(data_gen):
         train_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=train,
                                                     bckg_rate=data_gen['bckg_rate_train'],
                                                     segments = segment, norm_coef = norm_coef)
-        print('Number of seizure segments in training set:', train_dataset.seiz_samples)
-        
+        #add train seizure types to summary
+        seizure_types = train_dataset.segments['seiz']['seiz_types']
+        add_seiztypes_to_summary(seizure_types, summarywriter, 'train')
+
         print('Initialising validation dataset.')
         data_gen['use_train_seed'] = True
         data_gen['bckg_rate'] = data_gen['bckg_rate_val']
@@ -65,7 +79,8 @@ def get_dataset(data_gen):
         val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=val,
                                                   #bckg_rate=data_gen['bckg_rate_val'],
                                                   segments = segment, norm_coef=norm_coef)
-        print('Number of seizure segments in validation set', val_dataset.seiz_samples)
+        seizure_types = val_dataset.segments['seiz']['seiz_types']
+        add_seiztypes_to_summary(seizure_types, summarywriter, 'validation')
     if data_gen['train_val_test']:
         return train_dataset, val_dataset, test
     else:
@@ -85,7 +100,7 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
 
     return train_dataloader, val_dataloader
 
-def get_test_generator(data_gen, generator_kwargs, test_subj):
+def get_test_generator(data_gen, generator_kwargs, test_subj, summarywriter):
     if data_gen['gen_type'] == 'DataGenerator':
         print('Initialising test dataset.')
         dset = data_gen['hdf5_path'].split('/')[-1].split('.')[0]
@@ -98,7 +113,8 @@ def get_test_generator(data_gen, generator_kwargs, test_subj):
         val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=test_subj,
                                                   return_seiz_type = True,
                                                   segments = segment, norm_coef=norm_coef)
-        print('Number of seizure segments in test set:', (val_dataset.seiz_samples))
+        seizure_types = val_dataset.segments['seiz']['seiz_types']
+        add_seiztypes_to_summary(seizure_types, summarywriter, 'test')
         sampler = SequentialSampler(val_dataset)
         val_dataloader = DataLoader(val_dataset, 
                                     batch_size = generator_kwargs['val_batch_size'],

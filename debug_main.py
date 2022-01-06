@@ -2,14 +2,15 @@ from main import main
 import argparse
 parser = argparse.ArgumentParser()
 # job name
+parser.add_argument('--run_folder', type = str, default='notspec')
 parser.add_argument('--job_name', type = str, default='nojobname')
 # datagen
 parser.add_argument('--file_path', type = str)
 parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
 parser.add_argument('--seiz_stride', type=eval, default=None)
-parser.add_argument('--bckg_rate_val', type=eval, default=None) # None or value
-parser.add_argument('--bckg_rate_train', type=eval, default=None)
+parser.add_argument('--bckg_rate_val', type=eval, default=1) # None or value
+parser.add_argument('--bckg_rate_train', type=eval, default=1)
 parser.add_argument('--use_train_seed', type=eval, default=True)
 parser.add_argument('--subj_strat', type=eval, default=False)
 parser.add_argument('--anno_based_seg', type=eval, default=False)
@@ -43,5 +44,5 @@ parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
 args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2',
                           '--anno_based_seg', 'True', '--model_type', 'BaselineCNN',
-                          '--train_val_test', 'True', '--prefetch_data_from_seg', 'True'])
+                          '--train_val_test', 'True', '--prefetch_data_from_seg', 'False'])
 main(args)

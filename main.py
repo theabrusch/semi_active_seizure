@@ -18,7 +18,7 @@ def params_to_tb(writer, args):
     writer.add_text("args", t.get_html_string(), global_step=0)
 
 def main(args):
-    writer = SummaryWriter('../runs/expset/'+ args.model_type +\
+    writer = SummaryWriter('../runs/' + args.run_folder + '/' + args.model_type +\
                            '_'+ str(datetime.now()) + '_' + \
                             args.job_name)
     params_to_tb(writer, args)
@@ -51,12 +51,12 @@ def main(args):
     gen_args['use_train_seed'] = args.use_train_seed
 
     if args.train_val_test:
-        train_dataset, val_dataset, test = get_generator.get_dataset(datagen)
+        train_dataset, val_dataset, test = get_generator.get_dataset(datagen, writer)
         split_text = 'Train subjects: ' + str(train_dataset.subjects_to_use) + \
                  '. Validation subjects: ' + str(val_dataset.subjects_to_use) + \
                   '. Test subjects: ' + str(test) + '.'
     else:
-        train_dataset, val_dataset = get_generator.get_dataset(datagen)
+        train_dataset, val_dataset = get_generator.get_dataset(datagen, writer)
         split_text = 'Train subjects: ' + str(train_dataset.subjects_to_use) + \
                  '. Validation subjects: ' + str(val_dataset.subjects_to_use)+ '.'
 
@@ -76,9 +76,15 @@ def main(args):
     test_datagen['use_train_seed'] = False
 
     if not args.train_val_test:
-        test_loader = get_generator.get_test_generator(test_datagen, gen_args, val_dataset.subjects_to_use)
+        test_loader = get_generator.get_test_generator(test_datagen,
+                                                       gen_args,
+                                                       val_dataset.subjects_to_use, 
+                                                       summarywriter=writer)
     else:
-        test_loader = get_generator.get_test_generator(test_datagen, gen_args, test)
+        test_loader = get_generator.get_test_generator(test_datagen, 
+                                                       gen_args, 
+                                                       test, 
+                                                       writer)
 
     # load model
     model_config = config['model_kwargs']
@@ -171,6 +177,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # job name
     parser.add_argument('--job_name', type = str, default='nojobname')
+    parser.add_argument('--run_folder', type = str, default='notspec')
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
@@ -189,7 +196,7 @@ if __name__ == '__main__':
     parser.add_argument('--sens', type = eval, default=0)
     parser.add_argument('--batch_size', type=eval, default=512)
     # protocol(s) to use for training
-    parser.add_argument('--protocol', type=eval, default='all')
+    parser.add_argument('--protocol', type=str, default= 'all')
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
