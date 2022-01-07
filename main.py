@@ -51,12 +51,12 @@ def main(args):
     gen_args['use_train_seed'] = args.use_train_seed
 
     if args.train_val_test:
-        train_dataset, val_dataset, test = get_generator.get_dataset(datagen, writer)
+        train_dataset, val_dataset, test = get_generator.get_dataset(datagen, summarywriter = writer)
         split_text = 'Train subjects: ' + str(train_dataset.subjects_to_use) + \
                  '. Validation subjects: ' + str(val_dataset.subjects_to_use) + \
                   '. Test subjects: ' + str(test) + '.'
     else:
-        train_dataset, val_dataset = get_generator.get_dataset(datagen, writer)
+        train_dataset, val_dataset = get_generator.get_dataset(datagen, summarywriter = writer)
         split_text = 'Train subjects: ' + str(train_dataset.subjects_to_use) + \
                  '. Validation subjects: ' + str(val_dataset.subjects_to_use)+ '.'
 

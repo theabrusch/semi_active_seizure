@@ -120,7 +120,7 @@ if create_temple_small:
 
 
 if create_boston_sub:
-    F = dc.File('data/hdf5/boston_scalp_new.hdf5', 'r')
+    F = dc.File('data/hdf5/boston_scalp_small.hdf5', 'r')
     subF = dc.File('data/hdf5/boston_scalp_sub.hdf5', 'a')
 
     new_train = subF.create_group('train')
@@ -139,9 +139,9 @@ if create_boston_sub:
         
         #check for seizure records
         seiz_recs = train_val_split.get_seiz_recs(subject, seiz_names=['seiz'])
-        rec_seiz = np.random.choice(seiz_recs['seiz'], size = int(0.25*len(seiz_recs['seiz'])))
-        rec_non_seiz = np.random.choice(seiz_recs['non seiz'], size = int(0.25*len(seiz_recs['non seiz'])))
-        rec_sample = np.append(rec_seiz, rec_non_seiz)
+        rec_seiz = np.random.choice(seiz_recs['seiz'], size = 1)
+        #rec_non_seiz = np.random.choice(seiz_recs['non seiz'], size = int(0.1*len(seiz_recs['non seiz'])))
+        rec_sample = rec_seiz
 
         for rec in rec_sample:
             record = subject[rec]

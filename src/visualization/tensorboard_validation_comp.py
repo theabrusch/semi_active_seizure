@@ -78,6 +78,8 @@ for name, file in zip(subj_14_names, subj_14_files):
         subj_14[name.split('_')[-1]][:,i] = df['Value'].values
 
 step_14 = np.argmax(subj_14['f1'][:,0])
+new_met = 2*subj_14['sens']*subj_14['spec']/(subj_14['sens']+subj_14['spec'])
+step14_newmet = np.argmax(new_met[:,0])
 
 plt.plot(subj_14['sens'])
 plt.ylim([0,1])
@@ -92,6 +94,7 @@ plt.plot(subj_14['spec'])
 plt.ylim([0,1])
 plt.xlim([-2, 150])
 plt.vlines(step_14, 0, 1, colors = 'black', zorder = 3)
+plt.vlines(step14_newmet, 0, 1, colors = 'blue', zorder = 4)
 plt.ylabel('Specificity', fontsize = 12)
 plt.xlabel('Epoch', fontsize = 12)
 plt.legend(['Validation score', 'Test score', 'Best val. F1 score'], loc = 'lower right', fontsize = 10)
@@ -107,10 +110,12 @@ plt.legend(['Validation score', 'Test score', 'Best val. F1 score'], loc = 'uppe
 plt.show()
 
 
-plt.plot(subj_14['f1'][:,1])
-plt.ylim([0,0.05])
+plt.plot(subj_14['f1'])
+plt.plot(new_met)
+plt.ylim([0,1])
 plt.xlim([-2, 150])
-plt.vlines(step_14, 0, 1, colors = 'black', zorder = 3)
+plt.vlines(step_14, 0, 1, colors = 'black', zorder = 5)
+#plt.vlines(step14_newmet, 0, 1, colors = 'blue', zorder = 6)
 plt.ylabel('F1 score', fontsize = 12)
 plt.xlabel('Epoch', fontsize = 12)
 plt.legend(['Test score', 'Best val. F1 score'], loc = 'upper right', fontsize = 10)

@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 from src.models.metrics import sensitivity, specificity
 from sklearn.metrics import f1_score, confusion_matrix, precision_score
+import optuna
 
 
 class model_train():
@@ -26,7 +27,9 @@ class model_train():
               train_loader,
               val_loader, 
               track_test,
+              safe_best_model = False,
               test_loader = None,
+              trial = None,
               epochs = 10):
         '''
         Train model
@@ -98,6 +101,12 @@ class model_train():
             tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
             f1_scores[epoch] = f1
+
+            if trial is not None:
+                trial.report(f1, epoch)
+                if trial.should_prune():
+                    raise optuna.exceptions.TrialPruned()
+
             if self.writer is not None:
                 self.writer.add_scalar('val/sens', sens, epoch)
                 self.writer.add_scalar('val/spec', spec, epoch)
@@ -114,36 +123,37 @@ class model_train():
             print('Validation loss:', val_loss[epoch])
 
             #Compute test loss and metrics
-            num_batch = 1
-            running_test_loss = 0 
-            self.model.eval()
-            for batch in test_loader:
-                x = batch[0].float().to(self.device)
-                y = batch[1].long().to(self.device)
-                out = self.model(x)
-                loss = self.loss_fn(out, y)
+            if test_loader is not None:
+                num_batch = 1
+                running_test_loss = 0 
+                self.model.eval()
+                for batch in test_loader:
+                    x = batch[0].float().to(self.device)
+                    y = batch[1].long().to(self.device)
+                    out = self.model(x)
+                    loss = self.loss_fn(out, y)
 
-                running_test_loss += loss.detach().cpu()
-                if num_batch == 1:
-                    y_true = y.detach().cpu().numpy()
-                    y_pred = torch.argmax(out, axis = -1).detach().cpu().numpy()
-                else:
-                    y_true = np.append(y_true, y.detach().cpu().numpy(), axis = 0)
-                    y_pred = np.append(y_pred, torch.argmax(out, axis = -1).detach().cpu().numpy(), axis = 0)
-                num_batch += 1
-            
-            sens = sensitivity(y_true, y_pred)
-            spec = specificity(y_true, y_pred)
-            f1 = f1_score(y_true, y_pred)
-            prec = precision_score(y_true, y_pred)
-            test_loss = running_test_loss/num_batch
+                    running_test_loss += loss.detach().cpu()
+                    if num_batch == 1:
+                        y_true = y.detach().cpu().numpy()
+                        y_pred = torch.argmax(out, axis = -1).detach().cpu().numpy()
+                    else:
+                        y_true = np.append(y_true, y.detach().cpu().numpy(), axis = 0)
+                        y_pred = np.append(y_pred, torch.argmax(out, axis = -1).detach().cpu().numpy(), axis = 0)
+                    num_batch += 1
+                
+                sens = sensitivity(y_true, y_pred)
+                spec = specificity(y_true, y_pred)
+                f1 = f1_score(y_true, y_pred)
+                prec = precision_score(y_true, y_pred)
+                test_loss = running_test_loss/num_batch
 
-            if self.writer is not None:
-                self.writer.add_scalar('test/sens', sens, epoch)
-                self.writer.add_scalar('test/spec', spec, epoch)
-                self.writer.add_scalar('test/f1', f1, epoch)
-                self.writer.add_scalar('test/precision', prec, epoch)
-                self.writer.add_scalar('test/loss', test_loss, epoch)
+                if self.writer is not None:
+                    self.writer.add_scalar('test/sens', sens, epoch)
+                    self.writer.add_scalar('test/spec', spec, epoch)
+                    self.writer.add_scalar('test/f1', f1, epoch)
+                    self.writer.add_scalar('test/precision', prec, epoch)
+                    self.writer.add_scalar('test/loss', test_loss, epoch)
 
             epoch_time = (datetime.now()-time).total_seconds()
             print('Epoch time', epoch_time)
@@ -155,13 +165,16 @@ class model_train():
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
             checkpoint = torch.load(best_model_path)
             self.model.load_state_dict(checkpoint['model_state_dict'])
-        else:
+        elif safe_best_model:
             model_check = checkpoint_path + '/final_model' + '.pt'
             torch.save({'model_state_dict': self.model.state_dict()},
                         model_check)
-
-        self.writer.flush()
-        return train_loss, val_loss
+        if self.writer is not None:
+            self.writer.flush()
+        if trial is not None:
+            return f1_scores[-1]
+        else:
+            return train_loss, val_loss
     
     def eval(self, data_loader, return_seiz_type = False):
         y_pred = None

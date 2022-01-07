@@ -6,41 +6,39 @@ file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
 f = dc.File(file_name, 'r')
 
 annos = f.get_children(object_type=dc.Annotations, get_obj = True)
-anno_names = []
-
-protocol = f['train']
-subjects = f.get_children(object_type = dc.Subject, get_obj = False)
+anno_names = dict()
 
 for anno in annos:
     for an in anno:
-        if an['Name'] not in anno_names:
-            anno_names.append(an['Name'])
+        if an['Name'] not in anno_names.keys():
+            anno_names[an['Name']] = [an['Duration']]
+        else:
+            anno_names[an['Name']].append(an['Duration'])
+
+for name in anno_names.keys():
+    print(name)
+    print('Mean', np.mean(anno_names[name]))
+    print('Min', np.min(anno_names[name]))
+    print('Max', np.max(anno_names[name]), '\n')
 
 seiz_subjs = []
 seiz_dur = 0
 total_dur = 0
 stats = dict()
-
-for subj in f['train'].keys():
-    subject = f['train'][subj]
+subjects = f.get_children(dc.Subject, get_obj=False)
+for subj in subjects:
+    subject = f[subj]
     stats[subj] = dict()
     stats[subj]['total dur'] = 0
-    stats[subj]['seizures'] = 0
-    stats[subj]['seiz dur'] = 0
+    stats[subj]['seiz dur'] = []
     for rec in subject.keys():
         record = subject[rec]
         for anno in record['Annotations']:
-            if anno['Name'] in ['cpsz', 'gnsz', 'spsz', 'tcsz', 'seiz']:
-                seiz = True
-                stats[subj]['seizures'] += 1
-                stats[subj]['seiz dur'] += anno['Duration']
+            if anno['Name'] in ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
+                stats[subj]['seiz dur'].append(anno['Duration'])
         stats[subj]['total dur'] += record.duration
 
-
+seiz_per_subj = []
 for subj in stats.keys():
-    print('Subject', subj)
-    print('Number of seizures', stats[subj]['seizures'])
-    print('Seizure duration', stats[subj]['seiz dur'])
-    print('Seizure percent', stats[subj]['seiz dur']*100/stats[subj]['total dur'])
-    print('Total duration', stats[subj]['total dur']/60/60)
-    print('\n')
+    if len(stats[subj]['seiz dur']) > 0:
+        seiz_per_subj.append(len(stats[subj]['seiz dur']))
