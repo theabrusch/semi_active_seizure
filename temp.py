@@ -1,6 +1,14 @@
 import numpy as np
 import pyedflib
 from dataapi import data_collection as dc
+from pathlib import Path
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists
+
+split_path = 'data/optuna_trials/'
+p = Path(split_path)
+p.mkdir(parents=True, exist_ok=True)
+engine = create_engine('sqlite:///data/optuna_trials/test.db')
 
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
 f = dc.File(file_name, 'r')

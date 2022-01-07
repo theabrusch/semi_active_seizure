@@ -21,16 +21,20 @@ def main(args):
     splitdict['hdf5_path'] = args.file_path
     splitdict['protocol'] = 'all'
     # get split
-    train, val, test = train_val_split.train_val_test_split(**splitdict)
-
-    split = {'train': train, 'val': val, 'test': test}
-    split_path = 'data/optuna_trials'+ 'optuna_split_temple' + args.job_name
+    split_path = 'data/optuna_trials/optuna_split_temple/' 
     p = Path(split_path)
     p.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(split_path + args.job_name + '.pkl', 'rb') as fp:
+            split = pickle.load(fp)
+    except:
+        train, val, test = train_val_split.train_val_test_split(**splitdict)
+        split = {'train': train, 'val': val, 'test': test}
+        with open(split_path + args.job_name + '.pkl', 'wb') as fp:
+            pickle.dump(split, fp)
 
-    with open(split_path, 'wb') as fp:
-        pickle.dump(split, fp)
-    
+    train, val, test = split['train'], split['val'], split['test']
+
     # validation loader
     datagen = config['data_gen']
     datagen['hdf5_path'] = args.file_path
@@ -45,7 +49,7 @@ def main(args):
     datagen['subj_strat'] = False
     datagen['batch_size'] = args.batch_size
 
-    val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, subjs_to_use=val)
+    val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, subjs_to_use = val)
 
     # optimize
     def objective(trial):
@@ -56,7 +60,7 @@ def main(args):
         stride = trial.suggest_categorical('stride', args.stride)
         datagen['bckg_stride'] = stride
         datagen['seiz_stride'] = stride
-        bckg_rate = stride = trial.suggest_discrete_uniform('bckg_rate', 1, 10, 1)
+        bckg_rate = stride = trial.suggest_categorical('bckg_rate', [1,5,10])
         datagen['bckg_rate'] = bckg_rate
         datagen['anno_based_seg'] = True
         datagen['prefetch_data_from_seg'] = True
@@ -112,7 +116,11 @@ def main(args):
                                                 trial = trial)
         return f1
 
-    study = optuna.study.create_study(direction = 'maximize')
+    study = optuna.study.create_study(study_name = args.job_name, 
+                                      direction = 'maximize', 
+                                      pruner = optuna.pruners.MedianPruner(),
+                                      storage = 'sqlite:///data/optuna_trials.db',
+                                      load_if_exists = True)
     study.optimize(objective, args.n_trials, timeout = args.time_out)
 
     df = study.trials_dataframe()

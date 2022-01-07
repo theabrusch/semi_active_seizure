@@ -10,3 +10,5 @@ runs/*
 *.pt
 *.csv
 gpu_stats.csv
+*.db
+*.pkl
