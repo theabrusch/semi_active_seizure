@@ -152,7 +152,7 @@ def main(args):
                                       direction = 'maximize', 
                                       pruner = optuna.pruners.MedianPruner(),
                                       storage = 'sqlite:///data/optuna_trials.db',
-                                      load_if_exists = True)
+                                      load_if_exists = args.load_existing)
     study.optimize(objective, 
                    args.n_trials, 
                    timeout = args.time_out,
@@ -190,6 +190,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=150)
 
     # optuna params
+    parser.add_argument('--load_existing', type=eval, default=False)
     parser.add_argument('--n_trials', type=int, default=1)
     parser.add_argument('--time_out', type=int, default=600)
 
