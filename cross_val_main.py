@@ -89,7 +89,7 @@ def main(args):
         stride = trial.suggest_categorical('stride', args.stride)
         datagen['bckg_stride'] = stride
         datagen['seiz_stride'] = stride
-        bckg_rate = stride = trial.suggest_categorical('bckg_rate', [1,5,10])
+        bckg_rate = stride = trial.suggest_categorical('bckg_rate', args.bckg_rate)
         datagen['bckg_rate'] = bckg_rate
         datagen['anno_based_seg'] = True
         datagen['prefetch_data_from_seg'] = True
@@ -172,8 +172,7 @@ if __name__ == '__main__':
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--stride', type=eval, default=[0.05, 0.1, 0.2, 0.5, 0.7, 1, 1.5, 2])
-    parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
-    parser.add_argument('--bckg_rate_train', type=eval, default=1)
+    parser.add_argument('--bckg_rate', type=eval, default=[1,2,5]) # None or value
     parser.add_argument('--batch_size', type=eval, default=512)
     # protocol(s) to use for training
     parser.add_argument('--protocol', type=str, default= 'all')
