@@ -89,7 +89,7 @@ def main(args):
         stride = trial.suggest_categorical('stride', args.stride)
         datagen['bckg_stride'] = stride
         datagen['seiz_stride'] = stride
-        bckg_rate = stride = trial.suggest_categorical('bckg_rate', args.bckg_rate)
+        bckg_rate = trial.suggest_categorical('bckg_rate', args.bckg_rate)
         datagen['bckg_rate'] = bckg_rate
         datagen['anno_based_seg'] = True
         datagen['prefetch_data_from_seg'] = True
@@ -139,7 +139,6 @@ def main(args):
 
         f1, sens, spec = model_train.train(train_loader = train_dataloader,
                                                 val_loader = val_dataloader,
-                                                track_test = False,
                                                 test_loader = None,
                                                 epochs = args.epochs,
                                                 trial = trial)
