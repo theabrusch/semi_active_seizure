@@ -134,7 +134,6 @@ def main(args):
     time = datetime.now()
     train_loss, val_loss = model_train.train(train_loader = train_dataloader,
                                             val_loader = val_dataloader,
-                                            track_test = track_test,
                                             test_loader = test_loader,
                                             epochs = args.epochs)
                                             

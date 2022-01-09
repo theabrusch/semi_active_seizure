@@ -89,7 +89,7 @@ def main(args):
         stride = trial.suggest_categorical('stride', args.stride)
         datagen['bckg_stride'] = stride
         datagen['seiz_stride'] = stride
-        bckg_rate = trial.suggest_categorical('bckg_rate', [1, 2, 5])
+        bckg_rate = trial.suggest_categorical('bckg_rate', args.bckg_rate)
         datagen['bckg_rate'] = bckg_rate
         datagen['anno_based_seg'] = True
         datagen['prefetch_data_from_seg'] = True
@@ -139,7 +139,6 @@ def main(args):
 
         f1, sens, spec = model_train.train(train_loader = train_dataloader,
                                                 val_loader = val_dataloader,
-                                                track_test = False,
                                                 test_loader = None,
                                                 epochs = args.epochs,
                                                 trial = trial)
@@ -153,7 +152,7 @@ def main(args):
                                       direction = 'maximize', 
                                       pruner = optuna.pruners.MedianPruner(),
                                       storage = 'sqlite:///data/optuna_trials.db',
-                                      load_if_exists = True)
+                                      load_if_exists = args.load_existing)
     study.optimize(objective, 
                    args.n_trials, 
                    timeout = args.time_out,
@@ -191,6 +190,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=150)
 
     # optuna params
+    parser.add_argument('--load_existing', type=eval, default=False)
     parser.add_argument('--n_trials', type=int, default=1)
     parser.add_argument('--time_out', type=int, default=600)
 
