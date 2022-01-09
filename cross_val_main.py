@@ -1,6 +1,8 @@
 from re import S
 from dataapi import data_collection as dc
 import argparse
+import logging
+import sys
 import yaml
 from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
@@ -13,7 +15,34 @@ import optuna
 import pickle
 from pathlib import Path
 
+class LogParamsToTB:
+    def __init__(self, writer):
+        self.threshold = writer
+
+    def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
+        params = trial.params
+        pruned = trial.state == optuna.trial.TrialState.PRUNED
+        f1 = trial.value
+        sens = trial.user_attrs['sens']
+        spec = trial.user_attrs['spec']
+        f1_seq = trial.intermediate_values
+
+        t = PrettyTable(['Argument', 'Value'])
+        for key, val in params.items():
+            t.add_row([key, val])
+
+        t.add_row('pruned', pruned)
+        t.add_row('f1', f1)
+        t.add_row('sens', sens)
+        t.add_row('spec', spec)
+        args_name = 'args' + str(trial.number)
+        self.writer.add_text(args_name, t.get_html_string(), global_step=0)
+
+
 def main(args):
+    writer = SummaryWriter('../runs/' + args.run_folder + '/' + args.model_type +\
+                           '_'+ str(datetime.now()) + '_' + \
+                            args.job_name)
     with open('configuration.yml', 'r') as file:
         config = yaml.safe_load(file)
 
@@ -108,20 +137,27 @@ def main(args):
                                                 scheduler = scheduler,
                                                 choose_best = choose_best)
 
-        f1 = model_train.train(train_loader = train_dataloader,
+        f1, sens, spec = model_train.train(train_loader = train_dataloader,
                                                 val_loader = val_dataloader,
                                                 track_test = False,
                                                 test_loader = None,
                                                 epochs = args.epochs,
                                                 trial = trial)
+        trial.set_user_attrs('sens', sens)
+        trial.set_user_attrs('spec', spec)
         return f1
 
+    optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
+    callback = LogParamsToTB(writer)
     study = optuna.study.create_study(study_name = args.job_name, 
                                       direction = 'maximize', 
                                       pruner = optuna.pruners.MedianPruner(),
                                       storage = 'sqlite:///data/optuna_trials.db',
                                       load_if_exists = True)
-    study.optimize(objective, args.n_trials, timeout = args.time_out)
+    study.optimize(objective, 
+                   args.n_trials, 
+                   timeout = args.time_out,
+                   callbacks=[callback])
 
     df = study.trials_dataframe()
     file_name = 'data/optuna_trials/' + args.jobname + str(datetime.now()) + '.csv'

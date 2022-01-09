@@ -26,7 +26,6 @@ class model_train():
     def train(self,
               train_loader,
               val_loader, 
-              track_test,
               safe_best_model = False,
               test_loader = None,
               trial = None,
@@ -172,7 +171,7 @@ class model_train():
         if self.writer is not None:
             self.writer.flush()
         if trial is not None:
-            return f1_scores[-1]
+            return f1_scores[-1], sens, spec
         else:
             return train_loss, val_loss
     
