@@ -142,8 +142,8 @@ def main(args):
                                                 test_loader = None,
                                                 epochs = args.epochs,
                                                 trial = trial)
-        trial.set_user_attrs('sens', sens)
-        trial.set_user_attrs('spec', spec)
+        trial.set_user_attr('sens', sens)
+        trial.set_user_attr('spec', spec)
         return f1
 
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
