@@ -5,11 +5,6 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
 
-split_path = 'data/optuna_trials/'
-p = Path(split_path)
-p.mkdir(parents=True, exist_ok=True)
-engine = create_engine('sqlite:///data/optuna_trials/test.db')
-
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
 f = dc.File(file_name, 'r')
 
@@ -30,6 +25,9 @@ for name in anno_names.keys():
     print('Max', np.max(anno_names[name]), '\n')
 
 seiz_subjs = []
+seizures = 0
+fnsz = 0
+seiz_subjs_all = []
 seiz_dur = 0
 total_dur = 0
 stats = dict()
@@ -39,12 +37,24 @@ for subj in subjects:
     stats[subj] = dict()
     stats[subj]['total dur'] = 0
     stats[subj]['seiz dur'] = []
+    seiz_subj = False
+    subj_exclude = False
     for rec in subject.keys():
         record = subject[rec]
         for anno in record['Annotations']:
-            if anno['Name'] in ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
+            if anno['Name'] in ['gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
+                seiz_subj = True
+                seizures += 1
                 stats[subj]['seiz dur'].append(anno['Duration'])
-        stats[subj]['total dur'] += record.duration
+            elif anno['Name'] == 'fnsz':
+                fnsz += 1
+                subj_exclude = True
+    if not subj_exclude and seiz_subj:
+        seiz_subjs.append(subj)
+    if seiz_subj:
+        seiz_subjs_all.append(subj)
+
+    stats[subj]['total dur'] += record.duration
 
 seiz_per_subj = []
 for subj in stats.keys():
