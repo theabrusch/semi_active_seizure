@@ -152,8 +152,10 @@ def main(args):
 
     if not args.load_existing:
         job_name = args.job_name + str(np.random.rand())
-        
-    study = optuna.study.create_study(study_name = args.job_name, 
+    else:
+        job_name = args.job_name
+
+    study = optuna.study.create_study(study_name = job_name, 
                                       direction = 'maximize', 
                                       pruner = optuna.pruners.MedianPruner(),
                                       storage = 'sqlite:///data/optuna_trials.db',
