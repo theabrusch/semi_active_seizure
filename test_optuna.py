@@ -44,108 +44,24 @@ def main(args):
     writer = SummaryWriter('../runs/' + args.run_folder + '/' + args.model_type +\
                            '_'+ str(datetime.now()) + '_' + \
                             args.job_name)
-    with open('configuration.yml', 'r') as file:
-        config = yaml.safe_load(file)
-
-    splitdict = config['data_gen']
-    splitdict['hdf5_path'] = args.file_path
-    splitdict['protocol'] = 'all'
-    # get split
-    split_path = 'data/optuna_trials/optuna_split_temple/' 
-    p = Path(split_path)
-    p.mkdir(parents=True, exist_ok=True)
-    try:
-        with open(split_path + args.job_name + '.pkl', 'rb') as fp:
-            split = pickle.load(fp)
-    except:
-        train, val, test = train_val_split.train_val_test_split(**splitdict)
-        split = {'train': train, 'val': val, 'test': test}
-        with open(split_path + args.job_name + '.pkl', 'wb') as fp:
-            pickle.dump(split, fp)
-
-    train, val, test = split['train'], split['val'], split['test']
-
-    # validation loader
-    datagen = config['data_gen']
-    datagen['hdf5_path'] = args.file_path
-    datagen['window_length'] = args.window_length
-    datagen['bckg_stride'] = args.window_length
-    datagen['seiz_stride'] = args.window_length
-    datagen['bckg_rate'] = None
-    datagen['anno_based_seg'] = False
-    datagen['prefetch_data_from_seg'] = True
-    datagen['standardise'] = False
-    datagen['use_train_seed'] = True
-    datagen['subj_strat'] = False
-    datagen['batch_size'] = args.batch_size
-
-    val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, subjs_to_use = val)
 
     # optimize
     def objective(trial):
-        # get datasets and dataloaders
-        datagen = config['data_gen']
-        datagen['hdf5_path'] = args.file_path
-        datagen['window_length'] = args.window_length
-        stride = trial.suggest_categorical('stride', args.stride)
-        datagen['bckg_stride'] = stride
-        datagen['seiz_stride'] = stride
-        bckg_rate = trial.suggest_categorical('bckg_rate', args.bckg_rate)
-        datagen['bckg_rate'] = bckg_rate
-        datagen['anno_based_seg'] = True
-        datagen['prefetch_data_from_seg'] = True
-        datagen['standardise'] = False
-        datagen['use_train_seed'] = True
-        datagen['subj_strat'] = False
-        datagen['protocol'] = 'all'
-        datagen['batch_size'] = args.batch_size
+        x = trial.suggest_float("x", -10, 10)
+        y = trial.suggest_float("y", -10, 10)
+        
+        for i in range(3):
+            x+=0.1
+            y+=0.1
+            trial.report((x - 2) ** 2 + (y - 3) ** 2, i)
+            if trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
+        sens = x
+        spec = y
 
-        train_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, subjs_to_use=train)
-
-        # load model
-        model_config = config['model_kwargs']
-        model_config['model'] = args.model_type
-        model_config['dropoutprob'] = trial.suggest_float('dropout', 0, 1)
-        model_config['glob_avg_pool'] = trial.suggest_categorical('glob_avg_pool', [True, False])
-        model_config['padding'] = True
-        model_config['input_shape'] = train_dataloader.dataset._get_X_shape()
-        model = get_model.get_model(model_config)
-
-        # train model
-        optim_config = config['fit']['optimizer']
-        optim_config['optimizer'] = args.optimizer
-        optim_config['scheduler'] = args.scheduler
-        optim_config['milestones'] = args.milestones
-        optim_config['model'] = args.model_type
-        optim_config['lr'] = trial.suggest_float('lr', 1e-6, 1e-2)
-        optim_config['weight_decay'] = trial.suggest_float('weight_decay', 1e-5, 1e-1)
-        optimizer, scheduler = get_optim.get_optim(model, optim_config)
-
-        fit_config = config['fit']
-
-        if args.use_weighted_loss:
-            fit_config['weight'] = bckg_rate
-        else:
-            fit_config['weight'] = None
-
-        loss_fn = get_loss.get_loss(**fit_config)
-
-        choose_best = False
-        model_train = train_model.model_train(model = model, 
-                                                optimizer = optimizer, 
-                                                loss_fn = loss_fn, 
-                                                writer = None,
-                                                scheduler = scheduler,
-                                                choose_best = choose_best)
-
-        f1, sens, spec = model_train.train(train_loader = train_dataloader,
-                                                val_loader = val_dataloader,
-                                                test_loader = None,
-                                                epochs = args.epochs,
-                                                trial = trial)
         trial.set_user_attr('sens', sens)
         trial.set_user_attr('spec', spec)
-        return f1
+        return (x - 2) ** 2 + (y - 3) ** 2
 
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
     callback = LogParamsToTB(writer)
