@@ -3,6 +3,7 @@ from dataapi import data_collection as dc
 import argparse
 import logging
 import sys
+import numpy as np
 import yaml
 from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
@@ -148,6 +149,10 @@ def main(args):
 
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
     callback = LogParamsToTB(writer)
+
+    if not args.load_existing:
+        job_name = args.job_name + str(np.random.rand())
+        
     study = optuna.study.create_study(study_name = args.job_name, 
                                       direction = 'maximize', 
                                       pruner = optuna.pruners.MedianPruner(),
