@@ -18,7 +18,7 @@ from pathlib import Path
 
 class LogParamsToTB:
     def __init__(self, writer):
-        self.threshold = writer
+        self.writer = writer
 
     def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
         params = trial.params
