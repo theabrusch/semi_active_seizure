@@ -166,7 +166,7 @@ def main(args):
                    callbacks=[callback])
 
     df = study.trials_dataframe()
-    file_name = 'data/optuna_trials/' + args.jobname + str(datetime.now()) + '.csv'
+    file_name = 'data/optuna_trials/' + job_name + str(datetime.now()) + '.csv'
     df.to_csv(file_name)
 
 if __name__ == '__main__':
