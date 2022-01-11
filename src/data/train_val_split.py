@@ -127,41 +127,19 @@ def train_val_test_split(hdf5_path,
             for seiz in temp:
                 if seiz in excl_seiz_classes:
                     del seiz_subjs['seiz'][seiz]
-
+        val_percent_temp = round(val_percent/(1-train_percent), 2)
         if seiz_strat: 
             # distribute seizure types over train, validation and test sets 
             train_seiz = np.array([])
             val_seiz = np.array([])
-            missing_seizures = []
+            missing_seizures = np.array([])
             test_seiz = np.array([])
-            total_seizures = 0
-            total_missing = 0
             for seiz in seiz_subjs['seiz'].keys():
-                total_seizures+=len(seiz_subjs['seiz'][seiz])
-                if len(seiz_subjs['seiz'][seiz]) == 1 or len(seiz_subjs['seiz'][seiz]) == 2:
-                    missing_seizures.append(seiz)
-                elif len(seiz_subjs['seiz'][seiz]) < 10:
-                    sets = ['train', 'val', 'test']
-                    np.random.seed(seed)
-                    choices = np.random.choice(sets, 
-                                               size = len(seiz_subjs['seiz'][seiz]))
-                    for i in range(len(choices)):
-                        if choices[i] == 'train':
-                            train_seiz = np.append(train_seiz, seiz_subjs['seiz'][seiz][i])
-                        elif choices[i] == 'val':
-                            val_seiz = np.append(val_seiz, seiz_subjs['seiz'][seiz][i])
-                        else:
-                            test_seiz = np.append(test_seiz, seiz_subjs['seiz'][seiz][i])
-            if len(missing_seizures) > 0:
-                total_train = train_percent*total_seizures
-                total_val = val_percent*total_seizures
-                new_train_percent = (total_train-len(train_seiz))/total_missing
-                new_val_percent = (total_val-len(val_seiz))/total_missing
-                val_percent_temp = new_val_percent/(1-new_train_percent)
-
-                for seiz in missing_seizures:
+                if len(seiz_subjs['seiz'][seiz]) < 10:
+                    missing_seizures = np.append(missing_seizures, seiz_subjs['seiz'][seiz])
+                else:
                     train_seiz_temp, val_test_seiz = train_test_split(seiz_subjs['seiz'][seiz], 
-                                                                        train_size=new_train_percent, 
+                                                                        train_size=train_percent, 
                                                                         random_state=seed)
                     val_seiz_temp, test_seiz_temp = train_test_split(val_test_seiz, 
                                                                     train_size=val_percent_temp, 
@@ -169,9 +147,20 @@ def train_val_test_split(hdf5_path,
                     train_seiz = np.append(train_seiz, train_seiz_temp)
                     val_seiz = np.append(val_seiz, val_seiz_temp)
                     test_seiz = np.append(test_seiz, test_seiz_temp)
+                
+            if len(missing_seizures) > 0:
+                train_seiz_temp, val_test_seiz = train_test_split(missing_seizures, 
+                                                                    train_size=train_percent, 
+                                                                    random_state=seed)
+                val_seiz_temp, test_seiz_temp = train_test_split(val_test_seiz, 
+                                                                 train_size=val_percent_temp, 
+                                                                 random_state=seed)
+                train_seiz = np.append(train_seiz, train_seiz_temp)
+                val_seiz = np.append(val_seiz, val_seiz_temp)
+                test_seiz = np.append(test_seiz, test_seiz_temp)
         else:
             temp = []
-            val_percent = val_percent/(1-train_percent)
+            val_percent = round(val_percent/(1-train_percent), 2)
             for seiz in seiz_subjs['seiz'].keys():
                 temp.append(seiz_subjs['seiz'][seiz])
 
@@ -191,7 +180,7 @@ def train_val_test_split(hdf5_path,
             val_test_non_seiz = []
         if len(val_test_non_seiz) > 0:
             val_non_seiz, test_non_seiz = train_test_split(val_test_non_seiz, 
-                                                            train_size=val_percent, 
+                                                            train_size=val_percent_temp, 
                                                             random_state=seed)
         else:
             val_non_seiz = []
@@ -199,7 +188,6 @@ def train_val_test_split(hdf5_path,
         train = np.append(train_seiz, train_non_seiz)
         val = np.append(val_seiz, val_non_seiz)
         test = np.append(test_seiz, test_non_seiz)
-    np.random.seed(None) # remove seed
     return train, val, test
 
 def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
