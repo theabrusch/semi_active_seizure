@@ -29,6 +29,7 @@ class model_train():
               safe_best_model = False,
               test_loader = None,
               trial = None,
+              early_stopping = False,
               epochs = 10):
         '''
         Train model
@@ -60,7 +61,7 @@ class model_train():
 
                 running_train_loss += loss.detach().cpu()
                 num_batch += 1
-
+                
             if self.scheduler is not None:
                 self.scheduler.step()
             
@@ -158,7 +159,10 @@ class model_train():
             print('Epoch time', epoch_time)
             if self.writer is not None:
                 self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
-        
+                
+            if early_stopping:
+                if abs(train_loss[epoch]-train_loss[epoch]) < 1e-4:
+                    break
         if self.choose_best and epochs>0:
             best_epoch = torch.argmax(f1_scores).item()
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'

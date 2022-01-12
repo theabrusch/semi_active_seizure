@@ -142,6 +142,7 @@ def main(args):
                                                 val_loader = val_dataloader,
                                                 test_loader = None,
                                                 epochs = args.epochs,
+                                                early_stopping=True,
                                                 trial = trial)
         trial.set_user_attr('sens', sens)
         trial.set_user_attr('spec', spec)
