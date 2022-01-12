@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
-    parser.add_argument('--stride', type=eval, default=[0.05, 0.1, 0.2, 0.5, 0.7, 1, 1.5, 2])
+    parser.add_argument('--stride', type=eval, default=[0.5, 1, 1.5, 2])
     parser.add_argument('--bckg_rate', type=eval, default=[1, 2, 5]) # None or value
     parser.add_argument('--batch_size', type=eval, default=512)
     # protocol(s) to use for training
