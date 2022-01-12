@@ -514,7 +514,8 @@ class SegmentData():
         stride_string = ''.join(str(self.stride).split(' '))
         self.pickle_path = 'data/' + dset  + \
                            '_winlen_' + str(window_length) + '_anno_seg_'\
-                           + str(anno_based_seg)+'_stride_' + stride_string 
+                           + str(anno_based_seg)+'_stride_' + stride_string + \
+                            'seiz_classes_' + str(self.seiz_classes)
         self.norm_coef_path = 'data/' + dset + \
                               '_norm_coef.pickle'
         if self.standardise:
@@ -742,10 +743,6 @@ class SegmentData():
                     seiz_type = [anno['Name']]*windows
                     sw = anno_start + np.array([win*stride_samples for win in range(windows)])
                     ew = sw + window_samples
-                    if ew[-1] > record.duration*signal.fs:
-                        print('hej')
-                        del sw[-1]
-                        del ew[-1]
             
                 if i == 0:
                     start_win = sw
