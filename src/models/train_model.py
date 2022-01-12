@@ -105,6 +105,8 @@ class model_train():
             if trial is not None:
                 trial.report(f1, epoch)
                 if trial.should_prune():
+                    trial.set_user_attr('sens', sens)
+                    trial.set_user_attr('spec', spec)
                     raise optuna.exceptions.TrialPruned()
 
             if self.writer is not None:
