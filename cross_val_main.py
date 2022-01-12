@@ -117,7 +117,7 @@ def main(args):
         optim_config['scheduler'] = args.scheduler
         optim_config['milestones'] = args.milestones
         optim_config['model'] = args.model_type
-        optim_config['lr'] = trial.log_uniform('lr', 1e-6, 1e-2)
+        optim_config['lr'] = trial.suggest_loguniform('lr', 1e-6, 1e-2)
         optim_config['weight_decay'] = trial.suggest_float('weight_decay', 1e-5, 1e-1)
         optimizer, scheduler = get_optim.get_optim(model, optim_config)
 
