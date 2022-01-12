@@ -66,10 +66,9 @@ def train_val_test_split(hdf5_path,
                          **kwargs):
     '''
     Split dataset such that two subjects are in the
-    validation set and 1 subject in the test set.
-    Does not consider whether subjects contain seizures 
-    or not and therefore throws an error if the Temple
-    dataset is used. 
+    validation set and 1 subject in the test set (if the Boston dataset
+    is used). For the Temple dataset the subjects are split according 
+    to seizures. 
     '''
     dset = hdf5_path.split('/')[-1].split('.')[0]
     F = dc.File(hdf5_path, 'r')
@@ -162,7 +161,7 @@ def train_val_test_split(hdf5_path,
             temp = []
             val_percent = round(val_percent/(1-train_percent), 2)
             for seiz in seiz_subjs['seiz'].keys():
-                temp.append(seiz_subjs['seiz'][seiz])
+                temp = np.append(temp, seiz_subjs['seiz'][seiz])
 
             seiz_subjs['seiz'] = temp
             train_seiz, val_test_seiz = train_test_split(seiz_subjs['seiz'], 

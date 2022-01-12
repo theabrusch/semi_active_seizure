@@ -46,7 +46,6 @@ seiz_subjs_all = []
 seiz_dur = 0
 total_dur = 0
 stats = dict()
-stats['seizure types'] = dict()
 seiz_priority = ['mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
 subjects = f.get_children(dc.Subject, get_obj=False)
 for subj in subjects:
@@ -63,16 +62,8 @@ for subj in subjects:
             if anno['Name'] in ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
                 seiz_subj = True
                 seizures += 1
-                if anno['Name'] not in stats[subj]['seizure types']:
-                    stats[subj]['seizure types'].append(anno['Name'])
+                stats[subj]['seizure types'].append(anno['Name'])
                 stats[subj]['seiz dur'].append(anno['Duration'])
-            elif anno['Name'] == 'fnsz':
-                fnsz += 1
-                if anno['Name'] not in stats[subj]['seizure types']:
-                    stats[subj]['seizure types'].append(anno['Name'])
-                subj_exclude = True
-    #if not subj_exclude and seiz_subj:
-        #seiz_subjs.append(subj)
     if seiz_subj:
         seiz_subjs_all.append(subj)
         pri_seiz = [seiz for seiz in seiz_priority if seiz in stats[subj]['seizure types']][0]
@@ -80,16 +71,19 @@ for subj in subjects:
             seiz_subjs[pri_seiz].append(subj)
         else:
             seiz_subjs[pri_seiz] = [subj]
-    stats[subj]['total dur'] += record.duration
+    #stats[subj]['total dur'] += record.duration
 
-
+for subj in stats.keys():
+    if 'seiz dur' not in stats[subj].keys():
+        print(subj) 
 
 seiz_per_subj = []
 seiz_types_per_subj = []
 for subj in stats.keys():
     if len(stats[subj]['seiz dur']) > 0:
         seiz_per_subj.append(len(stats[subj]['seiz dur']))
-    if len(stats[subj]['seizure types']) > 0:
-        seiz_types_per_subj.append(len(stats[subj]['seizure types']))
-        if len(stats[subj]['seizure types']) > 1:
-            print(stats[subj]['seizure types'])
+    unique_seizures, counts = np.unique(stats[subj]['seizure types'], return_counts = True)
+    if len(unique_seizures) > 0:
+        seiz_types_per_subj.append(len(unique_seizures))
+        if len(unique_seizures) > 1:
+            print(unique_seizures, counts)

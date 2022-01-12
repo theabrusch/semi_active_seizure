@@ -45,6 +45,7 @@ def main(args):
     datagen['use_train_seed'] = args.use_train_seed
     datagen['subj_strat'] = args.subj_strat
     datagen['protocol'] = args.protocol
+    datagen['seiz_strat'] = args.seizure_strat
 
     gen_args = config['generator_kwargs']
     gen_args['batch_size'] = args.batch_size
@@ -170,6 +171,21 @@ def main(args):
 
         writer.add_text("Seizure specific performance", t.get_html_string(), global_step=0)
 
+        # get seizure specific performance on validation set
+        val_dataloader.dataset.return_seiz_type = True
+        y_pred, y_true, seiz_types = model_train.eval(val_dataloader, return_seiz_type = True)
+        uni_seiz_types = np.unique(seiz_types)
+        t = PrettyTable(['Seizure type', 'Sensitivity', 'Number of segments'])        
+        for seiz in uni_seiz_types:
+            if seiz != 'bckg':
+                idx = seiz_types == seiz
+                y_true_temp = y_true[idx]
+                y_pred_temp = y_pred[idx]
+                sens_temp = sensitivity(y_true_temp, y_pred_temp)
+                t.add_row([seiz, sens_temp, len(y_true_temp)])
+
+        writer.add_text("Seizure specific performance, validation", t.get_html_string(), global_step=0)
+
     writer.close()
 
 if __name__ == '__main__':
@@ -193,6 +209,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_subj', type = eval, default=None)
     parser.add_argument('--standardise', type = eval, default=False)
     parser.add_argument('--sens', type = eval, default=0)
+    parser.add_argument('--seizure_strat', type = eval, default = False)
     parser.add_argument('--batch_size', type=eval, default=512)
     # protocol(s) to use for training
     parser.add_argument('--protocol', type=str, default= 'all')
