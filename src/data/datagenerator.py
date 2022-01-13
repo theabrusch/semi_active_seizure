@@ -630,9 +630,10 @@ class SegmentData():
         stride_samples = int(self.stride*signal.fs)
 
 
-        labels = None
-        start_win = None
-        end_win = None
+        labels = np.array([])
+        start_win = np.array([])
+        end_win = np.array([])
+        seiz_types = np.array([])
 
         for win in range(windows):
             sw =int(win*stride_samples)
@@ -641,7 +642,7 @@ class SegmentData():
             if np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>window_samples*self.sens:
                 lab = 1
                 use_sample = True
-            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>0:
+            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>0.95*window_samples:
                 lab = 0
                 use_sample = True
 
@@ -654,16 +655,11 @@ class SegmentData():
                         class_types = [cl for cl in class_types if cl != 'bckg']
                     seiz_type = class_types[0]
 
-                if labels is None:
-                    start_win = np.array([sw])
-                    end_win = np.array([ew])
-                    labels = np.array([lab])
-                    seiz_types = np.array([seiz_type])
-                else: 
-                    start_win = np.append(start_win, np.array([sw]), axis = 0)
-                    end_win = np.append(end_win, np.array([ew]), axis = 0)
-                    labels = np.append(labels, np.array([lab]), axis = 0)
-                    seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
+
+                start_win = np.append(start_win, np.array([sw]), axis = 0)
+                end_win = np.append(end_win, np.array([ew]), axis = 0)
+                labels = np.append(labels, np.array([lab]), axis = 0)
+                seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
 
         return labels, start_win, end_win, seiz_types
     
@@ -677,7 +673,6 @@ class SegmentData():
         annos = record['Annotations']
         one_hot_label = np.zeros((len(signal), 2))
         seiz_types = np.empty(len(signal), object)
-        one_hot_label[:,0] = 1
 
         for anno in annos:
             anno_start = (anno['Start'] - record.start_time)*signal.fs
@@ -720,7 +715,7 @@ class SegmentData():
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 0
                 use_anno = True
-                
+
             if use_anno:
                 stride_samples = anno_stride*signal.fs
                 windows = int(windows)
