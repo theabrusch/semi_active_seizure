@@ -164,7 +164,7 @@ class model_train():
                 self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
 
             if early_stopping and epoch > 10:
-                if np.mean(abs(np.diff(train_loss[(epoch-5):epoch]))) < 5e-5:
+                if np.mean(abs(np.diff(train_loss[(epoch-4):(epoch+1)]))) < 5e-5:
                     break
         if self.choose_best and epochs>0:
             best_epoch = torch.argmax(f1_scores).item()
