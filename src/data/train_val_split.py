@@ -199,7 +199,6 @@ def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
     seiz_subjs = dict()
     seiz_subjs['seiz'] = dict()
     seiz_subjs['non seiz'] = []
-    seiz_subjs['seiz']['all_seiz'] = []
     seiz_priority = ['seiz', 'mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
     i = 1
     for subj in subjects:
@@ -220,7 +219,6 @@ def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
                 seiz_subjs['seiz'][pri_seiz].append(subj)
             else:
                 seiz_subjs['seiz'][pri_seiz] = [subj]
-            seiz_subjs['seiz']['all_seiz'].append(subj)
         else:
             seiz_subjs['non seiz'].append(subj)
 
