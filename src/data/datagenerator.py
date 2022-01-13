@@ -660,6 +660,9 @@ class SegmentData():
                 end_win = np.append(end_win, np.array([ew]), axis = 0)
                 labels = np.append(labels, np.array([lab]), axis = 0)
                 seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
+        temp = (labels==1) & (seiz_types == 'bckg')
+        if sum(temp)>0:
+            print('hej')
 
         return labels, start_win, end_win, seiz_types
     
@@ -679,12 +682,10 @@ class SegmentData():
             anno_end = anno_start+anno['Duration']*signal.fs
             seiz_types[int(np.floor(anno_start)):int(np.ceil(anno_end))] = anno['Name'].lower()
             if anno['Name'].lower() in self.seiz_classes:
-                one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),1] = 1
-                one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 0
+                one_hot_label[int(np.floor(anno_start)):int(np.floor(anno_end)),1] = 1
+                one_hot_label[int(np.floor(anno_start)):int(np.floor(anno_end)),0] = 0
             elif anno['Name'].lower() == 'bckg':
-                one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 1
-            else:
-                print('hej')
+                one_hot_label[int(np.floor(anno_start)):int(np.floor(anno_end)),0] = 1
         
         return one_hot_label, seiz_types
 
@@ -744,5 +745,7 @@ class SegmentData():
                     labels = np.append(labels, label)
                     seiz_types = np.append(seiz_types, seiz_type)
                 i+=1
-
+        temp = labels==1 & seiz_types == 'bckg'
+        if sum(temp)>0:
+            print('hej')
         return labels, start_win, end_win, seiz_types
