@@ -660,10 +660,7 @@ class SegmentData():
                 end_win = np.append(end_win, np.array([ew]), axis = 0)
                 labels = np.append(labels, np.array([lab]), axis = 0)
                 seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
-        temp = (labels==1) & (seiz_types == 'bckg')
-        if sum(temp)>0:
-            print('hej')
-
+                
         return labels, start_win, end_win, seiz_types
     
     def _anno_to_one_hot(self, record):
@@ -745,7 +742,4 @@ class SegmentData():
                     labels = np.append(labels, label)
                     seiz_types = np.append(seiz_types, seiz_type)
                 i+=1
-        temp = labels==1 & seiz_types == 'bckg'
-        if sum(temp)>0:
-            print('hej')
         return labels, start_win, end_win, seiz_types
