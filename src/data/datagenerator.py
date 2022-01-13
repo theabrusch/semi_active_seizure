@@ -688,6 +688,8 @@ class SegmentData():
                 one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 0
             elif anno['Name'].lower() == 'bckg':
                 one_hot_label[int(np.floor(anno_start)):int(np.ceil(anno_end)),0] = 1
+            else:
+                print('hej')
         
         return one_hot_label, seiz_types
 
@@ -718,18 +720,10 @@ class SegmentData():
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 0
                 use_anno = True
-            
+                
             if use_anno:
                 stride_samples = anno_stride*signal.fs
-                if windows%1 != 0:
-                    if int(anno_start - ((windows%1)*signal.fs)/2) > 0:
-                        anno_start = int(anno_start - ((windows%1)*signal.fs)/2)
-                    if anno_start + np.ceil(windows)*stride_samples + window_samples < record.duration*signal.fs:
-                        windows = int(np.ceil(windows))
-                    else:
-                        windows = int(np.floor(windows))
-                else:
-                    windows = int(windows)
+                windows = int(windows)
 
                 if windows <= 0:
                     print('Annotation', anno['Name'], 'in record', record.name, 'is too short for selected window length.')
