@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import warnings
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 def train_val_split(hdf5_path, 
                     train_percent, 
@@ -162,7 +163,7 @@ def train_val_test_split(hdf5_path,
             for seiz in seiz_subjs['seiz'].keys():
                 temp = np.append(temp, seiz_subjs['seiz'][seiz])
 
-            seiz_subjs['seiz'] = temp
+            seiz_subjs['seiz'] = shuffle(temp)
             train_seiz, val_test_seiz = train_test_split(seiz_subjs['seiz'], 
                                                         train_size=train_percent, 
                                                         random_state=seed)
@@ -198,6 +199,7 @@ def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
     seiz_subjs = dict()
     seiz_subjs['seiz'] = dict()
     seiz_subjs['non seiz'] = []
+    seiz_subjs['seiz']['all_seiz'] = []
     seiz_priority = ['seiz', 'mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
     i = 1
     for subj in subjects:
@@ -218,6 +220,7 @@ def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
                 seiz_subjs['seiz'][pri_seiz].append(subj)
             else:
                 seiz_subjs['seiz'][pri_seiz] = [subj]
+            seiz_subjs['seiz']['all_seiz'].append(subj)
         else:
             seiz_subjs['non seiz'].append(subj)
 
