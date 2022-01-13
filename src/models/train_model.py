@@ -123,7 +123,7 @@ class model_train():
 
                 self.writer.add_scalar(run+'/sens', sens, epoch)
                 self.writer.add_scalar(run+'/spec', spec, epoch)
-                self.writer.add_scalar(run+'/f1', f1, epoch)
+                self.writer.add_scalar(run+'/f1', f1_val, epoch)
                 self.writer.add_scalar(run+'/precision', prec, epoch)
                 self.writer.add_scalar(run+'_raw/true_pos', tp, epoch)
                 self.writer.add_scalar(run+'_raw/false_neg', fn, epoch)
