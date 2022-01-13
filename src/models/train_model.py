@@ -75,7 +75,7 @@ class model_train():
                 if trial is None:
                     run = 'train'
                 else:
-                    run = 'train_' + trial.number
+                    run = 'train_' + str(trial.number)
 
                 self.writer.add_scalar(run+'/loss', train_loss[epoch], epoch)
             print('Training loss:', train_loss[epoch])
@@ -119,7 +119,7 @@ class model_train():
                 if trial is None:
                     run = 'val'
                 else:
-                    run = 'val_' + trial.number
+                    run = 'val_' + str(trial.number)
 
                 self.writer.add_scalar(run+'/sens', sens, epoch)
                 self.writer.add_scalar(run+'/spec', spec, epoch)
@@ -135,7 +135,7 @@ class model_train():
                 if trial is None:
                     run = 'val'
                 else:
-                    run = 'val_' + trial.number
+                    run = 'val_' + str(trial.number)
                 self.writer.add_scalar(run+'/loss', val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
 
@@ -166,11 +166,11 @@ class model_train():
                 test_loss = running_test_loss/num_batch
 
                 if self.writer is not None:
-
                     if trial is None:
                         run = 'test'
                     else: 
-                        run = 'test_' + trial.number
+                        run = 'test_' + str(trial.number)
+
                     self.writer.add_scalar(run+'/sens', sens, epoch)
                     self.writer.add_scalar(run+'/spec', spec, epoch)
                     self.writer.add_scalar(run+'/f1', f1, epoch)
@@ -183,7 +183,7 @@ class model_train():
                 if trial is None:
                     run = 'Loss'
                 else:
-                    run = 'Loss_' + trial.number
+                    run = 'Loss_' + str(trial.number)
                 self.writer.add_scalar(run+'/epoch_time', epoch_time, epoch)
 
             if early_stopping and epoch > 10:
