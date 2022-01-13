@@ -72,7 +72,12 @@ class model_train():
 
             train_loss[epoch] = running_train_loss/num_batch
             if self.writer is not None:
-                self.writer.add_scalar('train/loss', train_loss[epoch], epoch)
+                if trial is None:
+                    run = 'train'
+                else:
+                    run = 'train_' + trial.number
+
+                self.writer.add_scalar(run+'/loss', train_loss[epoch], epoch)
             print('Training loss:', train_loss[epoch])
 
             # Compute validation loss and metrics
@@ -111,18 +116,27 @@ class model_train():
                         raise optuna.exceptions.TrialPruned()
 
             if self.writer is not None:
-                self.writer.add_scalar('val/sens', sens, epoch)
-                self.writer.add_scalar('val/spec', spec, epoch)
-                self.writer.add_scalar('val/f1', f1, epoch)
-                self.writer.add_scalar('val/precision', prec, epoch)
-                self.writer.add_scalar('val_raw/true_pos', tp, epoch)
-                self.writer.add_scalar('val_raw/false_neg', fn, epoch)
-                self.writer.add_scalar('val_raw/false_pos', fp, epoch)
-                self.writer.add_scalar('val_raw/true_neg', tn, epoch)
+                if trial is None:
+                    run = 'val'
+                else:
+                    run = 'val_' + trial.number
+
+                self.writer.add_scalar(run+'/sens', sens, epoch)
+                self.writer.add_scalar(run+'/spec', spec, epoch)
+                self.writer.add_scalar(run+'/f1', f1, epoch)
+                self.writer.add_scalar(run+'/precision', prec, epoch)
+                self.writer.add_scalar(run+'_raw/true_pos', tp, epoch)
+                self.writer.add_scalar(run+'_raw/false_neg', fn, epoch)
+                self.writer.add_scalar(run+'_raw/false_pos', fp, epoch)
+                self.writer.add_scalar(run+'_raw/true_neg', tn, epoch)
 
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
-                self.writer.add_scalar('val/loss', val_loss[epoch], epoch)
+                if trial is None:
+                    run = 'val'
+                else:
+                    run = 'val_' + trial.number
+                self.writer.add_scalar(run+'/loss', val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
 
             #Compute test loss and metrics
@@ -152,16 +166,25 @@ class model_train():
                 test_loss = running_test_loss/num_batch
 
                 if self.writer is not None:
-                    self.writer.add_scalar('test/sens', sens, epoch)
-                    self.writer.add_scalar('test/spec', spec, epoch)
-                    self.writer.add_scalar('test/f1', f1, epoch)
-                    self.writer.add_scalar('test/precision', prec, epoch)
-                    self.writer.add_scalar('test/loss', test_loss, epoch)
+
+                    if trial is None:
+                        run = 'test'
+                    else: 
+                        run = 'test_' + trial.number
+                    self.writer.add_scalar(run+'/sens', sens, epoch)
+                    self.writer.add_scalar(run+'/spec', spec, epoch)
+                    self.writer.add_scalar(run+'/f1', f1, epoch)
+                    self.writer.add_scalar(run+'/precision', prec, epoch)
+                    self.writer.add_scalar(run+'/loss', test_loss, epoch)
 
             epoch_time = (datetime.now()-time).total_seconds()
             print('Epoch time', epoch_time)
             if self.writer is not None:
-                self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
+                if trial is None:
+                    run = 'Loss'
+                else:
+                    run = 'Loss_' + trial.number
+                self.writer.add_scalar(run+'/epoch_time', epoch_time, epoch)
 
             if early_stopping and epoch > 10:
                 if np.mean(abs(np.diff(train_loss[(epoch-4):(epoch+1)]))) < 5e-5:

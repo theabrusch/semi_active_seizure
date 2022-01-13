@@ -71,8 +71,8 @@ def main(args):
     datagen['window_length'] = args.window_length
     datagen['bckg_stride'] = args.window_length
     datagen['seiz_stride'] = args.window_length
-    datagen['bckg_rate'] = None
-    datagen['anno_based_seg'] = False
+    datagen['bckg_rate'] = 1
+    datagen['anno_based_seg'] = True
     datagen['prefetch_data_from_seg'] = True
     datagen['standardise'] = False
     datagen['use_train_seed'] = True
@@ -134,7 +134,7 @@ def main(args):
         model_train = train_model.model_train(model = model, 
                                                 optimizer = optimizer, 
                                                 loss_fn = loss_fn, 
-                                                writer = None,
+                                                writer = writer,
                                                 scheduler = scheduler,
                                                 choose_best = choose_best)
 
