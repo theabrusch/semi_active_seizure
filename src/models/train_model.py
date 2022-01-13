@@ -95,15 +95,15 @@ class model_train():
             
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
-            f1 = f1_score(y_true, y_pred)
+            f1_val = f1_score(y_true, y_pred)
             prec = precision_score(y_true, y_pred)
             cm = confusion_matrix(y_true, y_pred, normalize = 'true')
             tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
-            f1_scores[epoch] = f1
+            f1_scores[epoch] = f1_val
 
             if trial is not None:
-                trial.report(f1, epoch)
+                trial.report(f1_val, epoch)
                 if epoch > 9:
                     if trial.should_prune():
                         trial.set_user_attr('sens', sens)
@@ -163,8 +163,8 @@ class model_train():
             if self.writer is not None:
                 self.writer.add_scalar('Loss/epoch_time', epoch_time, epoch)
 
-            if early_stopping and epoch > 0:
-                if abs(train_loss[epoch]-train_loss[epoch-1]) < 1e-4:
+            if early_stopping and epoch > 10:
+                if np.mean(abs(np.diff(train_loss[(epoch-5):epoch]))) < 5e-5:
                     break
         if self.choose_best and epochs>0:
             best_epoch = torch.argmax(f1_scores).item()
@@ -178,7 +178,7 @@ class model_train():
         if self.writer is not None:
             self.writer.flush()
         if trial is not None:
-            return f1_scores[-1], sens, spec
+            return f1_val, sens, spec
         else:
             return train_loss, val_loss
     
