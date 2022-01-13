@@ -19,6 +19,7 @@ from pathlib import Path
 class LogParamsToTB:
     def __init__(self, writer):
         self.writer = writer
+        self.time = datetime.now()
 
     def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
         params = trial.params
@@ -30,6 +31,8 @@ class LogParamsToTB:
         f1_seq = trial.intermediate_values
         self.writer.add_text(args_name+'/f1_seq', str(f1_seq), global_step=0)
         t = PrettyTable(['Argument', 'Value'])
+        run_time = (datetime.now()-self.time).total_seconds()
+        t.add_row('time', run_time)
         for key, val in params.items():
             t.add_row([key, val])
 
@@ -38,7 +41,7 @@ class LogParamsToTB:
         t.add_row(['sens', sens])
         t.add_row(['spec', spec])
         self.writer.add_text(args_name, t.get_html_string(), global_step=0)
-
+        self.time = datetime.now()
 
 def main(args):
     writer = SummaryWriter('../runs/' + args.run_folder + '/' + args.model_type +\
