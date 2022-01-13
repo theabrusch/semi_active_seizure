@@ -32,7 +32,7 @@ class LogParamsToTB:
         self.writer.add_text(args_name+'/f1_seq', str(f1_seq), global_step=0)
         t = PrettyTable(['Argument', 'Value'])
         run_time = (datetime.now()-self.time).total_seconds()
-        t.add_row('time', run_time)
+        t.add_row(['time', run_time])
         for key, val in params.items():
             t.add_row([key, val])
 
@@ -70,6 +70,7 @@ def main(args):
 
     # validation loader
     datagen = config['data_gen']
+    datagen['seiz_classes'] = args.seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length
     datagen['bckg_stride'] = args.window_length
@@ -88,6 +89,7 @@ def main(args):
     def objective(trial):
         # get datasets and dataloaders
         datagen = config['data_gen']
+        datagen['seiz_classes'] = args.seiz_classes
         datagen['hdf5_path'] = args.file_path
         datagen['window_length'] = args.window_length
         stride = trial.suggest_categorical('stride', args.stride)
@@ -179,6 +181,7 @@ if __name__ == '__main__':
     parser.add_argument('--job_name', type = str, default='nojobname')
     parser.add_argument('--run_folder', type = str, default='notspec')
     # datagen
+    parser.add_argument('--seiz_classes', type = eval, default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--stride', type=eval, default=[0.5, 1, 1.5, 2])

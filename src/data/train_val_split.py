@@ -57,7 +57,7 @@ def train_val_split(hdf5_path,
 
 def train_val_test_split(hdf5_path, 
                          seed, 
-                         excl_seiz_classes = None,
+                         seiz_classes,
                          test_subj = None, 
                          seiz_strat = True,
                          val_subj = None,
@@ -121,11 +121,10 @@ def train_val_test_split(hdf5_path,
             seiz_subjs = get_seiz_subjs(hdf5_path, 'all', pickle_path)
         # remove subjects that only contain the seizure type
         # to be excluded
-        if excl_seiz_classes is not None:
-            temp = list(seiz_subjs['seiz'].keys())
-            for seiz in temp:
-                if seiz in excl_seiz_classes:
-                    del seiz_subjs['seiz'][seiz]
+        temp = list(seiz_subjs['seiz'].keys())
+        for seiz in temp:
+            if seiz not in seiz_classes:
+                del seiz_subjs['seiz'][seiz]
         val_percent_temp = round(val_percent/(1-train_percent), 2)
         if seiz_strat: 
             # distribute seizure types over train, validation and test sets 

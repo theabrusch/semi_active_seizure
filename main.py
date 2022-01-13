@@ -29,6 +29,7 @@ def main(args):
 
     # get datasets and dataloaders
     datagen = config['data_gen']
+    datagen['seiz_classes'] = args.seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length
     datagen['bckg_stride'] = args.bckg_stride
@@ -194,6 +195,8 @@ if __name__ == '__main__':
     parser.add_argument('--job_name', type = str, default='nojobname')
     parser.add_argument('--run_folder', type = str, default='notspec')
     # datagen
+    parser.add_argument('--seiz_classes', type = eval, default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
+    parser.add_argument('--excl_seiz_classes', type = eval, default = [])
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
