@@ -41,6 +41,9 @@ class model_train():
         checkpoint_path = 'models/checkpoints/' + str(datetime.now())        
         p = Path(checkpoint_path)
         p.mkdir(parents=True, exist_ok=True)
+        f1_val_old = 0 
+        sens_old = 0
+        spec_old = 0
         
         for epoch in range(epochs):
             time = datetime.now()
@@ -100,13 +103,19 @@ class model_train():
             
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
-            f1_val = f1_score(y_true, y_pred)
+            f1_val_new = f1_score(y_true, y_pred)
             prec = precision_score(y_true, y_pred)
             cm = confusion_matrix(y_true, y_pred, normalize = 'true')
             tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
-            f1_scores[epoch] = f1_val
-
+            f1_scores[epoch] = f1_val_new
+            f1_val = (f1_val_new + f1_val_old)/2
+            f1_val_old = f1_val_new
+            sens_val = (sens + sens_old)/2
+            spec_val = (spec + spec_old)/2
+            sens_old = sens
+            spec_old = spec
+            
             if trial is not None:
                 trial.report(f1_val, epoch)
                 if epoch > 9:
@@ -123,7 +132,7 @@ class model_train():
 
                 self.writer.add_scalar(run+'/sens', sens, epoch)
                 self.writer.add_scalar(run+'/spec', spec, epoch)
-                self.writer.add_scalar(run+'/f1', f1_val, epoch)
+                self.writer.add_scalar(run+'/f1', f1_val_new, epoch)
                 self.writer.add_scalar(run+'/precision', prec, epoch)
                 self.writer.add_scalar(run+'_raw/true_pos', tp, epoch)
                 self.writer.add_scalar(run+'_raw/false_neg', fn, epoch)
