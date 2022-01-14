@@ -1,5 +1,5 @@
 general:
-  seed: &seed 20
+  seed: &seed 100
   run_test: True
   #hdf5_path: /work3/theb/boston_scalp_new.hdf5
   #hdf5_path: data/hdf5/temple_seiz_sub.hdf5
@@ -12,8 +12,8 @@ data_gen:
   seed: *seed
   protocol: all
   signal_name: [EEG, TCP]
-  seiz_classes: ['gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
-  excl_seiz_classes: ['fnsz']
+  seiz_classes: ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
+  excl_seiz_classes: []
   train_percent: 0.70
   val_percent: 0.15
 
