@@ -24,12 +24,12 @@ class LogParamsToTB:
     def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
         params = trial.params
         pruned = trial.state == optuna.trial.TrialState.PRUNED
-        args_name = 'args_' + str(trial.number)
+        args_name = 'args'
         f1 = trial.value
         sens = trial.user_attrs['sens']
         spec = trial.user_attrs['spec']
         f1_seq = trial.intermediate_values
-        self.writer.add_text(args_name+'/f1_seq', str(f1_seq), global_step=0)
+        self.writer.add_text(args_name+'/f1_seq'+str(trial.number), str(f1_seq), global_step=0)
         t = PrettyTable(['Argument', 'Value'])
         run_time = (datetime.now()-self.time).total_seconds()
         t.add_row(['time', run_time])
@@ -40,7 +40,7 @@ class LogParamsToTB:
         t.add_row(['f1', f1])
         t.add_row(['sens', sens])
         t.add_row(['spec', spec])
-        self.writer.add_text(args_name, t.get_html_string(), global_step=0)
+        self.writer.add_text(args_name+'/params' + str(trial.number), t.get_html_string(), global_step=0)
         self.time = datetime.now()
 
 def main(args):
