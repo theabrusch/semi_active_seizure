@@ -128,6 +128,7 @@ def train_val_test_split(hdf5_path,
                 del seiz_subjs['seiz'][seiz]
         val_percent_temp = round(val_percent/(1-train_percent), 2)
         if seiz_strat: 
+            print(seiz_classes)
             # distribute seizure types over train, validation and test sets 
             train_seiz = np.array([])
             val_seiz = np.array([])

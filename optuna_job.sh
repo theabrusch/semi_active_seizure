@@ -19,4 +19,4 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 cross_val_main.py --run_folder optuna --job_name test_optuna_full_run_no_bckg --file_path /work3/theb/temple_seiz.hdf5 --n_trials 50 --epochs 50 --time_out 72000 --stride [0.5,1,2] --bckg_rate [1,2]
+python3 cross_val_main.py --run_folder optuna_new --job_name test_optuna_full_run_final --file_path /work3/theb/temple_seiz_full.hdf5 --n_trials 50 --epochs 50 --time_out 72000 --stride [0.1,0.5,1,2] --bckg_rate [1,2,5] --load_existing True

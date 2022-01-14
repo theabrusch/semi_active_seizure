@@ -1,0 +1,38 @@
+No command is specified. Job not submitted.
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 12165148: <NONAME> in cluster <dcc> Exited
+
+Job <NONAME> was submitted from host <n-62-30-4> by user <theb> in cluster <dcc> at Fri Jan 14 16:13:32 2022
+Job was executed on host(s) <n-62-31-22>, in queue <hpc>, as user <theb> in cluster <dcc> at Fri Jan 14 16:13:34 2022
+</zhome/89/a/117273> was used as the home directory.
+</zhome/89/a/117273/Desktop/semi_active_seizure> was used as the working directory.
+Started at Fri Jan 14 16:13:34 2022
+Terminated at Fri Jan 14 16:13:34 2022
+Results reported at Fri Jan 14 16:13:34 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+bsub
+------------------------------------------------------------
+
+Exited with exit code 255.
+
+Resource usage summary:
+
+    CPU time :                                   0.30 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     1024.00 MB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   0 sec.
+    Turnaround time :                            2 sec.
+
+The output (if any) is above this job summary.
+
