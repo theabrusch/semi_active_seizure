@@ -51,7 +51,8 @@ def main(args):
         config = yaml.safe_load(file)
 
     splitdict = config['data_gen']
-    splitdict['hdf5_path'] = args.file_path
+    splitdict['hdf5_path'] = args.filde_path
+    splitdict['seiz_strat'] = args.seiz_strat
     splitdict['protocol'] = 'all'
     # get split
     split_path = 'data/optuna_trials/optuna_split_temple/' 
@@ -83,7 +84,9 @@ def main(args):
     datagen['subj_strat'] = False
     datagen['batch_size'] = args.batch_size
 
-    val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, subjs_to_use = val)
+    val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
+                                                         subjs_to_use = val, 
+                                                         writer = writer)
 
     # optimize
     def objective(trial):
@@ -183,6 +186,7 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--seiz_classes', type = eval, default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--file_path', type = str)
+    parser.add_argument('--seiz_strat', type = eval, default = False)
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--stride', type=eval, default=[0.5, 1, 1.5, 2])
     parser.add_argument('--bckg_rate', type=eval, default=[1, 2, 5]) # None or value

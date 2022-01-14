@@ -14,7 +14,7 @@ parser.add_argument('--bckg_rate_val', type=eval, default=1) # None or value
 parser.add_argument('--bckg_rate_train', type=eval, default=1)
 parser.add_argument('--use_train_seed', type=eval, default=True)
 parser.add_argument('--subj_strat', type=eval, default=False)
-parser.add_argument('--seizure_strat', type = eval, default = False)
+parser.add_argument('--seizure_strat', type = eval, default = True)
 parser.add_argument('--anno_based_seg', type=eval, default=False)
 parser.add_argument('--prefetch_data_from_seg', type=eval, default=False)
 parser.add_argument('--train_val_test', type=eval, default=False)

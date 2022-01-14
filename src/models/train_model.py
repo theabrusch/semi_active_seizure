@@ -133,7 +133,7 @@ class model_train():
                 self.writer.add_scalar('val/sens'+run, sens, epoch)
                 self.writer.add_scalar('val/spec'+run, spec, epoch)
                 self.writer.add_scalar('val/f1'+run, f1_val_new, epoch)
-                self.writer.add_scalar('/precision'+run, prec, epoch)
+                self.writer.add_scalar('val/precision'+run, prec, epoch)
                 self.writer.add_scalar('val_raw/true_pos'+run, tp, epoch)
                 self.writer.add_scalar('val_raw/false_neg'+run, fn, epoch)
                 self.writer.add_scalar('val_raw/false_pos'+run, fp, epoch)
@@ -142,10 +142,10 @@ class model_train():
             val_loss[epoch] = running_val_loss/num_batch
             if self.writer is not None:
                 if trial is None:
-                    run = 'val'
+                    run = ''
                 else:
-                    run = 'val_' + str(trial.number)
-                self.writer.add_scalar(run+'/loss', val_loss[epoch], epoch)
+                    run = str(trial.number)
+                self.writer.add_scalar('val/loss' + run, val_loss[epoch], epoch)
             print('Validation loss:', val_loss[epoch])
 
             #Compute test loss and metrics
