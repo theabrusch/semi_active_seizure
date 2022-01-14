@@ -634,6 +634,8 @@ class SegmentData():
         start_win = np.array([])
         end_win = np.array([])
         seiz_types = np.array([])
+        incl_seiz = False
+        excl_seiz = False
 
         for win in range(windows):
             sw =int(win*stride_samples)
@@ -642,9 +644,12 @@ class SegmentData():
             if np.sum(one_hot_label[sw:ew,:], axis = 0)[1]>window_samples*self.sens:
                 lab = 1
                 use_sample = True
+                incl_seiz = True
             elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>0.95*window_samples:
                 lab = 0
                 use_sample = True
+            else:
+                excl_seiz = True
 
             if use_sample:
                 if lab == 0:
@@ -660,7 +665,14 @@ class SegmentData():
                 end_win = np.append(end_win, np.array([ew]), axis = 0)
                 labels = np.append(labels, np.array([lab]), axis = 0)
                 seiz_types = np.append(seiz_types, np.array([seiz_type]), axis = 0)
-                
+        
+        if excl_seiz and not incl_seiz:
+            # if the only contains excluded seizure types and no included seizure types
+            labels = np.array([])
+            start_win = np.array([])
+            end_win = np.array([])
+            seiz_types = np.array([])
+            
         return labels, start_win, end_win, seiz_types
     
     def _anno_to_one_hot(self, record):
@@ -697,7 +709,8 @@ class SegmentData():
             stride = [self.stride, self.stride]
         else:
             stride = self.stride
-
+        excl_seiz = False
+        incl_seiz = False
         i = 0
         for anno in annos:
             anno_start = int((anno['Start'] - record.start_time)*signal.fs)
@@ -707,12 +720,15 @@ class SegmentData():
                 anno_stride = stride[1]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 1
+                incl_seiz = True
                 use_anno = True
             elif anno['Name'].lower() == 'bckg':
                 anno_stride = stride[0]
                 windows = (anno['Duration']-self.window_length)/anno_stride + 1
                 lab = 0
                 use_anno = True
+            else: 
+                excl_seiz = True
 
             if use_anno:
                 stride_samples = anno_stride*signal.fs
@@ -742,4 +758,12 @@ class SegmentData():
                     labels = np.append(labels, label)
                     seiz_types = np.append(seiz_types, seiz_type)
                 i+=1
+
+        if excl_seiz and not incl_seiz:
+            # if the only contains excluded seizure types and no included seizure types
+            labels = np.array([])
+            start_win = np.array([])
+            end_win = np.array([])
+            seiz_types = np.array([])
+
         return labels, start_win, end_win, seiz_types

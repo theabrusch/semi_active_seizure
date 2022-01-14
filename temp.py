@@ -87,3 +87,49 @@ for subj in stats.keys():
         seiz_types_per_subj.append(len(unique_seizures))
         if len(unique_seizures) > 1:
             print(unique_seizures, counts)
+
+
+seizures = 0
+fnsz = 0
+seiz_subjs_all = []
+seiz_dur = 0
+total_dur = 0
+stats = dict()
+seiz_priority = ['mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
+subjects = f.get_children(dc.Subject, get_obj=False)
+for subj in subjects:
+    subject = f[subj]
+    stats[subj] = dict()
+    stats[subj]['seizure types'] = []
+    stats[subj]['seiz dur'] = []
+    seiz_subj = False
+    subj_exclude = False
+    for rec in subject.keys():
+        record = subject[rec]
+        seiz_rec = False
+        stats[subj][rec] = []
+        for anno in record['Annotations']:
+            stats[subj][rec].append(anno['Name'])
+            if anno['Name'] in ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
+                seiz_subj = True
+                seizures += 1
+                stats[subj]['seizure types'].append(anno['Name'])
+                stats[subj]['seiz dur'].append(anno['Duration'])
+    if seiz_subj:
+        seiz_subjs_all.append(subj)
+    #stats[subj]['total dur'] += record.duration
+subjects = []
+for subj in seiz_subjs_all:
+    for key in stats[subj].keys():
+        if key != 'seizure types' and key != 'seiz dur':
+            annos, counts = np.unique(stats[subj][key], return_counts = True)
+            if 'bckg' in annos and len(annos) > 2:
+                if subj not in subjects:
+                    subjects.append(subj)
+                print(subj, rec)
+                print(annos, counts)
+            elif 'bckg' not in annos and len(annos) > 1:
+                if subj not in subjects:
+                    subjects.append(subj)
+                print(subj, rec)
+                print(annos, counts)
