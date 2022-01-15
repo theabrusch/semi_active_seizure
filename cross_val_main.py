@@ -54,6 +54,7 @@ def main(args):
     splitdict['hdf5_path'] = args.filde_path
     splitdict['seiz_strat'] = args.seiz_strat
     splitdict['protocol'] = 'all'
+    splitdict['seed'] = args.seed
     # get split
     split_path = 'data/optuna_trials/optuna_split_temple/' 
     p = Path(split_path)
@@ -184,6 +185,7 @@ if __name__ == '__main__':
     parser.add_argument('--job_name', type = str, default='nojobname')
     parser.add_argument('--run_folder', type = str, default='notspec')
     # datagen
+    parser.add_argument('--seed', type = int, default = 20)
     parser.add_argument('--seiz_classes', nargs='+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--seiz_strat', type = eval, default = False)
