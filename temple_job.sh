@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J temple_test_seizstrat_lowlr
+#BSUB -J temple_test_seizstrat_lowlr_noschedule
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -19,6 +19,6 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 main.py --run_folder temple_exp --job_name temple_test_seizstrat_lowlr --file_path /work3/theb/temple_seiz_full.hdf5 --window_length 2 --bckg_stride 1 --seiz_stride 1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test True --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --optimizer RMSprop --use_weighted_loss True --milestones [130,150] --scheduler MultistepLR --seizure_strat True --seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz'
+python3 main.py --run_folder temple_exp --job_name temple_test_seizstrat_lowlr_noscehduel --file_path /work3/theb/temple_seiz_full.hdf5 --window_length 2 --bckg_stride 1 --seiz_stride 1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test True --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --optimizer RMSprop --use_weighted_loss True --milestones [120,150] --scheduler MultistepLR --seizure_strat True --seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz'
 
 
