@@ -230,7 +230,7 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_pa
             #    seiz_subjs['seiz'][pri_seiz].append(subj)
             #else:
             #    seiz_subjs['seiz'][pri_seiz] = [subj]
-        else:
+        elif not excl_subj:
             seiz_subjs['non seiz'].append(subj)
 
     if len(seiz_subjs['seiz'].keys()) == 1:
