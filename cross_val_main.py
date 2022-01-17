@@ -51,7 +51,7 @@ def main(args):
         config = yaml.safe_load(file)
 
     splitdict = config['data_gen']
-    splitdict['hdf5_path'] = args.filde_path
+    splitdict['hdf5_path'] = args.file_path
     splitdict['seiz_strat'] = args.seiz_strat
     splitdict['protocol'] = 'all'
     splitdict['seed'] = args.seed
@@ -197,10 +197,7 @@ if __name__ == '__main__':
     parser.add_argument('--protocol', type=str, default= 'all')
 
     # model
-    parser.add_argument('--model_type', type=str, default='BaselineCNN')
-    parser.add_argument('--glob_avg_pool', type=eval, default=False)
-    parser.add_argument('--dropoutprob', type=float, default=0.4)
-    parser.add_argument('--padding', type=eval, default=False)       
+    parser.add_argument('--model_type', type=str, default='BaselineCNN')      
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
