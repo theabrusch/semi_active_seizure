@@ -77,7 +77,8 @@ def get_dataset(data_gen, split = None, summarywriter=None):
         print('Initialising validation dataset.')
         data_gen['use_train_seed'] = True
         data_gen['bckg_rate'] = data_gen['bckg_rate_val']
-        data_gen['seiz_classes'] = data_gen['eval_seiz_classes']
+        if data_gen['eval_seiz_classes'] is not None:
+            data_gen['seiz_classes'] = data_gen['eval_seiz_classes']
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = val)
         segment, norm_coef = datasegment.segment_data()
