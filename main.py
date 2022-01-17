@@ -199,8 +199,7 @@ if __name__ == '__main__':
     # datagen
     parser.add_argument('--seed', type = int, default = 20)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
-    parser.add_argument('--eval_seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
-    parser.add_argument('--excl_seiz_classes', type = eval, default = [])
+    parser.add_argument('--eval_seiz_classes', nargs = '+', default=None)
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
