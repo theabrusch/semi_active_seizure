@@ -116,7 +116,7 @@ def main(args):
         model_config['model'] = args.model_type
         model_config['dropoutprob'] = trial.suggest_float('dropout', 0, 0.7)
         model_config['glob_avg_pool'] = trial.suggest_categorical('glob_avg_pool', [True, False])
-        model_config['padding'] = True
+        model_config['padding'] = trial.suggest_categorical('padding', [True, False])
         model_config['input_shape'] = train_dataloader.dataset._get_X_shape()
         model = get_model.get_model(model_config)
 

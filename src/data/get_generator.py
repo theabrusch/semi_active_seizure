@@ -77,6 +77,7 @@ def get_dataset(data_gen, split = None, summarywriter=None):
         print('Initialising validation dataset.')
         data_gen['use_train_seed'] = True
         data_gen['bckg_rate'] = data_gen['bckg_rate_val']
+        data_gen['seiz_classes'] = data_gen['eval_seiz_classes']
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = val)
         segment, norm_coef = datasegment.segment_data()
@@ -132,6 +133,8 @@ def get_test_generator(data_gen, generator_kwargs, test_subj, summarywriter=None
         if  'temple' in dset and data_gen['protocol'] == 'train':
             F = dc.File(data_gen['hdf5_path'], 'r')
             test_subj = F['test'].get_children(object_type = dc.Subject, get_obj = False)
+        if data_gen['eval_seiz_classes'] is not None:
+            data_gen['seiz_classes'] = data_gen['eval_seiz_classes']
         datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = test_subj)
         segment, norm_coef = datasegment.segment_data()

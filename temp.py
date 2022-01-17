@@ -89,10 +89,13 @@ for subj in stats.keys():
             print(unique_seizures, counts)
 
 
-seizures = 0
+seiz_all = 0
 fnsz = 0
 seiz_subjs_all = []
+incl_subj = []
+incl_seiz = 0
 seiz_dur = 0
+fnsz = 0
 total_dur = 0
 stats = dict()
 seiz_priority = ['mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
@@ -104,21 +107,39 @@ for subj in subjects:
     stats[subj]['seiz dur'] = []
     seiz_subj = False
     subj_exclude = False
+    seizures = 0 
     for rec in subject.keys():
         record = subject[rec]
         seiz_rec = False
         stats[subj][rec] = []
         for anno in record['Annotations']:
             stats[subj][rec].append(anno['Name'])
-            if anno['Name'] in ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
+            if anno['Name'] in ['gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
                 seiz_subj = True
                 seizures += 1
                 stats[subj]['seizure types'].append(anno['Name'])
                 stats[subj]['seiz dur'].append(anno['Duration'])
+            if anno['Name'] == 'fnsz':
+                subj_exclude = True
+                fnsz+=1
     if seiz_subj:
         seiz_subjs_all.append(subj)
+        seiz_all += seizures
+    if seiz_subj and not subj_exclude:
+        incl_subj.append(subj)
+        incl_seiz += seizures
     #stats[subj]['total dur'] += record.duration
+
+subjects = 0
+for subj in stats:
+    seiz_types, counts = np.unique(stats[subj]['seizure types'], return_counts = True)
+    if len(seiz_types) > 1:
+        print(seiz_types, counts)
+        subjects += 1
+
+
 subjects = []
+mult = 0
 for subj in seiz_subjs_all:
     for key in stats[subj].keys():
         if key != 'seizure types' and key != 'seiz dur':
@@ -133,3 +154,12 @@ for subj in seiz_subjs_all:
                     subjects.append(subj)
                 print(subj, rec)
                 print(annos, counts)
+
+
+test_nofnsz =  ['/train/00008345', '/train/00008615', '/train/00004456', '/train/00000006', '/train/00008029', '/train/00012046', '/train/00011999', '/train/00007937', '/train/00002380', '/train/00010421', '/train/00000630', '/train/00010088', '/train/00008018', '/train/00010639', '/train/00008628', '/train/00005533', '/train/00000184', '/train/00002348', '/train/00010364', '/train/00005575', '/train/00011455', '/train/00011596', '/train/00013336', '/train/00011981', '/train/00007795', '/train/00001482', '/train/00010301', '/train/00005476', '/train/00005526', '/train/00012786', '/train/00000762', '/train/00004774', '/test/00001981', '/train/00009097', '/train/00007279', '/train/00000289', '/train/00009734', '/train/00007296', '/train/00011081', '/train/00005103', '/train/00004512', '/train/00010461', '/train/00012615', '/train/00009880', '/train/00001317', '/train/00007828', '/train/00001944', '/train/00009902', '/train/00002235', '/train/00001851', '/train/00002271', '/train/00009762', '/train/00009245']
+test_full= ['/train/00007835', '/train/00001843', '/train/00012759', '/test/00001027', '/train/00007235', '/train/00006103', '/train/00001052', '/train/00007793', '/train/00006452', '/train/00008345', '/train/00008615', '/train/00004456', '/train/00000006', '/train/00008029', '/train/00012046', '/train/00011999', '/train/00007937', '/train/00002380', '/train/00010421', '/train/00000630', '/train/00010088', '/train/00008018', '/train/00010639', '/train/00008628', '/train/00005533', '/train/00000184', '/train/00002348', '/train/00010364', '/train/00005575', '/train/00011455', '/train/00011596', '/train/00013336', '/train/00011981', '/train/00007795', '/train/00001482', '/train/00010301', '/train/00005476', '/train/00005526', '/train/00012786', '/train/00000762', '/train/00004774', '/test/00001981', '/train/00009097', '/train/00007279', '/train/00000289', '/train/00009734', '/train/00007296', '/train/00011081', '/train/00005103', '/train/00004512', '/train/00010461', '/train/00012615', '/train/00009880', '/train/00001317', '/train/00007828', '/train/00001944', '/train/00009902', '/train/00002235', '/train/00001851', '/train/00002271', '/train/00009762', '/train/00009245']
+
+same = 0
+for subj in test_nofnsz:
+    if subj in test_full:
+        same+=1

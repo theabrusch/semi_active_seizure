@@ -15,7 +15,7 @@ def train_val_split(hdf5_path,
                     **kwargs):
 
     dset = hdf5_path.split('/')[-1].split('.')[0]
-    pickle_path = 'data/' + dset + '_' + 'seiz_subjs_seiz_strat.pickle'
+    pickle_path = 'data/' + dset + '_' + 'seiz_subjs_seiz_strat_new.pickle'
     if seed == 'None':
         seed = None
     if test_subj is None:
@@ -112,32 +112,45 @@ def train_val_test_split(hdf5_path,
             TypeError('Length of test set:', len(test), '. Length of validation set:', len(val))
 
     else:
-        pickle_path = 'data/'+dset+'seiz_subjs_seiz_strat.pickle'
-        np.random.seed(seed) # set numpy seed
-        try:
-            with open(pickle_path, 'rb') as fp:
-                seiz_subjs = pickle.load(fp)
-        except:
+        if test_subj is not None and val_subj is not None:
+            test = test_subj
+            val = val_subj
+            subjs = F.get_children(object_type=dc.Subject, get_obj = False)
+            F.close()
+            train = [subj for subj in subjs if subj not in test and subj not in val]
+        else:
+            #pickle_path = 'data/'+dset+'seiz_subjs_seiz_strat_new.pickle'
             print('Extracting seizure subjects and non seizure subjects.')
-            seiz_subjs = get_seiz_subjs(hdf5_path, 'all', pickle_path)
-        # remove subjects that only contain the seizure type
-        # to be excluded
-        temp = list(seiz_subjs['seiz'].keys())
-        for seiz in temp:
-            if seiz not in seiz_classes:
-                del seiz_subjs['seiz'][seiz]
-        val_percent_temp = round(val_percent/(1-train_percent), 2)
-        if seiz_strat: 
-            # distribute seizure types over train, validation and test sets 
-            train_seiz = np.array([])
-            val_seiz = np.array([])
-            missing_seizures = np.array([])
-            test_seiz = np.array([])
-            for seiz in seiz_subjs['seiz'].keys():
-                if len(seiz_subjs['seiz'][seiz]) < 10:
-                    missing_seizures = np.append(missing_seizures, seiz_subjs['seiz'][seiz])
-                else:
-                    train_seiz_temp, val_test_seiz = train_test_split(seiz_subjs['seiz'][seiz], 
+            seiz_subjs = get_seiz_subjs(hdf5_path, 'all', seiz_classes = seiz_classes, pickle_path=None)
+            # remove subjects that only contain the seizure type
+            # to be excluded
+            temp = list(seiz_subjs['seiz'].keys())
+            #for seiz in temp:
+            #    if seiz not in seiz_classes:
+            #        del seiz_subjs['seiz'][seiz]
+            val_percent_temp = round(val_percent/(1-train_percent), 2)
+            if seiz_strat: 
+                # distribute seizure types over train, validation and test sets 
+                train_seiz = np.array([])
+                val_seiz = np.array([])
+                missing_seizures = np.array([])
+                test_seiz = np.array([])
+                for seiz in seiz_subjs['seiz'].keys():
+                    if len(seiz_subjs['seiz'][seiz]) < 10:
+                        missing_seizures = np.append(missing_seizures, seiz_subjs['seiz'][seiz])
+                    else:
+                        train_seiz_temp, val_test_seiz = train_test_split(seiz_subjs['seiz'][seiz], 
+                                                                            train_size=train_percent, 
+                                                                            random_state=seed)
+                        val_seiz_temp, test_seiz_temp = train_test_split(val_test_seiz, 
+                                                                        train_size=val_percent_temp, 
+                                                                        random_state=seed)
+                        train_seiz = np.append(train_seiz, train_seiz_temp)
+                        val_seiz = np.append(val_seiz, val_seiz_temp)
+                        test_seiz = np.append(test_seiz, test_seiz_temp)
+                    
+                if len(missing_seizures) > 0:
+                    train_seiz_temp, val_test_seiz = train_test_split(missing_seizures, 
                                                                         train_size=train_percent, 
                                                                         random_state=seed)
                     val_seiz_temp, test_seiz_temp = train_test_split(val_test_seiz, 
@@ -146,50 +159,39 @@ def train_val_test_split(hdf5_path,
                     train_seiz = np.append(train_seiz, train_seiz_temp)
                     val_seiz = np.append(val_seiz, val_seiz_temp)
                     test_seiz = np.append(test_seiz, test_seiz_temp)
-                
-            if len(missing_seizures) > 0:
-                train_seiz_temp, val_test_seiz = train_test_split(missing_seizures, 
+            else:
+                temp = []
+                val_percent = round(val_percent/(1-train_percent), 2)
+                for seiz in seiz_subjs['seiz'].keys():
+                    temp = np.append(temp, seiz_subjs['seiz'][seiz])
+
+                seiz_subjs['seiz'] = shuffle(temp)
+                train_seiz, val_test_seiz = train_test_split(seiz_subjs['seiz'], 
+                                                            train_size=train_percent, 
+                                                            random_state=seed)
+                val_seiz, test_seiz = train_test_split(val_test_seiz, 
+                                                        train_size=val_percent, 
+                                                        random_state=seed)
+            if len(seiz_subjs['non seiz']) > 0:
+                train_non_seiz, val_test_non_seiz = train_test_split(seiz_subjs['non seiz'], 
                                                                     train_size=train_percent, 
                                                                     random_state=seed)
-                val_seiz_temp, test_seiz_temp = train_test_split(val_test_seiz, 
-                                                                 train_size=val_percent_temp, 
-                                                                 random_state=seed)
-                train_seiz = np.append(train_seiz, train_seiz_temp)
-                val_seiz = np.append(val_seiz, val_seiz_temp)
-                test_seiz = np.append(test_seiz, test_seiz_temp)
-        else:
-            temp = []
-            val_percent = round(val_percent/(1-train_percent), 2)
-            for seiz in seiz_subjs['seiz'].keys():
-                temp = np.append(temp, seiz_subjs['seiz'][seiz])
-
-            seiz_subjs['seiz'] = shuffle(temp)
-            train_seiz, val_test_seiz = train_test_split(seiz_subjs['seiz'], 
-                                                        train_size=train_percent, 
-                                                        random_state=seed)
-            val_seiz, test_seiz = train_test_split(val_test_seiz, 
-                                                    train_size=val_percent, 
-                                                    random_state=seed)
-        if len(seiz_subjs['non seiz']) > 0:
-            train_non_seiz, val_test_non_seiz = train_test_split(seiz_subjs['non seiz'], 
-                                                                train_size=train_percent, 
+            else:
+                train_non_seiz = []
+                val_test_non_seiz = []
+            if len(val_test_non_seiz) > 0:
+                val_non_seiz, test_non_seiz = train_test_split(val_test_non_seiz, 
+                                                                train_size=val_percent_temp, 
                                                                 random_state=seed)
-        else:
-            train_non_seiz = []
-            val_test_non_seiz = []
-        if len(val_test_non_seiz) > 0:
-            val_non_seiz, test_non_seiz = train_test_split(val_test_non_seiz, 
-                                                            train_size=val_percent_temp, 
-                                                            random_state=seed)
-        else:
-            val_non_seiz = []
-            test_non_seiz = []
-        train = np.append(train_seiz, train_non_seiz)
-        val = np.append(val_seiz, val_non_seiz)
-        test = np.append(test_seiz, test_non_seiz)
+            else:
+                val_non_seiz = []
+                test_non_seiz = []
+            train = np.append(train_seiz, train_non_seiz)
+            val = np.append(val_seiz, val_non_seiz)
+            test = np.append(test_seiz, test_non_seiz)
     return train, val, test
 
-def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
+def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_path=None):
     F = dc.File(hdf5_path, 'r')
     if not protocol == 'all': 
         proto = F[protocol]
@@ -199,26 +201,35 @@ def get_seiz_subjs(hdf5_path, protocol, pickle_path=None):
     seiz_subjs = dict()
     seiz_subjs['seiz'] = dict()
     seiz_subjs['non seiz'] = []
-    seiz_priority = ['seiz', 'mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
+    #seiz_priority = ['seiz', 'mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
     i = 1
     for subj in subjects:
-        print('Subject', i, 'out of', len(subjects))
         i+=1
         seiz = 0
+        excl_subj = False
         seizure_types = []
         for rec in F[subj].keys():
             annos = F[subj][rec]['Annotations']
             for anno in annos:
-                if anno['Name'].lower() in seiz_priority:
+                if anno['Name'].lower() in seiz_classes:
                     seiz = 1
-                    if not anno['Name'].lower() in seizure_types:
-                        seizure_types.append(anno['Name'])
+                    #if not anno['Name'].lower() in seizure_types:
+                    seizure_types.append(anno['Name'])
+                elif not anno['Name'].lower() == 'bckg':
+                    excl_subj = True
         if seiz == 1:
-            pri_seiz = [seiz for seiz in seiz_priority if seiz in seizure_types][0]
-            if pri_seiz in seiz_subjs['seiz'].keys():
-                seiz_subjs['seiz'][pri_seiz].append(subj)
-            else:
-                seiz_subjs['seiz'][pri_seiz] = [subj]
+            if (excl_seiz and not excl_subj) or not excl_seiz:
+                seiz, counts = np.unique(seizure_types, return_counts = True)
+                seiz_sort = seiz[np.argmax(counts)]
+                if seiz_sort in seiz_subjs['seiz'].keys():
+                    seiz_subjs['seiz'][seiz_sort].append(subj)
+                else:
+                    seiz_subjs['seiz'][seiz_sort] = [subj]
+            #pri_seiz = [seiz for seiz in seiz_priority if seiz in seizure_types][0]
+            #if pri_seiz in seiz_subjs['seiz'].keys():
+            #    seiz_subjs['seiz'][pri_seiz].append(subj)
+            #else:
+            #    seiz_subjs['seiz'][pri_seiz] = [subj]
         else:
             seiz_subjs['non seiz'].append(subj)
 

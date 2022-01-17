@@ -31,6 +31,7 @@ def main(args):
     datagen = config['data_gen']
     datagen['seed'] = args.seed
     datagen['seiz_classes'] = args.seiz_classes
+    datagen['eval_seiz_classes'] = args.eval_seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length
     datagen['bckg_stride'] = args.bckg_stride
@@ -197,7 +198,8 @@ if __name__ == '__main__':
     parser.add_argument('--run_folder', type = str, default='notspec')
     # datagen
     parser.add_argument('--seed', type = int, default = 20)
-    parser.add_argument('--seiz_classes', type = eval, default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
+    parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
+    parser.add_argument('--eval_seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--excl_seiz_classes', type = eval, default = [])
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
