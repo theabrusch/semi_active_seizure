@@ -196,12 +196,8 @@ if __name__ == '__main__':
     parser.add_argument('--job_name', type = str, default='nojobname')
     parser.add_argument('--run_folder', type = str, default='notspec')
     # datagen
-<<<<<<< HEAD
-    parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
-=======
     parser.add_argument('--seed', type = int, default = 20)
-    parser.add_argument('--seiz_classes', type = eval, default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
->>>>>>> b232223ba66ea66cf402d80d100e316431df6a60
+    parser.add_argument('--seiz_classes', nargs='+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--excl_seiz_classes', type = eval, default = [])
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--window_length', type=float, default = 2)
