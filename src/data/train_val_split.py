@@ -258,6 +258,7 @@ def get_kfold(hdf5_path,
     # move subjects to training split if they only contain the 
     # seizure defined in only train seiz
     if only_train_seiz is not None:
+        print('Moving subjects with only seizure type', only_train_seiz, 'to training set.')
         df = pd.DataFrame({'subj': seiz_subjs['seiz']['subjects'], 'seiz': seiz_subjs['seiz']['seizures']})
         df_grouped = df.groupby('subj').agg(['unique', 'nunique'])['seiz']
         one_seiz = df_grouped[df_grouped['nunique'] == 1]
@@ -269,7 +270,6 @@ def get_kfold(hdf5_path,
                 idx = np.where(test_seiz == subj)
                 test_seiz = np.delete(test_seiz, idx)
                 train_seiz = np.append(train_seiz, subj)
-
 
     # regular splitting on non-seizure subjects
     kfold = KFold(n_splits=n_splits)
