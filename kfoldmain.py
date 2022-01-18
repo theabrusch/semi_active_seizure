@@ -39,19 +39,16 @@ def main(args):
     datagen = config['data_gen']
     datagen['seed'] = args.seed
     datagen['seiz_classes'] = args.seiz_classes
-    datagen['eval_seiz_classes'] = args.eval_seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length
     datagen['bckg_stride'] = args.bckg_stride
     datagen['seiz_stride'] = args.seiz_stride
-    datagen['bckg_rate_val'] = args.bckg_rate_val
-    datagen['bckg_rate_train'] = args.bckg_rate_train
+    datagen['bckg_rate'] = args.bckg_rate_train
     datagen['anno_based_seg'] = args.anno_based_seg
+    datagen['prefetch_data_from_seg'] = False
     datagen['protocol'] = args.protocol
-
-    gen_args = config['generator_kwargs']
-    gen_args['batch_size'] = args.batch_size
-    gen_args['use_train_seed'] = True
+    datagen['batch_size'] = args.batch_size
+    datagen['use_train_seed'] = True
 
     train_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
                                                             subjs_to_use = train,
@@ -61,8 +58,9 @@ def main(args):
     # get test loader
     datagen['bckg_stride'] = None
     datagen['seiz_stride'] = None
-    datagen['bckg_rate_val'] = None
-    datagen['bckg_rate_train'] = None
+    datagen['bckg_rate'] = None
+    datagen['anno_based_seg'] = False
+    datagen['seiz_classes'] = args.eval_seiz_classes
     test_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
                                                             subjs_to_use = test,
                                                             split = 'test',
@@ -96,25 +94,17 @@ def main(args):
 
     loss_fn = get_loss.get_loss(**fit_config)
 
-    if not datagen['train_val_test']:
-        # if validation set is the same as test set, then use the final model
-        choose_best = False
-        track_test = True
-    else:
-        choose_best = False
-        track_test = True
-
     model_train = train_model.model_train(model = model, 
                                             optimizer = optimizer, 
                                             loss_fn = loss_fn, 
                                             writer = writer,
                                             scheduler = scheduler,
-                                            choose_best = choose_best)
+                                            choose_best = False)
 
     time = datetime.now()
     train_loss, val_loss = model_train.train(train_loader = train_dataloader,
                                             val_loader = test_dataloader,
-                                            #test_loader = test_loader,
+                                            test_loader = None,
                                             epochs = args.epochs)
                                             
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
@@ -166,6 +156,7 @@ if __name__ == '__main__':
     # exclude subjects that have 1 or more seizures not included in analysis
     parser.add_argument('--excl_seiz', type = eval, default = False) 
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
+    parser.add_argument('--eval_seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
     parser.add_argument('--seiz_stride', type=eval, default=None)

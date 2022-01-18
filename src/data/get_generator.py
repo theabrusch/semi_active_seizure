@@ -116,8 +116,7 @@ def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
                                                 subjects_to_use = subjs_to_use)
     segment, norm_coef = datasegment.segment_data()
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
-                                        segments = segment, norm_coef = norm_coef, 
-                                        prefetch_data_from_seg=False)
+                                        segments = segment, norm_coef = norm_coef)
     sampler = SeizSampler(dataset, seed = True)
     val_dataloader = DataLoader(dataset, 
                                 batch_size = data_gen['batch_size'], 
