@@ -111,6 +111,7 @@ def main(args):
     print('Total time', datetime.now()-time_start, '.')
 
     if config['general']['run_test']:
+        test_dataloader.dataset.return_seiz_type = True
         y_pred, y_true, seiz_types = model_train.eval(test_dataloader, return_seiz_type = True)
 
         # calculate metrics
