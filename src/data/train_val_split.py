@@ -264,12 +264,14 @@ def get_kfold(hdf5_path,
         one_seiz = df_grouped[df_grouped['nunique'] == 1]
         one_seiz['unique'] = one_seiz['unique'].explode() 
         only_train = one_seiz[one_seiz['unique'] == only_train_seiz].index
-
+        moved_seiz = 0
         for subj in only_train:
             if subj in test_seiz:
                 idx = np.where(test_seiz == subj)
                 test_seiz = np.delete(test_seiz, idx)
                 train_seiz = np.append(train_seiz, subj)
+                moved_seiz+=1
+        print('Moved', moved_seiz, 'to training set.')
 
     # regular splitting on non-seizure subjects
     kfold = KFold(n_splits=n_splits)
