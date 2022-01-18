@@ -14,9 +14,9 @@ class DataGenerator(Dataset):
                  return_seiz_type = False,
                  norm_coef = None,
                  segments = None,
-                 standardise = True,
+                 standardise = False,
                  bckg_rate = None, 
-                 prefetch_data_from_seg = False,
+                 prefetch_data_from_seg = True,
                  **kwargs):
         '''
         Wrapper for the Pytorch dataset that takes the segmentation and seizes the samples.
@@ -452,8 +452,8 @@ class SegmentData():
                  bckg_rate,
                  sens = 0,
                  subj_strat = False,
-                 use_train_seed = False,
-                 standardise = True,
+                 use_train_seed = True,
+                 standardise = False,
                  bckg_stride = None,
                  seiz_stride = None, 
                  anno_based_seg = False,

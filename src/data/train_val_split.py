@@ -2,7 +2,7 @@ from dataapi import data_collection as dc
 import pickle
 import numpy as np
 import warnings
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedGroupKFold, KFold
 from sklearn.utils import shuffle
 
 def train_val_split(hdf5_path, 
@@ -201,7 +201,6 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_pa
     seiz_subjs = dict()
     seiz_subjs['seiz'] = dict()
     seiz_subjs['non seiz'] = []
-    #seiz_priority = ['seiz', 'mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
     i = 1
     for subj in subjects:
         i+=1
@@ -213,7 +212,6 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_pa
             for anno in annos:
                 if anno['Name'].lower() in seiz_classes:
                     seiz = 1
-                    #if not anno['Name'].lower() in seizure_types:
                     seizure_types.append(anno['Name'])
                 elif not anno['Name'].lower() == 'bckg':
                     excl_subj = True
@@ -225,11 +223,6 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_pa
                     seiz_subjs['seiz'][seiz_sort].append(subj)
                 else:
                     seiz_subjs['seiz'][seiz_sort] = [subj]
-            #pri_seiz = [seiz for seiz in seiz_priority if seiz in seizure_types][0]
-            #if pri_seiz in seiz_subjs['seiz'].keys():
-            #    seiz_subjs['seiz'][pri_seiz].append(subj)
-            #else:
-            #    seiz_subjs['seiz'][pri_seiz] = [subj]
         elif not excl_subj:
             seiz_subjs['non seiz'].append(subj)
 
@@ -240,6 +233,82 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_pa
         with open(pickle_path, 'wb') as fp:
             pickle.dump(seiz_subjs, fp)
 
+    return seiz_subjs
+
+def get_kfold(hdf5_path, 
+                split,
+                seiz_classes,
+                excl_seiz = False,
+                n_splits = 5,
+                **kwargs):
+    seiz_subjs = get_seiz_kfoldsubjs(hdf5_path, 'all',
+                                     seiz_classes = seiz_classes,
+                                     excl_seiz = False, 
+                                     pickle_path = None)
+
+    # stratified splitting on seizure type
+    stratgroupsplit = StratifiedGroupKFold(n_splits = n_splits)
+    seiz_splits = stratgroupsplit.split(seiz_subjs['seiz']['subjects'], seiz_subjs['seiz']['seizures'], seiz_subjs['seiz']['subjects']) 
+    seiz_split = list(seiz_splits)[split]
+    train_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]])
+    test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[1]])
+
+    # regular splitting on non-seizure subjects
+    kfold = KFold(n_splits=n_splits)
+    bckg_splits = kfold.split(seiz_subjs['non seiz'])
+    bckg_split = list(bckg_splits)[split]
+    train_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[0]])
+    test_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[1]])
+
+    train = np.append(train_seiz, train_bckg)
+    test = np.append(test_seiz, test_bckg)
+
+    return train, test
+
+
+
+def get_seiz_kfoldsubjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_path=None):
+    '''
+    Get all seizure and non seizure subjects in format to use for kfold stratified group splitting
+    '''
+    F = dc.File(hdf5_path, 'r')
+    if not protocol == 'all': 
+        proto = F[protocol]
+        subjects = proto.get_children(object_type = dc.Subject, get_obj = False)
+    else:
+        subjects = F.get_children(object_type = dc.Subject, get_obj = False)
+    seiz_subjs = dict()
+    seiz_subjs['seiz'] = dict()
+    seiz_subjs['seiz']['subjects'] = np.array([])
+    seiz_subjs['seiz']['seizures'] = np.array([])
+    seiz_subjs['non seiz'] = []
+    i = 1
+    for subj in subjects:
+        i+=1
+        seiz = 0
+        excl_subj = False
+        seizure_types = []
+        for rec in F[subj].keys():
+            annos = F[subj][rec]['Annotations']
+            for anno in annos:
+                if anno['Name'].lower() in seiz_classes:
+                    seizure_types.append(anno['Name'])
+                    seiz = 1
+                elif not anno['Name'].lower() == 'bckg':
+                    excl_subj = True
+        if seiz == 1:
+            # if there is a seizure present in the subject and 
+            # if we are not excluding seizure types, append the 
+            # subject
+            if (excl_seiz and not excl_subj) or not excl_seiz:
+                subject = [subj]*len(seizure_types)
+                seiz_subjs['seiz']['subjects'] = np.append(seiz_subjs['seiz']['subjects'], subject)
+                seiz_subjs['seiz']['seizures'] = np.append(seiz_subjs['seiz']['seizures'], seizure_types)
+        elif not excl_subj:
+            seiz_subjs['non seiz'].append(subj)
+    if pickle_path is not None:
+        with open(pickle_path, 'wb') as fp:
+            pickle.dump(seiz_subjs, fp)
     return seiz_subjs
 
 

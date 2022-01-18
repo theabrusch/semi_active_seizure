@@ -52,6 +52,7 @@ def main(args):
 
     splitdict = config['data_gen']
     splitdict['hdf5_path'] = args.file_path
+    splitdict['seiz_classes'] = args.seiz_classes
     splitdict['seiz_strat'] = args.seiz_strat
     splitdict['protocol'] = 'all'
     splitdict['seed'] = args.seed

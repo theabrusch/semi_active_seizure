@@ -111,12 +111,13 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
 
     return train_dataloader, val_dataloader
 
-def get_dataset_cross_val(data_gen, subjs_to_use, writer = None):
+def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
     datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = subjs_to_use)
     segment, norm_coef = datasegment.segment_data()
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
-                                        segments = segment, norm_coef = norm_coef)
+                                        segments = segment, norm_coef = norm_coef, 
+                                        prefetch_data_from_seg=False)
     sampler = SeizSampler(dataset, seed = True)
     val_dataloader = DataLoader(dataset, 
                                 batch_size = data_gen['batch_size'], 
@@ -124,7 +125,7 @@ def get_dataset_cross_val(data_gen, subjs_to_use, writer = None):
                                 pin_memory = True)
     if writer is not None:
         seizure_types = dataset.segments['seiz']['seiz_types']
-        add_seiztypes_to_summary(seizure_types, writer, 'val')
+        add_seiztypes_to_summary(seizure_types, writer, split)
     return val_dataloader
 
 def get_test_generator(data_gen, generator_kwargs, test_subj, summarywriter=None):
