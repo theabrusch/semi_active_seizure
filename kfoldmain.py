@@ -30,6 +30,7 @@ def main(args):
     splitdict = dict()
     splitdict['hdf5_path'] = args.file_path
     splitdict['split'] = args.split
+    splitdict['only_train_seiz'] = args.onlytrainseiz
     splitdict['excl_seiz'] = args.excl_seiz
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = args.n_splits
@@ -156,6 +157,8 @@ if __name__ == '__main__':
     parser.add_argument('--n_splits', type = int, default = 5)
     # exclude subjects that have 1 or more seizures not included in analysis
     parser.add_argument('--excl_seiz', type = eval, default = False) 
+    # exclude seizure types to include in training but not evaluation
+    parser.add_argument('--onlytrainseiz', default = None)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--eval_seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)

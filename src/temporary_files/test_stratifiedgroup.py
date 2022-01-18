@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pyedflib
 from dataapi import data_collection as dc
 from pathlib import Path
@@ -23,6 +24,12 @@ for subj in subjects:
             if anno['Name'] in seiz_priority:
                 seiz_subjects.append(subj)
                 seizures.append(anno['Name'])
+
+df = pd.DataFrame({'subj': seiz_subjects, 'seiz': seizures})
+df_grouped = df.groupby('subj').agg(['unique', 'nunique'])['seiz']
+one_seiz = df_grouped[df_grouped['nunique'] == 1]
+one_seiz['unique'] = one_seiz['unique'].explode() 
+fnsz = one_seiz[one_seiz['unique'] == 'fnsz'].index
 
 stratkfold = StratifiedGroupKFold()
 splits = stratkfold.split(seiz_subjects, seizures, seiz_subjects)

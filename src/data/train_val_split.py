@@ -1,6 +1,7 @@
 from dataapi import data_collection as dc
 import pickle
 import numpy as np
+import pandas as pd
 import warnings
 from sklearn.model_selection import train_test_split, StratifiedGroupKFold, KFold
 from sklearn.utils import shuffle
@@ -238,12 +239,13 @@ def get_seiz_subjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_pa
 def get_kfold(hdf5_path, 
                 split,
                 seiz_classes,
+                only_train_seiz = None,
                 excl_seiz = False,
                 n_splits = 5,
                 **kwargs):
     seiz_subjs = get_seiz_kfoldsubjs(hdf5_path, 'all',
                                      seiz_classes = seiz_classes,
-                                     excl_seiz = False, 
+                                     excl_seiz = excl_seiz, 
                                      pickle_path = None)
 
     # stratified splitting on seizure type
@@ -252,6 +254,22 @@ def get_kfold(hdf5_path,
     seiz_split = list(seiz_splits)[split]
     train_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]])
     test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[1]])
+
+    # move subjects to training split if they only contain the 
+    # seizure defined in only train seiz
+    if only_train_seiz is not None:
+        df = pd.DataFrame({'subj': seiz_subjs['seiz']['subjects'], 'seiz': seiz_subjs['seiz']['seizures']})
+        df_grouped = df.groupby('subj').agg(['unique', 'nunique'])['seiz']
+        one_seiz = df_grouped[df_grouped['nunique'] == 1]
+        one_seiz['unique'] = one_seiz['unique'].explode() 
+        only_train = one_seiz[one_seiz['unique'] == only_train_seiz].index
+
+        for subj in only_train:
+            if subj in test_seiz:
+                idx = np.where(test_seiz == subj)
+                test_seiz = np.delete(test_seiz, idx)
+                train_seiz = np.append(train_seiz, subj)
+
 
     # regular splitting on non-seizure subjects
     kfold = KFold(n_splits=n_splits)
