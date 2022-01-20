@@ -45,7 +45,8 @@ class LogParamsToTB:
 
 def main(args):
     writer = SummaryWriter('../runs/' + args.run_folder + '/' + args.model_type +\
-                           '_'+ str(datetime.now()) + '_' + \
+                           '_split_' + str(args.split)+'_'+str(args.val_split)+ \
+                            str(datetime.now()) + '_' + \
                             args.job_name)
     with open('configuration.yml', 'r') as file:
         config = yaml.safe_load(file)
