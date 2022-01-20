@@ -71,6 +71,9 @@ def main(args):
             pickle.dump(split, fp)
 
     train, val, test = split['train'], split['val'], split['test']
+    print('Train:',train)
+    print('Validation:', val)
+    print('Test:', test)
 
     # validation loader
     datagen = config['data_gen']
