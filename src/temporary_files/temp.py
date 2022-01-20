@@ -13,11 +13,13 @@ window_length = 2
 anno_stride = 1/256
 segments = 0
 segments_total = 0
+total_seiz_dur = 0
 for anno in annos:
     for an in anno:
         windows = (an['Duration']-window_length)/anno_stride + 1
         if an['Name'].lower() == 'seiz':
             segments += windows
+            total_seiz_dur += an['Duration']
         segments_total+=windows
 
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
@@ -25,9 +27,12 @@ f = dc.File(file_name, 'r')
 
 annos = f.get_children(object_type=dc.Annotations, get_obj = True)
 anno_names = dict()
-
+seiz_priority = ['mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
+total_seiz_dur = 0
 for anno in annos:
     for an in anno:
+        if an['Name'] in seiz_priority:
+            total_seiz_dur+=an['Duration']
         if an['Name'] not in anno_names.keys():
             anno_names[an['Name']] = [an['Duration']]
         else:

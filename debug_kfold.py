@@ -43,5 +43,5 @@ args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data
                           '--bckg_stride', '2', '--seiz_stride', '2',
                           '--anno_based_seg', 'True', '--model_type', 'BaselineCNN',
                           '--seiz_classes', 'fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz',
-                          '--onlytrainseiz', 'fnsz'])
+                          '--onlytrainseiz', None])
 main(args)

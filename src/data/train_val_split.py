@@ -240,9 +240,12 @@ def get_kfold(hdf5_path,
                 split,
                 seiz_classes,
                 only_train_seiz = None,
+                val_split = None,
                 excl_seiz = False,
                 n_splits = 5,
+                n_val_splits = 7,
                 **kwargs):
+
     seiz_subjs = get_seiz_kfoldsubjs(hdf5_path, 'all',
                                      seiz_classes = seiz_classes,
                                      excl_seiz = excl_seiz, 
@@ -252,40 +255,65 @@ def get_kfold(hdf5_path,
     stratgroupsplit = StratifiedGroupKFold(n_splits = n_splits)
     seiz_splits = stratgroupsplit.split(seiz_subjs['seiz']['subjects'], seiz_subjs['seiz']['seizures'], seiz_subjs['seiz']['subjects']) 
     seiz_split = list(seiz_splits)[split]
-    train_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]])
-    test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[1]])
-
-    # move subjects to training split if they only contain the 
-    # seizure defined in only train seiz
-    if only_train_seiz is not None:
-        print('Moving subjects with only seizure type', only_train_seiz, 'to training set.')
-        df = pd.DataFrame({'subj': seiz_subjs['seiz']['subjects'], 'seiz': seiz_subjs['seiz']['seizures']})
-        df_grouped = df.groupby('subj').agg(['unique', 'nunique'])['seiz']
-        one_seiz = df_grouped[df_grouped['nunique'] == 1]
-        one_seiz['unique'] = one_seiz['unique'].explode() 
-        only_train = one_seiz[one_seiz['unique'] == only_train_seiz].index
-        moved_seiz = 0
-        for subj in only_train:
-            if subj in test_seiz:
-                idx = np.where(test_seiz == subj)
-                test_seiz = np.delete(test_seiz, idx)
-                train_seiz = np.append(train_seiz, subj)
-                moved_seiz+=1
-        print('Moved', moved_seiz, 'to training set.')
-
     # regular splitting on non-seizure subjects
     kfold = KFold(n_splits=n_splits)
     bckg_splits = kfold.split(seiz_subjs['non seiz'])
     bckg_split = list(bckg_splits)[split]
+
+    test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[1]])
     train_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[0]])
     test_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[1]])
-
-    train = np.append(train_seiz, train_bckg)
     test = np.append(test_seiz, test_bckg)
 
-    return train, test
+    if val_split is None:
+        train_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]])
 
+        # move subjects to training split if they only contain the 
+        # seizure defined in only train seiz
+        if only_train_seiz is not None:
+            print('Moving subjects with only seizure type', only_train_seiz, 'to training set.')
+            df = pd.DataFrame({'subj': seiz_subjs['seiz']['subjects'], 'seiz': seiz_subjs['seiz']['seizures']})
+            df_grouped = df.groupby('subj').agg(['unique', 'nunique'])['seiz']
+            one_seiz = df_grouped[df_grouped['nunique'] == 1]
+            one_seiz['unique'] = one_seiz['unique'].explode() 
+            only_train = one_seiz[one_seiz['unique'] == only_train_seiz].index
+            moved_seiz = 0
+            for subj in only_train:
+                if subj in test_seiz:
+                    idx = np.where(test_seiz == subj)
+                    test_seiz = np.delete(test_seiz, idx)
+                    train_seiz = np.append(train_seiz, subj)
+                    moved_seiz+=1
+            print('Moved', moved_seiz, 'to training set.')
 
+        train = np.append(train_seiz, train_bckg)
+
+        return train, test
+    else:
+        train_subj_split = np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]]
+        train_seiz_split = np.array(seiz_subjs['seiz']['seizures'])[seiz_split[0]]
+        # split seizures
+        stratgroupsplit = StratifiedGroupKFold(n_splits = n_val_splits)
+        seiz_splits = stratgroupsplit.split(train_subj_split, train_seiz_split, train_subj_split) 
+        # split background
+        kfold = KFold(n_splits=n_val_splits)
+        bckg_splits = kfold.split(train_bckg)
+
+        seiz_split = list(seiz_splits)[val_split]
+        bckg_split = list(bckg_splits)[val_split]
+
+        # get train and val seizures
+        train_seiz = np.unique(np.array(train_subj_split)[seiz_split[0]])
+        val_seiz = np.unique(np.array(train_subj_split)[seiz_split[1]])
+
+        # get train and val background
+        train_bckg = np.unique(np.array(train_bckg)[bckg_split[0]])
+        val_bckg = np.unique(np.array(train_bckg)[bckg_split[1]])
+
+        train = np.append(train_seiz, train_bckg)
+        val = np.append(val_seiz, val_bckg)
+
+        return train, val, test
 
 def get_seiz_kfoldsubjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pickle_path=None):
     '''

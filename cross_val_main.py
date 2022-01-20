@@ -52,19 +52,20 @@ def main(args):
 
     splitdict = config['data_gen']
     splitdict['hdf5_path'] = args.file_path
+    splitdict['split'] = args.split
     splitdict['seiz_classes'] = args.seiz_classes
-    splitdict['seiz_strat'] = args.seiz_strat
-    splitdict['protocol'] = 'all'
-    splitdict['seed'] = args.seed
+    splitdict['n_splits'] = args.n_splits
+    splitdict['n_val_splits'] = args.n_val_splits
+    splitdict['val_split'] = args.val_split
     # get split
-    split_path = 'data/optuna_trials/optuna_split_temple/' 
+    split_path = 'data/optuna_trials/optuna_split_temple/new_' 
     p = Path(split_path)
     p.mkdir(parents=True, exist_ok=True)
     try:
         with open(split_path + args.job_name + '.pkl', 'rb') as fp:
             split = pickle.load(fp)
     except:
-        train, val, test = train_val_split.train_val_test_split(**splitdict)
+        train, val, test = train_val_split.get_kfold(**splitdict)
         split = {'train': train, 'val': val, 'test': test}
         with open(split_path + args.job_name + '.pkl', 'wb') as fp:
             pickle.dump(split, fp)
@@ -185,6 +186,11 @@ if __name__ == '__main__':
     # job name
     parser.add_argument('--job_name', type = str, default='nojobname')
     parser.add_argument('--run_folder', type = str, default='notspec')
+    # split
+    parser.add_argument('--split', type = int, default = 0)
+    parser.add_argument('--val_split', type = int, default = 0)
+    parser.add_argument('--n_splits', type = int, default = 5)
+    parser.add_argument('--n_val_splits', type = int, default = 5)
     # datagen
     parser.add_argument('--seed', type = int, default = 20)
     parser.add_argument('--seiz_classes', nargs='+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])

@@ -10,20 +10,32 @@ f = dc.File(file_name, 'r')
 
 seiz_subjects = []
 seizures = []
+records_count = []
 seiz_priority = ['mysz', 'absz', 'spsz', 'tnsz', 'tcsz', 'cpsz', 'gnsz', 'fnsz']
 subjects = f.get_children(dc.Subject, get_obj = False)
+seiz_recs = dict()
 
 i=1
 for subj in subjects:
     print(i, 'out of', len(subjects))
     i+=1
+    nrecs = 0
     for rec in f[subj]:
+        nrecs += 1
         record = f[subj][rec]
+        seiz_rec = False
         annos = record['Annotations']
         for anno in annos:
             if anno['Name'] in seiz_priority:
+                seiz_rec = True
                 seiz_subjects.append(subj)
                 seizures.append(anno['Name'])
+        if seiz_rec:
+            if subj in seiz_recs.keys():
+                seiz_recs[subj].append(rec)
+            else:
+                seiz_recs[subj] = [rec]
+    records_count.append(nrecs)
 
 df = pd.DataFrame({'subj': seiz_subjects, 'seiz': seizures})
 df_grouped = df.groupby('subj').agg(['unique', 'nunique'])['seiz']
@@ -55,3 +67,7 @@ for split in temp:
     for (seiz, count) in zip(train_seiz, train_counts):
         seiz_percent = count/np.sum(train_counts)
         print(seiz, ':', seiz_percent)
+        
+seiz_rec_count = []
+for subj in seiz_recs.keys():
+    seiz_rec_count.append(len(seiz_recs[subj]))
