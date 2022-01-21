@@ -307,9 +307,9 @@ def get_kfold(hdf5_path,
         val_seiz = np.unique(np.array(train_subj_split)[seiz_split[1]])
 
         # get train and val background
-        train_bckg = np.unique(np.array(train_bckg)[bckg_split[0]])
         val_bckg = np.unique(np.array(train_bckg)[bckg_split[1]])
-
+        train_bckg = np.unique(np.array(train_bckg)[bckg_split[0]])
+        
         train = np.append(train_seiz, train_bckg)
         val = np.append(val_seiz, val_bckg)
 

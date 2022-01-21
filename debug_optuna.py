@@ -7,7 +7,7 @@ parser.add_argument('--job_name', type = str, default='nojobname')
 parser.add_argument('--run_folder', type = str, default='notspec')
 # split
 parser.add_argument('--split', type = int, default = 0)
-parser.add_argument('--val_split', type = int, default = 0)
+parser.add_argument('--val_split', type = int, default = 3)
 parser.add_argument('--n_splits', type = int, default = 5)
 parser.add_argument('--n_val_splits', type = int, default = 5)
 # datagen

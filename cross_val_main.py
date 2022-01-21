@@ -59,17 +59,8 @@ def main(args):
     splitdict['n_val_splits'] = args.n_val_splits
     splitdict['val_split'] = args.val_split
     # get split
-    split_path = 'data/optuna_trials/optuna_split_temple/new_' 
-    p = Path(split_path)
-    p.mkdir(parents=True, exist_ok=True)
-    try:
-        with open(split_path + args.job_name + '.pkl', 'rb') as fp:
-            split = pickle.load(fp)
-    except:
-        train, val, test = train_val_split.get_kfold(**splitdict)
-        split = {'train': train, 'val': val, 'test': test}
-        with open(split_path + args.job_name + '.pkl', 'wb') as fp:
-            pickle.dump(split, fp)
+    train, val, test = train_val_split.get_kfold(**splitdict)
+    split = {'train': train, 'val': val, 'test': test}
 
     train, val, test = split['train'], split['val'], split['test']
     print('Train:',train)
