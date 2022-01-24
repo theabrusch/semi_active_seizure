@@ -30,6 +30,7 @@ class model_train():
               test_loader = None,
               trial = None,
               early_stopping = False,
+              transfer_subj = None,
               epochs = 10):
         '''
         Train model
@@ -75,10 +76,12 @@ class model_train():
 
             train_loss[epoch] = running_train_loss/num_batch
             if self.writer is not None:
-                if trial is None:
+                if trial is None and transfer_subj is None:
                     run = ''
-                else:
+                elif trial is not None:
                     run = str(trial.number)
+                elif transfer_subj is not None:
+                    run = transfer_subj
 
                 self.writer.add_scalar('train/loss'+run, train_loss[epoch], epoch)
             print('Training loss:', train_loss[epoch])
@@ -125,10 +128,12 @@ class model_train():
                         raise optuna.exceptions.TrialPruned()
 
             if self.writer is not None:
-                if trial is None:
+                if trial is None and transfer_subj is None:
                     run = ''
-                else:
+                elif trial is not None:
                     run = str(trial.number)
+                elif transfer_subj is not None:
+                    run = transfer_subj
 
                 self.writer.add_scalar('val/sens'+run, sens, epoch)
                 self.writer.add_scalar('val/spec'+run, spec, epoch)
@@ -189,10 +194,12 @@ class model_train():
             epoch_time = (datetime.now()-time).total_seconds()
             print('Epoch time', epoch_time)
             if self.writer is not None:
-                if trial is None:
+                if trial is None and transfer_subj is None:
                     run = ''
-                else:
+                elif trial is not None:
                     run = str(trial.number)
+                elif transfer_subj is not None:
+                    run = transfer_subj
                 self.writer.add_scalar('Loss/epoch_time'+run, epoch_time, epoch)
 
             if early_stopping and epoch > 10:

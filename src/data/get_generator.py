@@ -127,6 +127,23 @@ def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
         add_seiztypes_to_summary(seizure_types, writer, split)
     return val_dataloader
 
+def get_dataset_transfer(data_gen, subjs_to_use, records_to_use, split = 'val', writer = None):
+    datasegment = datagenerator.SegmentData(**data_gen, records_to_use = records_to_use
+                                            subjects_to_use = subjs_to_use)
+    segment, norm_coef = datasegment.segment_data_transfer()
+    dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
+                                          segments = segment, norm_coef = norm_coef)
+    sampler = SeizSampler(dataset, seed = True)
+    val_dataloader = DataLoader(dataset, 
+                                batch_size = data_gen['batch_size'], 
+                                sampler = sampler,
+                                pin_memory = True)
+    if writer is not None:
+        seizure_types = dataset.segments['seiz']['seiz_types']
+        add_seiztypes_to_summary(seizure_types, writer, split)
+    return val_dataloader
+
+
 def get_test_generator(data_gen, generator_kwargs, test_subj, summarywriter=None):
     if data_gen['gen_type'] == 'DataGenerator':
         print('Initialising test dataset.')

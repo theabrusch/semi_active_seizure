@@ -458,6 +458,7 @@ class SegmentData():
                  seiz_stride = None, 
                  anno_based_seg = False,
                  subjects_to_use = 'all',
+                 records_to_use = None,
                  **kwargs):
         '''
         Wrapper for the segmenting the data.
@@ -498,6 +499,7 @@ class SegmentData():
             self.stride = [bckg_stride, seiz_stride]
 
         self.subjects_to_use = subjects_to_use
+        self.records_to_use = records_to_use
         self.anno_based_seg = anno_based_seg
         self.seiz_classes = seiz_classes
         self.standardise = standardise
@@ -596,6 +598,89 @@ class SegmentData():
 
                 with open(subj_path, 'wb') as fp:
                     pickle.dump(subj_seg, fp)
+
+            if self.calc_norm_coef:
+                self.norm_coef.update(subj_seg['norm_coef'])
+            
+            segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
+            if not self.bckg_rate is None and self.use_train_seed and self.subj_strat:
+                seiz_samples = len(subj_seg['seiz'])
+                bckg_tot = int(self.bckg_rate*seiz_samples)
+                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n=bckg_tot))
+            else:
+                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
+        
+        self.segments = segments
+
+        if not self.bckg_rate is None and self.use_train_seed and not self.subj_strat:
+            seiz_samples = len(self.segments['seiz'])
+            bckg_tot = int(self.bckg_rate*seiz_samples)
+            self.segments['bckg'] = self.segments['bckg'].sample(n = bckg_tot)
+
+        return self.segments, self.norm_coef
+    
+    def segment_data_transfer(self):
+        '''
+        Build pandas DataFrame containing pointers to the different
+        segments to sample when generating data. 
+        This function is meant for using when building the transfer
+        learning framework. This means that it does not try to 
+        load the segmentation from a pickle file. 
+        '''
+        segments = dict() 
+        segments['seiz'] = pd.DataFrame()
+        segments['bckg'] = pd.DataFrame()
+        labels = ['bckg', 'seiz']
+
+        if self.calc_norm_coef:
+            self.norm_coef = dict()
+        else:
+            self.norm_coef = None
+        
+        i=0
+        subjects = self.subjects_to_use
+
+        for subj in subjects:
+            print('Segmenting data for subject', i + 1, 'out of', len(subjects))
+            i+=1
+            subj_name = subj.split('/')[-1]
+            subj_seg = dict()
+            subj_seg['seiz'] = pd.DataFrame()
+            subj_seg['bckg'] = pd.DataFrame()
+            subj_seg['norm_coef'] = dict()
+            records = self.records_to_use[subj]
+            for rec in records:
+                record = self.data_file[subj][rec]
+                for sig in self.signal_name:
+                    if sig in record.keys():
+                        signal = record[sig]
+                        signal_name = sig
+                path =  subj + '/' + rec + '/' + signal_name
+
+                # Calculate normalisation coefficients for each record
+                mean = np.mean(signal)
+                std = np.std(signal)
+                
+                if self.anno_based_seg:
+                    labels, start_win, end_win, seiz_types = self._anno_based_segment(record)
+                else:
+                    labels, start_win, end_win, seiz_types = self._record_based_segment(record)
+                    
+                seg_rec = pd.DataFrame({'startseg': start_win.astype(int), 
+                                        'endseg': end_win.astype(int), 
+                                        'label': labels, 
+                                        'seiz_types': seiz_types})
+                seg_rec['path'] = path
+                seg_rec['subj'] = subj
+                seg_rec['rec'] = subj + '/' + rec
+                subj_seg['norm_coef'][path] = dict()
+                subj_seg['norm_coef'][path]['mean'] = mean
+                subj_seg['norm_coef'][path]['std'] = std
+
+                seg_rec_pos = seg_rec[seg_rec['label'] == 1]
+                seg_rec_neg = seg_rec[seg_rec['label'] == 0]
+                subj_seg['seiz'] = subj_seg['seiz'].append(seg_rec_pos)
+                subj_seg['bckg'] = subj_seg['bckg'].append(seg_rec_neg)
 
             if self.calc_norm_coef:
                 self.norm_coef.update(subj_seg['norm_coef'])

@@ -359,6 +359,33 @@ def get_seiz_kfoldsubjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pick
             pickle.dump(seiz_subjs, fp)
     return seiz_subjs
 
+def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed, **kwargs):
+    '''
+    Function for splitting subjects into seizure records to use
+    for transferring knowledge and into testing 
+    '''
+    file = dc.File(hdf5_path, 'r')
+    transfer_subjects = []
+    transfer_records = dict()
+    test_records = dict()
+    for subj in subjects:
+        if subj in file.keys():
+            subject = file[subj]
+            seiz_recs = get_seiz_recs(subject, seiz_classes)
+            if len(seiz_recs['seiz']) > 1:
+                # choose 1 record with seizure to use for transferring
+                test, transfer = train_test_split(seiz_recs['seiz'], test_size = 1, random_state = seed)
+                test_records[subj] = test
+                transfer_records[subj] = transfer
+                transfer_subjects.append(subj)
+                # if any non seizure records, choose 1 record to use for transferring
+                if len(seiz_recs['non seiz']) > 1:
+                    test, transfer = train_test_split(seiz_recs['non seiz'], test_size = 1, random_state = seed)
+                    test_records[subj] = np.append(test_records[subj], test)
+                    transfer_records[subj] = np.append(transfer_records[subj], transfer)
+
+    return transfer_subjects, transfer_records, test_records
+
 
 def get_seiz_recs(subject, seiz_classes, pickle_path=None):
     seiz_recs = dict()
