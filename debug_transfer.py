@@ -38,27 +38,27 @@ parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
 
 trans_subjs = ['/test/00008174', '/test/00008544', '/train/00000609',
-               '/train/00000820', '/train/00001891', '/train/00005452',
-                '/train/00006230', '/train/00006520', '/train/00008204',
-                '/train/00008345', '/train/00010418', '/test/00000629',
-                '/test/00000795', '/test/00001770', '/test/00001981',
-                '/test/00002289', '/test/00003281', '/test/00004594',
-                '/test/00004671', '/test/00005031', '/test/00005943',
-                '/test/00006900', '/test/00007633', '/train/00000017',
-                '/train/00000032', '/train/00000054', '/train/00000077',
-                '/train/00000107', '/train/00000148', '/train/00000175',
-                '/train/00000184', '/train/00000216', '/train/00000244',
-                '/train/00000254', '/train/00000289', '/train/00000427',
-                '/train/00000458', '/train/00000502', '/train/00000577',
-                '/train/00000598', '/train/00000604', '/train/00000659',
-                '/train/00000705', '/train/00000762', '/train/00000908',
-                '/train/00000924', '/train/00000929', '/train/00001026',
-                '/train/00001030', '/train/00001050', '/train/00001217',
-                '/train/00001246', '/train/00001267', '/train/00001317',
-                '/train/00001331']
+       '/train/00000820', '/train/00001891', '/train/00005452',
+       '/train/00006230', '/train/00006520', '/train/00008204',
+       '/train/00008345', '/train/00010418', '/test/00000629',
+       '/test/00000795', '/test/00001770', '/test/00001981',
+       '/test/00002289', '/test/00003281', '/test/00004594',
+       '/test/00004671', '/test/00005031', '/test/00005943',
+       '/test/00006900', '/test/00007633', '/train/00000017',
+       '/train/00000032', '/train/00000054', '/train/00000077',
+       '/train/00000107', '/train/00000148', '/train/00000175',
+       '/train/00000184', '/train/00000216', '/train/00000244',
+       '/train/00000254', '/train/00000289', '/train/00000427',
+       '/train/00000458', '/train/00000502', '/train/00000577',
+       '/train/00000598', '/train/00000604', '/train/00000659',
+       '/train/00000705', '/train/00000762', '/train/00000908',
+       '/train/00000924', '/train/00000929', '/train/00001026',
+       '/train/00001030', '/train/00001050', '/train/00001217',
+       '/train/00001246', '/train/00001267', '/train/00001317',
+       '/train/00001331']
 
 args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2', 
-                          '--transfer_subjects', '/test/00008174', '/test/00008544', '/train/00000609', '/train/00000820', '/train/00001891', '/train/00005452', '/train/00006230', '/train/00006520', '/train/00008204', '/train/00008345', '/train/00010418', '/test/00000629', '/test/00000795', '/test/00001770', '/test/00001981', '/test/00002289', '/test/00003281', '/test/00004594', '/test/00004671', '/test/00005031', '/test/00005943', '/test/00006900', '/test/00007633', '/train/00000017', '/train/00000032', '/train/00000054', '/train/00000077', '/train/00000107', '/train/00000148', '/train/00000175', '/train/00000184', '/train/00000216', '/train/00000244', '/train/00000254', '/train/00000289', '/train/00000427', '/train/00000458', '/train/00000502', '/train/00000577', '/train/00000598', '/train/00000604', '/train/00000659', '/train/00000705', '/train/00000762', '/train/00000908', '/train/00000924', '/train/00000929', '/train/00001026', '/train/00001030', '/train/00001050', '/train/00001217', '/train/00001246', '/train/00001267', '/train/00001317', '/train/00001331',
+                          '--transfer_subjects', *trans_subjs
                           ])
 main(args)

@@ -359,7 +359,8 @@ def get_seiz_kfoldsubjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pick
             pickle.dump(seiz_subjs, fp)
     return seiz_subjs
 
-def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed, **kwargs):
+def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
+                          min_seiz = 20, min_ratio = 2, **kwargs):
     '''
     Function for splitting subjects into seizure records to use
     for transferring knowledge and into testing 
@@ -369,39 +370,60 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed, **kwargs):
     transfer_records = dict()
     test_records = dict()
     for subj in subjects:
-        if subj in file.keys():
-            subject = file[subj]
-            seiz_recs = get_seiz_recs(subject, seiz_classes)
-            if len(seiz_recs['seiz']) > 1:
-                # choose 1 record with seizure to use for transferring
-                test, transfer = train_test_split(seiz_recs['seiz'], test_size = 1, random_state = seed)
-                test_records[subj] = test
-                transfer_records[subj] = transfer
-                transfer_subjects.append(subj)
-                # if any non seizure records, choose 1 record to use for transferring
-                if len(seiz_recs['non seiz']) > 1:
-                    test, transfer = train_test_split(seiz_recs['non seiz'], test_size = 1, random_state = seed)
-                    test_records[subj] = np.append(test_records[subj], test)
-                    transfer_records[subj] = np.append(transfer_records[subj], transfer)
+        subject = file[subj]
+        seiz_recs = get_seiz_recs(subject, seiz_classes)
+        if len(seiz_recs['seiz']['rec']) > 1:
+            # choose 1 record with seizure to use for transferring
+            seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by = 'seiz dur')
+            min_seiz_dur = seiz_pd[seiz_pd['seiz dur'] >= min_seiz]
+            non_min_seiz_dur = seiz_pd[seiz_pd['seiz dur'] < min_seiz]['rec']
+
+            if len(min_seiz_dur) > 0:
+                transfer = min_seiz_dur['rec'].values[0]
+                transfer_ratio = min_seiz_dur['bckg dur'].values[0]/min_seiz_dur['seiz dur'].values[0]
+                test = min_seiz_dur['rec'].values[1:]
+            else:
+                transfer = min_seiz_dur['rec'].values[-1]
+                transfer_ratio = min_seiz_dur['bckg dur'].values[-1]/min_seiz_dur['seiz dur'].values[-1]
+                test = min_seiz_dur['rec'].values[:-1]
+
+            test_records[subj] = np.append(test, non_min_seiz_dur)
+            transfer_records[subj] = [transfer]
+            transfer_subjects.append(subj)
+            # if any non seizure records, choose 1 record to use for transferring
+            if transfer_ratio < min_ratio and len(seiz_recs['non seiz']['rec']) > 1:
+                test, transfer = train_test_split(seiz_recs['non seiz']['rec'], test_size = 1, random_state = seed)
+                test_records[subj] = np.append(test_records[subj], test)
+                transfer_records[subj] = np.append(transfer_records[subj], transfer)
 
     return transfer_subjects, transfer_records, test_records
 
 
 def get_seiz_recs(subject, seiz_classes, pickle_path=None):
     seiz_recs = dict()
-    seiz_recs['seiz'] = []
-    seiz_recs['non seiz'] = []
+    seiz_recs['seiz'] = {'rec': [], 'seiz dur': [], 'bckg dur': []}
+    seiz_recs['non seiz'] = {'rec': [], 'bckg dur': []}
 
     for rec in subject.keys():
         seiz = 0
         annos = subject[rec]['Annotations']
+        seiz_dur = 0
+        bckg_dur = 0
+
         for anno in annos:
             if anno['Name'].lower() in seiz_classes:
+                seiz_dur += anno['Duration']
                 seiz = 1
+            elif anno['Name'].lower() == 'bckg':
+                bckg_dur += anno['Duration']
+
         if seiz == 1:
-            seiz_recs['seiz'].append(rec)
+            seiz_recs['seiz']['rec'].append(rec)
+            seiz_recs['seiz']['seiz dur'].append(seiz_dur)
+            seiz_recs['seiz']['bckg dur'].append(bckg_dur)
         else:
-            seiz_recs['non seiz'].append(rec)
+            seiz_recs['non seiz']['rec'].append(rec)
+            seiz_recs['non seiz']['bckg dur'].append(bckg_dur)
 
         if pickle_path is not None:
             with open(pickle_path, 'wb') as fp:
