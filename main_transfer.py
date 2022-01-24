@@ -86,8 +86,8 @@ def main(args):
         model = get_model.get_model(model_config)
 
         # load weights of trained model
-        #checkpoint = torch.load('/Volumes/GoogleDrive/Mit drev/Matematisk modellering/Speciale/semi_active_seizure/models/checkpoints/2021_11_22_12_23_06_815553/epoch_0.pt')
-        #model.load_state_dict(checkpoint['model_state_dict'])
+        checkpoint = torch.load(args.model_path)
+        model.load_state_dict(checkpoint['model_state_dict'])
 
         # train model
         optim_config = config['fit']['optimizer']
@@ -116,45 +116,45 @@ def main(args):
                                                 choose_best = False)
         
         # evaluate test error before transfer
-        #y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
+        y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
         # calculate metrics
-        #sens = sensitivity(y_true, y_pred)
-        #spec = specificity(y_true, y_pred)
-        #f1 = f1_score(y_true, y_pred)
-        #prec = precision_score(y_true, y_pred)
-        #acc = accuracy(y_true, y_pred)
+        sens = sensitivity(y_true, y_pred)
+        spec = specificity(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+        prec = precision_score(y_true, y_pred)
+        acc = accuracy(y_true, y_pred)
 
-        #writer.add_scalar('test_initial/sensitivity_' + subj, sens)
-        #writer.add_scalar('test_initial/specificity_' + subj, spec)
-        #writer.add_scalar('test_initial/f1_' + subj, f1)
-        #writer.add_scalar('test_initial/precision_' + subj, prec)
-        #writer.add_scalar('test_initial/accuracy_' + subj, acc)
+        writer.add_scalar('test_initial/sensitivity_' + subj, sens)
+        writer.add_scalar('test_initial/specificity_' + subj, spec)
+        writer.add_scalar('test_initial/f1_' + subj, f1)
+        writer.add_scalar('test_initial/precision_' + subj, prec)
+        writer.add_scalar('test_initial/accuracy_' + subj, acc)
 
 
         time = datetime.now()
-        #train_loss, val_loss = model_train.train(train_loader = transfer_dataloader,
-        #                                            val_loader = test_dataloader,
-        #                                            test_loader = None,
-        #                                            epochs = args.epochs)
+        train_loss, val_loss = model_train.train(train_loader = transfer_dataloader,
+                                                    val_loader = test_dataloader,
+                                                    test_loader = None,
+                                                    epochs = args.epochs)
                                                 
         print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
         print('Total time', datetime.now()-time_start, '.')
 
         # test model after transfer
-        #y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
+        y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
 
         # calculate metrics
-        #sens = sensitivity(y_true, y_pred)
-        #spec = specificity(y_true, y_pred)
-        #f1 = f1_score(y_true, y_pred)
-        #prec = precision_score(y_true, y_pred)
-        #acc = accuracy(y_true, y_pred)
+        sens = sensitivity(y_true, y_pred)
+        spec = specificity(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+        prec = precision_score(y_true, y_pred)
+        acc = accuracy(y_true, y_pred)
 
-        #writer.add_scalar('test_final/sensitivity_' + subj, sens)
-        #writer.add_scalar('test_final/specificity_' + subj, spec)
-        #writer.add_scalar('test_final/f1_' + subj, f1)
-        #writer.add_scalar('test_final/precision_' + subj, prec)
-        #writer.add_scalar('test_final/accuracy_' + subj, acc)
+        writer.add_scalar('test_final/sensitivity_' + subj, sens)
+        writer.add_scalar('test_final/specificity_' + subj, spec)
+        writer.add_scalar('test_final/f1_' + subj, f1)
+        writer.add_scalar('test_final/precision_' + subj, prec)
+        writer.add_scalar('test_final/accuracy_' + subj, acc)
 
 
     writer.close()
