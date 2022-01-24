@@ -21,7 +21,7 @@ def params_to_tb(writer, args):
 def main(args):
     writer = SummaryWriter('../runs/' + args.run_folder + '/' + args.model_type +\
                            '_'+ str(datetime.now()) + '_' + \
-                            args.job_name + '_split_' + str(args.split))
+                            args.job_name)
     params_to_tb(writer, args)
     with open('configuration.yml', 'r') as file:
         config = yaml.safe_load(file)
@@ -44,7 +44,7 @@ def main(args):
     train_datagen['window_length'] = args.window_length
     train_datagen['bckg_stride'] = args.bckg_stride
     train_datagen['seiz_stride'] = args.seiz_stride
-    train_datagen['bckg_rate'] = args.bckg_rate_train
+    train_datagen['bckg_rate'] = None
     train_datagen['anno_based_seg'] = True
     train_datagen['prefetch_data_from_seg'] = True
     train_datagen['protocol'] = 'all'
@@ -81,8 +81,8 @@ def main(args):
         model = get_model.get_model(model_config)
 
         # load weights of trained model
-        checkpoint = torch.load(args.model_path)
-        model.load_state_dict(checkpoint['model_state_dict'])
+        #checkpoint = torch.load('/Volumes/GoogleDrive/Mit drev/Matematisk modellering/Speciale/semi_active_seizure/models/checkpoints/2021_11_22_12_23_06_815553/epoch_0.pt')
+        #model.load_state_dict(checkpoint['model_state_dict'])
 
         # train model
         optim_config = config['fit']['optimizer']
@@ -164,6 +164,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type = int, default = 20)
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
+    parser.add_argument('--transfer_subjects', default = None)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)

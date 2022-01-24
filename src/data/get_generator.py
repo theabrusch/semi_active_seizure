@@ -128,7 +128,7 @@ def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
     return val_dataloader
 
 def get_dataset_transfer(data_gen, subjs_to_use, records_to_use, split = 'val', writer = None):
-    datasegment = datagenerator.SegmentData(**data_gen, records_to_use = records_to_use
+    datasegment = datagenerator.SegmentData(**data_gen, records_to_use = records_to_use,
                                             subjects_to_use = subjs_to_use)
     segment, norm_coef = datasegment.segment_data_transfer()
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
