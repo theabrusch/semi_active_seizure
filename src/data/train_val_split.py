@@ -383,12 +383,22 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
                 transfer_ratio = min_seiz_dur['bckg dur'].values[0]/min_seiz_dur['seiz dur'].values[0]
                 test = min_seiz_dur['rec'].values[1:]
             else:
-                transfer = min_seiz_dur['rec'].values[-1]
-                transfer_ratio = min_seiz_dur['bckg dur'].values[-1]/min_seiz_dur['seiz dur'].values[-1]
-                test = min_seiz_dur['rec'].values[:-1]
+                n_seiz_recs = len(seiz_pd)
+                dur = 0
+                i = 0
+                transfer = []
+                while (i+1) < n_seiz_recs and dur < min_seiz:
+                    transfer.append(seiz_pd['rec'].values[i])
+                    dur += seiz_pd['seiz dur'].values[i]
+                    i += 1
+                test = seiz_pd['rec'].values[i:]
+                transfer_ratio = np.sum(seiz_pd['bckg dur'].values[:i])/np.sum(seiz_pd['seiz dur'].values[:i])
 
             test_records[subj] = np.append(test, non_min_seiz_dur)
-            transfer_records[subj] = [transfer]
+            if not isinstance(transfer, list):
+                transfer_records[subj] = [transfer]
+            else:
+                transfer_records[subj] = transfer
             transfer_subjects.append(subj)
             # if any non seizure records, choose 1 record to use for transferring
             if transfer_ratio < min_ratio and len(seiz_recs['non seiz']['rec']) > 1:

@@ -48,7 +48,7 @@ class DataGenerator(Dataset):
 
         self.bckg_samples = len(self.segments['bckg'])
         self.seiz_samples = len(self.segments['seiz'])
-
+        
         # Set the background rate to the 
         if self.bckg_rate == 'None' or self.bckg_rate is None:
             self.bckg_rate = self.bckg_samples/self.seiz_samples

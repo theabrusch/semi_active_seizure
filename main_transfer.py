@@ -33,6 +33,8 @@ def main(args):
     splitdict['subjects'] = args.transfer_subjects
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['seed'] = args.seed
+    splitdict['min_seiz'] = args.min_seiz
+    splitdict['min_ratio'] = args.min_ratio
 
     transfer_subjects, transfer_records, test_records = train_val_split.get_transfer_subjects(**splitdict)
 
@@ -168,6 +170,10 @@ if __name__ == '__main__':
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
     parser.add_argument('--transfer_subjects', default = None)
+    # minimum amount of seizure in transfer dataset
+    parser.add_argument('--min_seiz', default = 20)
+    # minimum ratio of background in transfer dataset
+    parser.add_argument('--min_ratio', default = 2)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)

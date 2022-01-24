@@ -6,6 +6,9 @@ parser.add_argument('--file_path', type = str)
 parser.add_argument('--run_folder', default = 'None')
 parser.add_argument('--job_name', default = 'None')
 parser.add_argument('--seed', type = int, default = 20)
+parser.add_argument('--min_seiz', default = 20)
+# minimum ratio of background in transfer dataset
+parser.add_argument('--min_ratio', default = 2)
 # exclude seizure types to include in training but not evaluation
 parser.add_argument('--onlytrainseiz', default = None)
 parser.add_argument('--transfer_subjects', nargs = '+', default = None)
