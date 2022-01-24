@@ -106,6 +106,7 @@ def main(args):
     train_loss, val_loss = model_train.train(train_loader = train_dataloader,
                                             val_loader = test_dataloader,
                                             test_loader = None,
+                                            safe_best_model= args.save_best_model,
                                             epochs = args.epochs)
                                             
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
@@ -177,6 +178,7 @@ if __name__ == '__main__':
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
     parser.add_argument('--padding', type=eval, default=False)       
+    parser.add_argument('--save_best_model', type=eval, default=False)       
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
