@@ -31,10 +31,19 @@ def main(args):
     splitdict['hdf5_path'] = args.file_path
     splitdict['split'] = args.split
     splitdict['only_train_seiz'] = args.onlytrainseiz
+    splitdict['val_split'] = args.val_split
+    splitdict['n_val_splits'] = 5
     splitdict['excl_seiz'] = args.excl_seiz
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = args.n_splits
-    train, test = train_val_split.get_kfold(**splitdict)
+
+    if splitdict['val_split'] is not None:
+        train, val, test = train_val_split.get_kfold(**splitdict)
+        print('Train:', train)
+        print('Val:', val)
+        print('Test:', test)
+    else:
+        train, test = train_val_split.get_kfold(**splitdict)
 
     # get trainloader
     datagen = config['data_gen']
@@ -55,7 +64,11 @@ def main(args):
                                                             subjs_to_use = train,
                                                             split = 'train',
                                                             writer = writer)
-    
+    if args.val_split is not None:
+        val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
+                                                            subjs_to_use = val,
+                                                            split = 'val',
+                                                            writer = writer)
     # get test loader
     datagen['bckg_stride'] = None
     datagen['seiz_stride'] = None
@@ -103,11 +116,18 @@ def main(args):
                                             choose_best = False)
 
     time = datetime.now()
-    train_loss, val_loss = model_train.train(train_loader = train_dataloader,
-                                            val_loader = test_dataloader,
-                                            test_loader = None,
-                                            safe_best_model= args.save_best_model,
-                                            epochs = args.epochs)
+    if args.val_split is not None:
+        train_loss, val_loss = model_train.train(train_loader = train_dataloader,
+                                                val_loader = val_dataloader,
+                                                test_loader = test_dataloader,
+                                                safe_best_model= args.save_best_model,
+                                                epochs = args.epochs)
+    else:
+        train_loss, val_loss = model_train.train(train_loader = train_dataloader,
+                                                val_loader = test_dataloader,
+                                                test_loader = None,
+                                                safe_best_model= args.save_best_model,
+                                                epochs = args.epochs)
                                             
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
     print('Total time', datetime.now()-time_start, '.')
@@ -155,6 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--seed', type = int, default = 20)
     parser.add_argument('--split', type = int, default = 0)
+    parser.add_argument('--val_split', type = int, default = 0)
     parser.add_argument('--n_splits', type = int, default = 5)
     # exclude subjects that have 1 or more seizures not included in analysis
     parser.add_argument('--excl_seiz', type = eval, default = False) 
