@@ -4,6 +4,7 @@ from dataapi import data_collection as dc
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
+import scipy
 
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5'
 f = dc.File(file_name, 'r')
