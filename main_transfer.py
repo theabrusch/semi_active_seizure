@@ -46,7 +46,7 @@ def main(args):
     train_datagen['window_length'] = args.window_length
     train_datagen['bckg_stride'] = args.bckg_stride
     train_datagen['seiz_stride'] = args.seiz_stride
-    train_datagen['bckg_rate'] = None
+    train_datagen['bckg_rate'] = args.bckg_rate_train
     train_datagen['anno_based_seg'] = True
     train_datagen['prefetch_data_from_seg'] = True
     train_datagen['protocol'] = 'all'
@@ -86,7 +86,7 @@ def main(args):
         model = get_model.get_model(model_config)
 
         # load weights of trained model
-        checkpoint = torch.load(args.model_path)
+        checkpoint = torch.load(args.model_path, map_location = torch.device('cpu'))
         model.load_state_dict(checkpoint['model_state_dict'])
 
         # train model
@@ -107,10 +107,12 @@ def main(args):
             fit_config['weight'] = None
 
         loss_fn = get_loss.get_loss(**fit_config)
-
+        fit_config['weight'] = test_dataloader.dataset.bckg_rate
+        test_loss = get_loss.get_loss(**fit_config)
         model_train = train_model.model_train(model = model, 
                                                 optimizer = optimizer, 
                                                 loss_fn = loss_fn, 
+                                                val_loss = test_loss,
                                                 writer = writer,
                                                 scheduler = scheduler,
                                                 choose_best = False)
@@ -191,14 +193,14 @@ if __name__ == '__main__':
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
     parser.add_argument('--padding', type=eval, default=False)     
-    parser.add_argument('--model_path', type=eval, default=None)    
+    parser.add_argument('--model_path', type=str)    
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
     parser.add_argument('--scheduler', type = str, default = None)
     parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
-    parser.add_argument('--epochs', type=int, default=150)
+    parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
 

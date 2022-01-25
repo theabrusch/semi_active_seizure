@@ -28,8 +28,8 @@ parser.add_argument('--protocol', type=str, default= 'all')
 parser.add_argument('--model_type', type=str, default='BaselineCNN')
 parser.add_argument('--glob_avg_pool', type=eval, default=False)
 parser.add_argument('--dropoutprob', type=float, default=0.4)
-parser.add_argument('--padding', type=eval, default=False)     
-parser.add_argument('--model_path', type=eval, default=None)    
+parser.add_argument('--padding', type=eval, default=True)     
+parser.add_argument('--model_path', type=str)    
 
 # Training parameters
 parser.add_argument('--optimizer', type = str, default = 'RMSprop')
@@ -62,6 +62,6 @@ trans_subjs = ['/test/00008174', '/test/00008544', '/train/00000609',
 
 args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2', 
-                          '--transfer_subjects', *trans_subjs
+                          '--transfer_subjects', *trans_subjs, '--model_path', '/Users/theabrusch/Desktop/Speciale_data/final_model.pt'
                           ])
 main(args)

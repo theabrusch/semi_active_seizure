@@ -11,7 +11,7 @@ class model_train():
     '''
     Class for training pytorch model
     '''
-    def __init__(self, model, optimizer, loss_fn, 
+    def __init__(self, model, optimizer, loss_fn, val_loss = None,
                  choose_best = True, writer = None, scheduler = None):
         self.model = model
         self.optimizer = optimizer
@@ -22,6 +22,7 @@ class model_train():
         self.loss_fn.to(self.device)
         self.writer = writer
         self.choose_best = choose_best
+        self.val_loss = val_loss
 
     def train(self,
               train_loader,
@@ -93,7 +94,10 @@ class model_train():
                 x = batch[0].float().to(self.device)
                 y = batch[1].long().to(self.device)
                 out = self.model(x)
-                loss = self.loss_fn(out, y)
+                if self.val_loss is None:
+                    loss = self.loss_fn(out, y)
+                else:
+                    loss = self.val_loss(out, y)
 
                 running_val_loss += loss.detach().cpu()
                 if num_batch == 1:

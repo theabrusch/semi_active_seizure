@@ -134,8 +134,9 @@ def get_dataset_transfer(data_gen, subjs_to_use, records_to_use, split = 'val', 
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
                                           segments = segment, norm_coef = norm_coef)
     sampler = SeizSampler(dataset, seed = True)
+    batchsize = int(np.max([len(dataset)/10, 2*np.ceil(dataset.bckg_rate+1)]))
     val_dataloader = DataLoader(dataset, 
-                                batch_size = data_gen['batch_size'], 
+                                batch_size = batchsize, 
                                 sampler = sampler,
                                 pin_memory = True)
     if writer is not None:
