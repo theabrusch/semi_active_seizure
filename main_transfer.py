@@ -86,7 +86,7 @@ def main(args):
         model = get_model.get_model(model_config)
 
         # load weights of trained model
-        checkpoint = torch.load(args.model_path, map_location = torch.device('cpu'))
+        checkpoint = torch.load(args.model_path)
         model.load_state_dict(checkpoint['model_state_dict'])
 
         # train model
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type = int, default = 20)
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
-    parser.add_argument('--transfer_subjects', default = None)
+    parser.add_argument('--transfer_subjects', nargs = '+', default = None)
     # minimum amount of seizure in transfer dataset
     parser.add_argument('--min_seiz', default = 20)
     # minimum ratio of background in transfer dataset
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
-    parser.add_argument('--padding', type=eval, default=False)     
+    parser.add_argument('--padding', type=eval, default=True)     
     parser.add_argument('--model_path', type=str)    
 
     # Training parameters
