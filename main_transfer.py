@@ -86,7 +86,7 @@ def main(args):
         model = get_model.get_model(model_config)
 
         # load weights of trained model
-        checkpoint = torch.load(args.model_path)
+        checkpoint = torch.load(args.model_path, map_location = 'cpu')
         model.load_state_dict(checkpoint['model_state_dict'])
 
         # train model
