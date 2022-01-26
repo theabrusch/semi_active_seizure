@@ -244,6 +244,7 @@ def get_kfold(hdf5_path,
                 excl_seiz = False,
                 n_splits = 5,
                 n_val_splits = 7,
+                choose_orig_val = True,
                 **kwargs):
 
     seiz_subjs = get_seiz_kfoldsubjs(hdf5_path, 'all',
@@ -253,12 +254,12 @@ def get_kfold(hdf5_path,
 
     # stratified splitting on seizure type
     stratgroupsplit = StratifiedGroupKFold(n_splits = n_splits)
-    seiz_splits = stratgroupsplit.split(seiz_subjs['seiz']['subjects'], seiz_subjs['seiz']['seizures'], seiz_subjs['seiz']['subjects']) 
-    seiz_split = list(seiz_splits)[split]
+    seiz_splits = list(stratgroupsplit.split(seiz_subjs['seiz']['subjects'], seiz_subjs['seiz']['seizures'], seiz_subjs['seiz']['subjects']))
+    seiz_split = seiz_splits[split]
     # regular splitting on non-seizure subjects
     kfold = KFold(n_splits=n_splits)
-    bckg_splits = kfold.split(seiz_subjs['non seiz'])
-    bckg_split = list(bckg_splits)[split]
+    bckg_splits = list(kfold.split(seiz_subjs['non seiz']))
+    bckg_split = bckg_splits[split]
 
     test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[1]])
     train_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[0]])
@@ -289,7 +290,23 @@ def get_kfold(hdf5_path,
         train = np.append(train_seiz, train_bckg)
 
         return train, test
-    else:
+    elif choose_orig_val: #choose one of the other splits for validation
+        if val_split == split:
+            val_split = np.random.choice([i for i in range(n_splits) if i != split])
+            print('Same split is chosen for testing and validation split. Randomly setting validation set to', val_split)
+        seiz_val_split = seiz_splits[val_split]
+        bckg_val_split = bckg_splits[val_split]
+        val_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_val_split[1]])
+        val_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_val_split[1]])
+        train_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]])
+
+        val = np.append(val_seiz, val_bckg)
+        train_temp = np.append(train_seiz, train_bckg)
+
+        train = np.array([subj for subj in train_temp if subj not in val])
+        
+        return train, val, test
+    else: #split training set again to get validaition and training set
         train_subj_split = np.array(seiz_subjs['seiz']['subjects'])[seiz_split[0]]
         train_seiz_split = np.array(seiz_subjs['seiz']['seizures'])[seiz_split[0]]
         # split seizures

@@ -44,6 +44,7 @@ class model_train():
         p = Path(checkpoint_path)
         p.mkdir(parents=True, exist_ok=True)
         f1_val_old = 0 
+        sensspec_old = 0
         sens_old = 0
         spec_old = 0
         
@@ -118,13 +119,14 @@ class model_train():
             f1_scores[epoch] = f1_val_new
             f1_val = (f1_val_new + f1_val_old)/2
             f1_val_old = f1_val_new
-            sens_val = (sens + sens_old)/2
-            spec_val = (spec + spec_old)/2
-            sens_old = sens
-            spec_old = spec
-            
+
+            # harmonic mean between sens and spec
+            sensspec_new = 2*sens*spec/(sens+spec)
+            sensspec = (sensspec_new + sensspec_old)/2
+            sensspec_old = sensspec_new
+
             if trial is not None:
-                trial.report(f1_val, epoch)
+                trial.report(sensspec, epoch)
                 if epoch > 9:
                     if trial.should_prune():
                         trial.set_user_attr('sens', sens)
@@ -142,6 +144,7 @@ class model_train():
                 self.writer.add_scalar('val/sens'+run, sens, epoch)
                 self.writer.add_scalar('val/spec'+run, spec, epoch)
                 self.writer.add_scalar('val/f1'+run, f1_val_new, epoch)
+                self.writer.add_scalar('val/sensspec'+run, sensspec_new, epoch)
                 self.writer.add_scalar('val/precision'+run, prec, epoch)
                 self.writer.add_scalar('val_raw/true_pos'+run, tp, epoch)
                 self.writer.add_scalar('val_raw/false_neg'+run, fn, epoch)
@@ -221,7 +224,7 @@ class model_train():
         if self.writer is not None:
             self.writer.flush()
         if trial is not None:
-            return f1_val, sens, spec
+            return sensspec, sens, spec
         else:
             return train_loss, val_loss
     

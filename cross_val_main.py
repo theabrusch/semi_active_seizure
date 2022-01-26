@@ -144,7 +144,7 @@ def main(args):
                                                 scheduler = scheduler,
                                                 choose_best = choose_best)
 
-        f1, sens, spec = model_train.train(train_loader = train_dataloader,
+        sensspec, sens, spec = model_train.train(train_loader = train_dataloader,
                                                 val_loader = val_dataloader,
                                                 test_loader = None,
                                                 epochs = args.epochs,
@@ -152,7 +152,7 @@ def main(args):
                                                 trial = trial)
         trial.set_user_attr('sens', sens)
         trial.set_user_attr('spec', spec)
-        return f1
+        return sensspec
 
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
     callback = LogParamsToTB(writer)
@@ -164,8 +164,8 @@ def main(args):
 
     study = optuna.study.create_study(study_name = job_name, 
                                       direction = 'maximize', 
-                                      pruner = optuna.pruners.MedianPruner(),
-                                      storage = 'sqlite:///data/optuna_trials.db',
+                                      pruner = optuna.pruners.PatientPruner(optuna.pruners.HyperbandPruner(max_resource=args.epochs), patience = 5),
+                                      storage = 'sqlite:///data/optuna_trials_final.db',
                                       load_if_exists = args.load_existing)
     study.optimize(objective, 
                    args.n_trials, 
