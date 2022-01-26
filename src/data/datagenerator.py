@@ -694,21 +694,14 @@ class SegmentData():
                 segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
         
         self.segments = segments
-#if self.bckg_rate == 'None' or self.bckg_rate is None:
-#            self.bckg_rate = self.bckg_samples/self.seiz_samples
-#        elif self.bckg_rate > self.bckg_samples/self.seiz_samples:
-#            print('Background rate is too high compared to ratio.',
-#                  'Setting background rate to', 
-#                  self.bckg_samples/self.seiz_samples, '.')
-#            self.bckg_rate = self.bckg_samples/self.seiz_samples
         if not self.bckg_rate is None and self.use_train_seed and not self.subj_strat:
             seiz_samples = len(self.segments['seiz'])
             bckg_samples = len(self.segments['bckg'])
-            
+
             if self.bckg_rate > bckg_samples/seiz_samples:
                 print('Background rate is too high compared to ratio.',
                         'Setting background rate to', 
-                        self.bckg_samples/self.seiz_samples, '.')
+                        bckg_samples/seiz_samples, '.')
                 bckg_rate = bckg_samples/seiz_samples
             else:
                 bckg_rate = self.bckg_rate
