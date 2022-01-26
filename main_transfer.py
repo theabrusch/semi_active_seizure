@@ -136,6 +136,7 @@ def main(args):
         time = datetime.now()
         train_loss, val_loss = model_train.train(train_loader = transfer_dataloader,
                                                     val_loader = test_dataloader,
+                                                    transfer_subj = subj,
                                                     test_loader = None,
                                                     epochs = args.epochs)
                                                 
