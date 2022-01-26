@@ -22,7 +22,8 @@ class model_train():
         self.loss_fn.to(self.device)
         self.writer = writer
         self.choose_best = choose_best
-        self.val_loss = val_loss
+        if val_loss is not None:
+            self.val_loss = val_loss.to(self.device)
 
     def train(self,
               train_loader,
