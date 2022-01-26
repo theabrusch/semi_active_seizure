@@ -34,8 +34,9 @@ def main(args):
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['seed'] = args.seed
     splitdict['min_seiz'] = args.min_seiz
-    if args.min_ratio < args.bckg_rate_train:
-        args.min_ratio = args.bckg_rate_train
+    if not args.bckg_rate_train is None:
+        if args.min_ratio < args.bckg_rate_train:
+            args.min_ratio = args.bckg_rate_train
     splitdict['min_ratio'] = args.min_ratio
 
     transfer_subjects, transfer_records, test_records = train_val_split.get_transfer_subjects(**splitdict)
