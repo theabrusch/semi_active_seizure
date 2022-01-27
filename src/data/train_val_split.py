@@ -397,8 +397,10 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
 
             if len(min_seiz_dur) > 0:
                 transfer = min_seiz_dur['rec'].values[0]
-                transfer_ratio = min_seiz_dur['bckg dur'].values[0]/min_seiz_dur['seiz dur'].values[0]
                 test = min_seiz_dur['rec'].values[1:]
+                seiz_dur = min_seiz_dur['seiz dur'].values[0]
+                bckg_dur = min_seiz_dur['bckg dur'].values[0]
+                transfer_ratio = bckg_dur / seiz_dur
             else:
                 n_seiz_recs = len(seiz_pd)
                 dur = 0
@@ -409,19 +411,29 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
                     dur += seiz_pd['seiz dur'].values[i]
                     i += 1
                 test = seiz_pd['rec'].values[i:]
-                transfer_ratio = np.sum(seiz_pd['bckg dur'].values[:i])/np.sum(seiz_pd['seiz dur'].values[:i])
+                seiz_dur = np.sum(seiz_pd['seiz dur'].values[:i])
+                bckg_dur = np.sum(seiz_pd['bckg dur'].values[:i])
+                transfer_ratio = bckg_dur / seiz_dur
 
             test_records[subj] = np.append(test, non_min_seiz_dur)
             if not isinstance(transfer, list):
                 transfer_records[subj] = [transfer]
             else:
                 transfer_records[subj] = transfer
+    
+            # if any non seizure records, sample enough background records
+            i=0
+            n_bckg = len(seiz_recs['non seiz']['rec'])
+            bckg_pd = pd.DataFrame(seiz_recs['non seiz']).sample(frac=1, random_state = seed).reset_index(drop=True)
+            while transfer_ratio < min_ratio and  i < n_bckg:
+                transfer_records[subj].append(bckg_pd['rec'].values[i])
+                bckg_dur += bckg_pd['bckg dur'].values[i]
+                transfer_ratio = bckg_dur / seiz_dur
+                i += 1
+            test_bckg = bckg_pd['rec'].values[i:]
+            test_records[subj] = np.append(test_records[subj], test_bckg)
+
             transfer_subjects.append(subj)
-            # if any non seizure records, choose 1 record to use for transferring
-            if transfer_ratio < min_ratio and len(seiz_recs['non seiz']['rec']) > 1:
-                test, transfer = train_test_split(seiz_recs['non seiz']['rec'], test_size = 1, random_state = seed)
-                test_records[subj] = np.append(test_records[subj], test)
-                transfer_records[subj] = np.append(transfer_records[subj], transfer)
 
     return transfer_subjects, transfer_records, test_records
 
