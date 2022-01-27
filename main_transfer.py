@@ -164,7 +164,9 @@ def main(args):
         writer.add_scalar('test_final/precision_' + subj, prec_fin)
         writer.add_scalar('test_final/accuracy_' + subj, acc_fin)
 
-        t_res.add_row([subj, sens_init, sens_fin, spec_init, spec_fin, f1_init, f1_fin])
+        t_res.add_row([subj, round(sens_init,3), round(sens_fin,3),\
+                       round(spec_init,3), round(spec_fin,3), round(f1_init,3), \
+                       round(f1_fin,3)])
     
     writer.add_text("transfer_results", t_res.get_html_string(), global_step=0)
     writer.close()
