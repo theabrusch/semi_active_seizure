@@ -85,7 +85,10 @@ def main(args):
     val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
                                                          subjs_to_use = val, 
                                                          writer = writer)
-
+    fit_config = config['fit']
+    fit_config['weight'] = val_dataloader.dataset.bckg_rate
+    # get weighted validation loss
+    val_loss_fn = get_loss.get_loss(**fit_config)
     # optimize
     def objective(trial):
         # get datasets and dataloaders
@@ -127,8 +130,6 @@ def main(args):
         optim_config['weight_decay'] = trial.suggest_float('weight_decay', 1e-5, 1e-1)
         optimizer, scheduler = get_optim.get_optim(model, optim_config)
 
-        fit_config = config['fit']
-
         if args.use_weighted_loss:
             fit_config['weight'] = bckg_rate
         else:
@@ -140,6 +141,7 @@ def main(args):
         model_train = train_model.model_train(model = model, 
                                                 optimizer = optimizer, 
                                                 loss_fn = loss_fn, 
+                                                val_loss = val_loss_fn,
                                                 writer = writer,
                                                 scheduler = scheduler,
                                                 choose_best = choose_best)
