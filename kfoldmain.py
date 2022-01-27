@@ -123,12 +123,14 @@ def main(args):
         train_loss, val_loss = model_train.train(train_loader = train_dataloader,
                                                 val_loader = val_dataloader,
                                                 test_loader = test_dataloader,
+                                                job_name = args.job_name,
                                                 safe_best_model= args.save_best_model,
                                                 epochs = args.epochs)
     else:
         train_loss, val_loss = model_train.train(train_loader = train_dataloader,
                                                 val_loader = test_dataloader,
                                                 test_loader = None,
+                                                job_name = args.job_name,
                                                 safe_best_model= args.save_best_model,
                                                 epochs = args.epochs)
                                             

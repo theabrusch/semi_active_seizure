@@ -1,3 +1,4 @@
+from pyexpat import features
 import torch
 from datetime import date, datetime
 import numpy as np
@@ -31,6 +32,7 @@ class model_train():
               safe_best_model = False,
               test_loader = None,
               trial = None,
+              job_name = None,
               early_stopping = False,
               transfer_subj = None,
               epochs = 10):
@@ -41,7 +43,10 @@ class model_train():
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
         f1_scores = torch.zeros(epochs)
-        checkpoint_path = 'models/checkpoints/' + str(datetime.now())        
+        if job_name is not None:
+            checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + job_name
+        else:
+            checkpoint_path = 'models/checkpoints/' + str(datetime.now())     
         p = Path(checkpoint_path)
         p.mkdir(parents=True, exist_ok=True)
         f1_val_old = 0 
@@ -255,6 +260,177 @@ class model_train():
             return y_pred, y_true, seiz_type
         else:
             return y_pred, y_true
+
+
+class model_train_ssltf():
+    '''
+    Class for training pytorch model using 
+    semisupervised transfer learning.
+    '''
+    def __init__(self, target_model, source_model, optimizer, loss_fn, val_loss = None,
+                 choose_best = True, writer = None, scheduler = None):
+        self.target_model = target_model
+        self.source_model = source_model
+        self.optimizer = optimizer
+        self.loss_fn = loss_fn
+        self.scheduler = scheduler
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.target_model.to(self.device)
+        self.source_model.to(self.device)
+        self.loss_fn.to(self.device)
+        self.writer = writer
+        self.choose_best = choose_best
+        if val_loss is not None:
+            self.val_loss = val_loss.to(self.device)
+
+    def train_transfer(self,
+                        train_loader,
+                        val_loader, 
+                        safe_best_model = False,
+                        test_loader = None,
+                        transfer_subj = None,
+                        epochs = 10):
+        '''
+        Train model
+        '''
+
+        train_loss = torch.zeros(epochs)
+        val_loss = torch.zeros(epochs)
+        f1_scores = torch.zeros(epochs)
+
+        for epoch in range(epochs):
+            running_train_loss = 0
+            running_val_loss = 0
+
+            num_batch = 1
+            print('Epoch', epoch + 1, 'out of', epochs)
+            self.target_model.train()
+            self.source_model.eval()
+            for batch in train_loader:
+                x = batch[0].float().to(self.device)
+                y = batch[1].long().to(self.device)
+                self.optimizer.zero_grad()
+                # get output of target model to be trained
+                out_target, features_target = self.target_model(x, return_features = True)
+                # get output of source model
+                out_source, features_source = self.source_model(x, return_features = True)
+
+                loss = self.loss_fn(out_target, features_target, out_source, features_source, y)
+                loss.backward()
+                self.optimizer.step()
+
+                running_train_loss += loss.detach().cpu()
+                num_batch += 1
+                
+            if self.scheduler is not None:
+                self.scheduler.step()
+
+            train_loss[epoch] = running_train_loss/num_batch
+            if self.writer is not None: 
+                run = transfer_subj
+                self.writer.add_scalar('train/loss'+run, train_loss[epoch], epoch)
+            print('Training loss:', train_loss[epoch])
+
+            # Compute validation loss and metrics
+            num_batch = 1
+            self.model.eval()
+            for batch in val_loader:
+                x = batch[0].float().to(self.device)
+                y = batch[1].long().to(self.device)
+                out = self.model(x)
+                if self.val_loss is None:
+                    loss = self.loss_fn(out, y)
+                else:
+                    loss = self.val_loss(out, y)
+
+                running_val_loss += loss.detach().cpu()
+                if num_batch == 1:
+                    y_true = y.detach().cpu().numpy()
+                    y_pred = torch.argmax(out, axis = -1).detach().cpu().numpy()
+                else:
+                    y_true = np.append(y_true, y.detach().cpu().numpy(), axis = 0)
+                    y_pred = np.append(y_pred, torch.argmax(out, axis = -1).detach().cpu().numpy(), axis = 0)
+                num_batch += 1
+            
+            sens = sensitivity(y_true, y_pred)
+            spec = specificity(y_true, y_pred)
+            f1_val_new = f1_score(y_true, y_pred)
+            prec = precision_score(y_true, y_pred)
+            cm = confusion_matrix(y_true, y_pred, normalize = 'true')
+            tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
+
+            f1_scores[epoch] = f1_val_new
+            f1_val = (f1_val_new + f1_val_old)/2
+            f1_val_old = f1_val_new
+
+            # harmonic mean between sens and spec
+            sensspec_new = 2*sens*spec/(sens+spec)
+            sensspec = (sensspec_new + sensspec_old)/2
+            sensspec_old = sensspec_new
+            val_loss[epoch] = running_val_loss/num_batch
+
+            if self.writer is not None:
+                run = transfer_subj
+
+                self.writer.add_scalar('val/sens'+run, sens, epoch)
+                self.writer.add_scalar('val/spec'+run, spec, epoch)
+                self.writer.add_scalar('val/f1'+run, f1_val_new, epoch)
+                self.writer.add_scalar('val/sensspec'+run, sensspec_new, epoch)
+                self.writer.add_scalar('val/precision'+run, prec, epoch)
+                self.writer.add_scalar('val_raw/true_pos'+run, tp, epoch)
+                self.writer.add_scalar('val_raw/false_neg'+run, fn, epoch)
+                self.writer.add_scalar('val_raw/false_pos'+run, fp, epoch)
+                self.writer.add_scalar('val_raw/true_neg'+run, tn, epoch)
+                self.writer.add_scalar('val/loss' + run, val_loss[epoch], epoch)
+
+            print('Validation loss:', val_loss[epoch])
+
+        if safe_best_model:
+            checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + transfer_subj
+            p = Path(checkpoint_path)
+            p.mkdir(parents=True, exist_ok=True)
+            model_check = checkpoint_path + '/final_model' + '.pt'
+            torch.save({'model_state_dict': self.model.state_dict()},
+                        model_check)
+        if self.writer is not None:
+            self.writer.flush()
+
+        return train_loss, val_loss
+    
+    def eval(self, data_loader, return_seiz_type = False):
+        y_pred = None
+
+        self.model.eval()
+        i = 1
+        for batch in data_loader:
+            print('Batch', i, 'out of',  data_loader.__len__())
+            i+=1
+            x = batch[0].float().to(self.device)
+            out = self.model(x)
+            y_class = torch.argmax(out, axis = -1).cpu().numpy()
+
+            if y_pred is None:
+                y_pred = y_class
+                y_true = batch[1]
+                if len(batch) > 2:
+                    seiz_type = batch[2]
+            else:
+                y_pred = np.append(y_pred, y_class, axis = 0)
+                y_true = np.append(y_true, batch[1], axis = 0)
+                if len(batch) > 2:
+                    seiz_type = np.append(seiz_type, batch[2], axis = 0)
+        if return_seiz_type:
+            return y_pred, y_true, seiz_type
+        else:
+            return y_pred, y_true
+
+
+
+
+
+
+
+
 
 
 
