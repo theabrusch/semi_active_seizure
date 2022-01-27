@@ -15,7 +15,8 @@ def params_to_tb(writer, args):
     t = PrettyTable(['Argument', 'Value'])
     param_dict = vars(args)
     for key, val in param_dict.items():
-        t.add_row([key, val])
+        if not key == 'transfer_subjects':
+            t.add_row([key, val])
     writer.add_text("args", t.get_html_string(), global_step=0)
 
 def main(args):
