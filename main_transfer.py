@@ -65,7 +65,8 @@ def main(args):
     
     # initialise tabel for initial and final results
     t_dataset = PrettyTable(['Subject', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio'])
-    t_res = PrettyTable(['Subject', 'I. sens', 'F. sens', 'I. spec', 'F. spec', 'I. f1', 'F. f1'])
+    t_res = PrettyTable(['Subject', 'I. sens', 'F. sens', 'I. spec', 'F. spec', 'I. f1', 'F. f1',\
+                         'I. sensspec', 'F. sensspec'])
     for subj in transfer_subjects:
         transfer_dataloader = get_generator.get_dataset_transfer(data_gen = train_datagen, 
                                                                 subjs_to_use = [subj], 
@@ -136,6 +137,7 @@ def main(args):
         f1_init = f1_score(y_true, y_pred)
         prec_init = precision_score(y_true, y_pred)
         acc_init = accuracy(y_true, y_pred)
+        sensspec_init = 2*sens_init*spec_init/(sens_init+spec_init)
 
         writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
         writer.add_scalar('test_initial/specificity_' + subj, spec_init)
@@ -163,6 +165,8 @@ def main(args):
         f1_fin = f1_score(y_true, y_pred)
         prec_fin = precision_score(y_true, y_pred)
         acc_fin = accuracy(y_true, y_pred)
+        sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
+
 
         writer.add_scalar('test_final/sensitivity_' + subj, sens_fin)
         writer.add_scalar('test_final/specificity_' + subj, spec_fin)
@@ -172,7 +176,7 @@ def main(args):
 
         t_res.add_row([subj, round(sens_init,3), round(sens_fin,3),\
                        round(spec_init,3), round(spec_fin,3), round(f1_init,3), \
-                       round(f1_fin,3)])
+                       round(f1_fin,3), round(sensspec_init,3), round(sensspec_fin, 3)])
     
     writer.add_text("transfer_results", t_res.get_html_string(), global_step=0)
     writer.add_text("transfer_datasets", t_dataset.get_html_string(), global_step=0)
