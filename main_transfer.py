@@ -54,7 +54,7 @@ def main(args):
     train_datagen['prefetch_data_from_seg'] = True
     train_datagen['protocol'] = 'all'
     train_datagen['batch_size'] = args.batch_size
-    train_datagen['use_train_seed'] = True
+    train_datagen['use_train_seed'] = False
 
     # get test loader
     test_datagen = train_datagen.copy()
@@ -64,6 +64,7 @@ def main(args):
     test_datagen['anno_based_seg'] = False
     
     # initialise tabel for initial and final results
+    t_dataset = PrettyTable(['Subject', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio'])
     t_res = PrettyTable(['Subject', 'I. sens', 'F. sens', 'I. spec', 'F. spec', 'I. f1', 'F. f1'])
     for subj in transfer_subjects:
         transfer_dataloader = get_generator.get_dataset_transfer(data_gen = train_datagen, 
@@ -71,8 +72,13 @@ def main(args):
                                                                 records_to_use = transfer_records, 
                                                                 split = subj, 
                                                                 writer = writer)
-        print('Trans. Seiz samples', transfer_dataloader.dataset.seiz_samples)
-        print('Trans. Bckg samples', transfer_dataloader.dataset.bckg_samples)
+        trans_seiz = transfer_dataloader.dataset.seiz_samples
+        trans_bckg = transfer_dataloader.dataset.bckg_samples
+        print('Trans. Seiz samples', trans_seiz)
+        print('Trans. Bckg samples', trans_bckg)
+        t_dataset.add_row([subj, trans_seiz, trans_bckg, trans_seiz + trans_bckg, \
+                           trans_bckg/trans_seiz])
+
         test_dataloader = get_generator.get_dataset_transfer(data_gen = test_datagen, 
                                                                 subjs_to_use = [subj], 
                                                                 records_to_use = test_records, 
@@ -169,6 +175,7 @@ def main(args):
                        round(f1_fin,3)])
     
     writer.add_text("transfer_results", t_res.get_html_string(), global_step=0)
+    writer.add_text("transfer_datasets", t_dataset.get_html_string(), global_step=0)
     writer.close()
 
 if __name__ == '__main__':
