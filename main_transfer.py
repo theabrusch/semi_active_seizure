@@ -62,7 +62,9 @@ def main(args):
     test_datagen['seiz_stride'] = None
     test_datagen['bckg_rate'] = None
     test_datagen['anno_based_seg'] = False
-
+    
+    # initialise tabel for initial and final results
+    t_res = PrettyTable(['Subject', 'I. sens', 'F. sens', 'I. spec', 'F. spec', 'I. f1', 'F. f1'])
     for subj in transfer_subjects:
         transfer_dataloader = get_generator.get_dataset_transfer(data_gen = train_datagen, 
                                                                 subjs_to_use = [subj], 
@@ -123,17 +125,17 @@ def main(args):
         # evaluate test error before transfer
         y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
         # calculate metrics
-        sens = sensitivity(y_true, y_pred)
-        spec = specificity(y_true, y_pred)
-        f1 = f1_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred)
-        acc = accuracy(y_true, y_pred)
+        sens_init = sensitivity(y_true, y_pred)
+        spec_init = specificity(y_true, y_pred)
+        f1_init = f1_score(y_true, y_pred)
+        prec_init = precision_score(y_true, y_pred)
+        acc_init = accuracy(y_true, y_pred)
 
-        writer.add_scalar('test_initial/sensitivity_' + subj, sens)
-        writer.add_scalar('test_initial/specificity_' + subj, spec)
-        writer.add_scalar('test_initial/f1_' + subj, f1)
-        writer.add_scalar('test_initial/precision_' + subj, prec)
-        writer.add_scalar('test_initial/accuracy_' + subj, acc)
+        writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
+        writer.add_scalar('test_initial/specificity_' + subj, spec_init)
+        writer.add_scalar('test_initial/f1_' + subj, f1_init)
+        writer.add_scalar('test_initial/precision_' + subj, prec_init)
+        writer.add_scalar('test_initial/accuracy_' + subj, acc_init)
 
 
         time = datetime.now()
@@ -150,19 +152,21 @@ def main(args):
         y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
 
         # calculate metrics
-        sens = sensitivity(y_true, y_pred)
-        spec = specificity(y_true, y_pred)
-        f1 = f1_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred)
-        acc = accuracy(y_true, y_pred)
+        sens_fin = sensitivity(y_true, y_pred)
+        spec_fin = specificity(y_true, y_pred)
+        f1_fin = f1_score(y_true, y_pred)
+        prec_fin = precision_score(y_true, y_pred)
+        acc_fin = accuracy(y_true, y_pred)
 
-        writer.add_scalar('test_final/sensitivity_' + subj, sens)
-        writer.add_scalar('test_final/specificity_' + subj, spec)
-        writer.add_scalar('test_final/f1_' + subj, f1)
-        writer.add_scalar('test_final/precision_' + subj, prec)
-        writer.add_scalar('test_final/accuracy_' + subj, acc)
+        writer.add_scalar('test_final/sensitivity_' + subj, sens_fin)
+        writer.add_scalar('test_final/specificity_' + subj, spec_fin)
+        writer.add_scalar('test_final/f1_' + subj, f1_fin)
+        writer.add_scalar('test_final/precision_' + subj, prec_fin)
+        writer.add_scalar('test_final/accuracy_' + subj, acc_fin)
 
-
+        t_res.add_row([subj, sens_init, sens_fin, spec_init, spec_fin, f1_init, f1_fin])
+    
+    writer.add_text("transfer_results", t_res.get_html_string(), global_step=0)
     writer.close()
 
 if __name__ == '__main__':
@@ -188,7 +192,7 @@ if __name__ == '__main__':
     parser.add_argument('--bckg_rate_train', type=eval, default=1)
     parser.add_argument('--anno_based_seg', type=eval, default=True)
     parser.add_argument('--train_val_test', type=eval, default=False)
-    parser.add_argument('--batch_size', type=eval, default=512)
+    parser.add_argument('--batch_size', type=eval, default=64)
     # protocol(s) to use for training
     parser.add_argument('--protocol', type=str, default= 'all')
 
