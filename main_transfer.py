@@ -131,53 +131,53 @@ def main(args):
                                                 choose_best = False)
         
         # evaluate test error before transfer
-        y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
+        #y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
         # calculate metrics
-        sens_init = sensitivity(y_true, y_pred)
-        spec_init = specificity(y_true, y_pred)
-        f1_init = f1_score(y_true, y_pred)
-        prec_init = precision_score(y_true, y_pred)
-        acc_init = accuracy(y_true, y_pred)
-        sensspec_init = 2*sens_init*spec_init/(sens_init+spec_init)
+        #sens_init = sensitivity(y_true, y_pred)
+        #spec_init = specificity(y_true, y_pred)
+        #f1_init = f1_score(y_true, y_pred)
+        #prec_init = precision_score(y_true, y_pred)
+        #acc_init = accuracy(y_true, y_pred)
+        #sensspec_init = 2*sens_init*spec_init/(sens_init+spec_init)
 
-        writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
-        writer.add_scalar('test_initial/specificity_' + subj, spec_init)
-        writer.add_scalar('test_initial/f1_' + subj, f1_init)
-        writer.add_scalar('test_initial/precision_' + subj, prec_init)
-        writer.add_scalar('test_initial/accuracy_' + subj, acc_init)
+        #writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
+        #writer.add_scalar('test_initial/specificity_' + subj, spec_init)
+        #writer.add_scalar('test_initial/f1_' + subj, f1_init)
+        #writer.add_scalar('test_initial/precision_' + subj, prec_init)
+        #writer.add_scalar('test_initial/accuracy_' + subj, acc_init)
 
 
         time = datetime.now()
-        train_loss, val_loss = model_train.train(train_loader = transfer_dataloader,
-                                                    val_loader = test_dataloader,
-                                                    transfer_subj = subj,
-                                                    test_loader = None,
-                                                    epochs = args.epochs)
+        #train_loss, val_loss = model_train.train(train_loader = transfer_dataloader,
+        #                                            val_loader = test_dataloader,
+        #                                            transfer_subj = subj,
+        #                                            test_loader = None,
+        #                                            epochs = args.epochs)
                                                 
         print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
         print('Total time', datetime.now()-time_start, '.')
 
         # test model after transfer
-        y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
+        #y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
 
         # calculate metrics
-        sens_fin = sensitivity(y_true, y_pred)
-        spec_fin = specificity(y_true, y_pred)
-        f1_fin = f1_score(y_true, y_pred)
-        prec_fin = precision_score(y_true, y_pred)
-        acc_fin = accuracy(y_true, y_pred)
-        sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
+        #sens_fin = sensitivity(y_true, y_pred)
+        #spec_fin = specificity(y_true, y_pred)
+        #f1_fin = f1_score(y_true, y_pred)
+        #prec_fin = precision_score(y_true, y_pred)
+        #acc_fin = accuracy(y_true, y_pred)
+        #sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
 
 
-        writer.add_scalar('test_final/sensitivity_' + subj, sens_fin)
-        writer.add_scalar('test_final/specificity_' + subj, spec_fin)
-        writer.add_scalar('test_final/f1_' + subj, f1_fin)
-        writer.add_scalar('test_final/precision_' + subj, prec_fin)
-        writer.add_scalar('test_final/accuracy_' + subj, acc_fin)
+        #writer.add_scalar('test_final/sensitivity_' + subj, sens_fin)
+        #writer.add_scalar('test_final/specificity_' + subj, spec_fin)
+        #writer.add_scalar('test_final/f1_' + subj, f1_fin)
+        #writer.add_scalar('test_final/precision_' + subj, prec_fin)
+        #writer.add_scalar('test_final/accuracy_' + subj, acc_fin)
 
-        t_res.add_row([subj, round(sens_init,3), round(sens_fin,3),\
-                       round(spec_init,3), round(spec_fin,3), round(f1_init,3), \
-                       round(f1_fin,3), round(sensspec_init,3), round(sensspec_fin, 3)])
+        #t_res.add_row([subj, round(sens_init,3), round(sens_fin,3),\
+        #               round(spec_init,3), round(spec_fin,3), round(f1_init,3), \
+        #               round(f1_fin,3), round(sensspec_init,3), round(sensspec_fin, 3)])
     
     writer.add_text("transfer_results", t_res.get_html_string(), global_step=0)
     writer.add_text("transfer_datasets", t_dataset.get_html_string(), global_step=0)
