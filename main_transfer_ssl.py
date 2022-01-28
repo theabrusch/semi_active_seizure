@@ -134,7 +134,7 @@ def main(args):
             fit_config['weight'] = None
 
         class_loss = get_loss.get_loss(**fit_config)
-        loss_fn = get_loss.TransferLoss(class_loss)
+        loss_fn = get_loss.TransferLoss(class_loss, lambda_cons=args.lambda_cons)
         fit_config['weight'] = test_dataloader.dataset.bckg_rate
         test_loss = get_loss.get_loss(**fit_config)
 
@@ -239,6 +239,7 @@ if __name__ == '__main__':
     parser.add_argument('--scheduler', type = str, default = None)
     parser.add_argument('--milestones', type = eval, default = [50, 130, 150])
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
+    parser.add_argument('--lambda_cons', type=float, default=1)
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
