@@ -149,7 +149,7 @@ def main(args):
         # evaluate test error before transfer
         y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
         # calculate metrics
-        report = classification_report(y_true, y_pred)
+        report = classification_report(y_true, y_pred, output_dict = True)
         classes = list(report.keys())
         sens_init = report[classes[1]]['recall']
         spec_init = report[classes[0]]['recall']
@@ -179,7 +179,7 @@ def main(args):
         y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
 
         # calculate metrics
-        report = classification_report(y_true, y_pred)
+        report = classification_report(y_true, y_pred, output_dict = True)
         classes = list(report.keys())
         sens_fin = report[classes[1]]['recall']
         spec_fin = report[classes[0]]['recall']
