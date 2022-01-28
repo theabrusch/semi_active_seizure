@@ -1,4 +1,4 @@
-from main_transfer import main
+from main_transfer_ssl import main
 import argparse
 # job name
 parser = argparse.ArgumentParser()
