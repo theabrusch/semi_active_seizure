@@ -6,8 +6,7 @@ from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
 from src.models import get_model, get_optim, get_loss, train_model, metrics
 from datetime import datetime
-from src.models.metrics import sensitivity, specificity, accuracy
-from sklearn.metrics import f1_score, precision_score
+from sklearn.metrics import f1_score, precision_score, sensitivity, specificity, accuracy
 from torch.utils.tensorboard import SummaryWriter
 
 print('done loading packages')
