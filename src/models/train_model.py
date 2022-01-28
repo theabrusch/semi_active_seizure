@@ -361,13 +361,9 @@ class model_train_ssltf():
             tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
             f1_scores[epoch] = f1_val_new
-            f1_val = (f1_val_new + f1_val_old)/2
-            f1_val_old = f1_val_new
 
             # harmonic mean between sens and spec
             sensspec_new = 2*sens*spec/(sens+spec)
-            sensspec = (sensspec_new + sensspec_old)/2
-            sensspec_old = sensspec_new
             val_loss[epoch] = running_val_loss/num_batch
 
             if self.writer is not None:
