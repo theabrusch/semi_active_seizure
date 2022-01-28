@@ -160,6 +160,7 @@ def main(args):
         writer.add_scalar('test_initial/specificity_' + subj, spec_init)
         writer.add_scalar('test_initial/f1_' + subj, f1_init)
         writer.add_scalar('test_initial/precision_' + subj, prec_init)
+        writer.add_scalar('test_initial/sensspec_' + subj, sensspec_init)
         writer.add_scalar('test_initial/accuracy_' + subj, acc_init)
 
 
@@ -187,6 +188,7 @@ def main(args):
         writer.add_scalar('test_final/sensitivity_' + subj, sens_fin)
         writer.add_scalar('test_final/specificity_' + subj, spec_fin)
         writer.add_scalar('test_final/f1_' + subj, f1_fin)
+        writer.add_scalar('test_initial/sensspec_' + subj, sensspec_fin)
         writer.add_scalar('test_final/precision_' + subj, prec_fin)
         writer.add_scalar('test_final/accuracy_' + subj, acc_fin)
 
