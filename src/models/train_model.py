@@ -287,7 +287,6 @@ class model_train_ssltf():
                         train_loader,
                         val_loader, 
                         safe_best_model = False,
-                        test_loader = None,
                         transfer_subj = None,
                         epochs = 10):
         '''
@@ -312,8 +311,10 @@ class model_train_ssltf():
                 self.optimizer.zero_grad()
                 # get output of target model to be trained
                 out_target, features_target = self.target_model(x, return_features = True)
+
                 # get output of source model
-                out_source, features_source = self.source_model(x, return_features = True)
+                with torch.no_grad():
+                    out_source, features_source = self.source_model(x, return_features = True)
 
                 loss = self.loss_fn(out_target, features_target, out_source, features_source, y)
                 loss.backward()
@@ -333,11 +334,11 @@ class model_train_ssltf():
 
             # Compute validation loss and metrics
             num_batch = 1
-            self.model.eval()
+            self.target_model.eval()
             for batch in val_loader:
                 x = batch[0].float().to(self.device)
                 y = batch[1].long().to(self.device)
-                out = self.model(x)
+                out = self.target_model(x)
                 if self.val_loss is None:
                     loss = self.loss_fn(out, y)
                 else:
@@ -400,13 +401,13 @@ class model_train_ssltf():
     def eval(self, data_loader, return_seiz_type = False):
         y_pred = None
 
-        self.model.eval()
+        self.target_model.eval()
         i = 1
         for batch in data_loader:
             print('Batch', i, 'out of',  data_loader.__len__())
             i+=1
             x = batch[0].float().to(self.device)
-            out = self.model(x)
+            out = self.target_model(x)
             y_class = torch.argmax(out, axis = -1).cpu().numpy()
 
             if y_pred is None:

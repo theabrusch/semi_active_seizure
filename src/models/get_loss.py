@@ -12,7 +12,7 @@ def get_loss(loss, weight, **kwargs):
     return loss_fn
 
 
-class TransferLoss():
+class TransferLoss(nn.Module):
     def __init__(self, 
                  classification_loss,
                  lambda_cons = 1,
@@ -22,12 +22,13 @@ class TransferLoss():
         Class for implementing a transfer loss inspired by 
         'Adaptive Consistency Regularization for Semi-Supervised Transfer Learning'
         '''
+        super(TransferLoss, self).__init__()
         self.classification_loss = classification_loss
         self.use_entropy = use_entropy
         self.epsilon = epsilon
         self.lambda_cons = lambda_cons
 
-    def __call__(self, 
+    def forward(self, 
                 out_target, 
                 features_target, 
                 out_source,
