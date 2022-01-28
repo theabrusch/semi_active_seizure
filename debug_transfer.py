@@ -18,7 +18,7 @@ parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
 parser.add_argument('--seiz_stride', type=eval, default=None)
 parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
-parser.add_argument('--bckg_rate_train', type=eval, default=10)
+parser.add_argument('--bckg_rate_train', type=eval, default=None)
 parser.add_argument('--anno_based_seg', type=eval, default=True)
 parser.add_argument('--train_val_test', type=eval, default=False)
 parser.add_argument('--batch_size', type=eval, default=64)
