@@ -391,38 +391,32 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
         seiz_recs = get_seiz_recs(subject, seiz_classes)
         if len(seiz_recs['seiz']['rec']) > 1:
             # choose 1 record with seizure to use for transferring
-            seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by = 'seiz dur')
-            min_seiz_dur = seiz_pd[seiz_pd['seiz dur'] >= min_seiz]
-            non_min_seiz_dur = seiz_pd[seiz_pd['seiz dur'] < min_seiz]['rec']
+            seiz_pd = pd.DataFrame(seiz_recs['seiz']).sample(frac=1, random_state = seed).reset_index(drop=True)
+            n_seiz_recs = len(seiz_pd)
+            dur = 0
+            i = 0
+            transfer = []
+            while (i+1) < n_seiz_recs and dur < min_seiz:
+                transfer.append(seiz_pd['rec'].values[i])
+                dur += seiz_pd['seiz dur'].values[i]
+                i += 1
+            test = seiz_pd['rec'].values[i:]
+            seiz_dur = np.sum(seiz_pd['seiz dur'].values[:i])
+            bckg_dur = np.sum(seiz_pd['bckg dur'].values[:i])
+            transfer_ratio = bckg_dur / seiz_dur
 
-            if len(min_seiz_dur) > 0:
-                transfer = min_seiz_dur['rec'].values[0]
-                test = min_seiz_dur['rec'].values[1:]
-                seiz_dur = min_seiz_dur['seiz dur'].values[0]
-                bckg_dur = min_seiz_dur['bckg dur'].values[0]
-                transfer_ratio = bckg_dur / seiz_dur
+            if not isinstance(test, np.ndarray) and not isinstance(test, list):
+                test_records[subj] = [test]
             else:
-                n_seiz_recs = len(seiz_pd)
-                dur = 0
-                i = 0
-                transfer = []
-                while (i+1) < n_seiz_recs and dur < min_seiz:
-                    transfer.append(seiz_pd['rec'].values[i])
-                    dur += seiz_pd['seiz dur'].values[i]
-                    i += 1
-                test = seiz_pd['rec'].values[i:]
-                seiz_dur = np.sum(seiz_pd['seiz dur'].values[:i])
-                bckg_dur = np.sum(seiz_pd['bckg dur'].values[:i])
-                transfer_ratio = bckg_dur / seiz_dur
+                test_records[subj] = test
 
-            test_records[subj] = np.append(test, non_min_seiz_dur)
-            if not isinstance(transfer, list):
+            if not isinstance(transfer, np.ndarray) and not isinstance(transfer, list):
                 transfer_records[subj] = [transfer]
             else:
                 transfer_records[subj] = transfer
     
             # if any non seizure records, sample enough background records
-            i=0
+            i = 0
             n_bckg = len(seiz_recs['non seiz']['rec'])
             bckg_pd = pd.DataFrame(seiz_recs['non seiz']).sample(frac=1, random_state = seed).reset_index(drop=True)
             while transfer_ratio < min_ratio and  i < n_bckg:
