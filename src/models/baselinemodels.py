@@ -88,11 +88,11 @@ class BaselineCNN(nn.Module):
                                              nn.Flatten(),
                                              nn.Linear(in_features=80, out_features=2))
     
-    def forward(self, x, return_features=False):
+    def forward(self, x, training = True, return_features=False):
         features = self.convblock(x.unsqueeze(1))
         x = self.final_layer(features)
         out = F.softmax(x, dim = 1)
-        
+
         if return_features:
             return out, features
         else:
