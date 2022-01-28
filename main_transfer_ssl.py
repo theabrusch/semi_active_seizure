@@ -214,7 +214,7 @@ if __name__ == '__main__':
     # minimum amount of seizure in transfer dataset
     parser.add_argument('--min_seiz', default = 20)
     # minimum ratio of background in transfer dataset
-    parser.add_argument('--min_ratio', default = 2)
+    parser.add_argument('--min_ratio', type = float, default = 2)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
