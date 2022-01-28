@@ -7,11 +7,12 @@ parser.add_argument('--run_folder', default = 'None')
 parser.add_argument('--job_name', default = 'None')
 parser.add_argument('--seed', type = int, default = 20)
 parser.add_argument('--min_seiz', default = 20)
+parser.add_argument('--onlytrainseiz', default = None)
+parser.add_argument('--val_split', type = int, default = 3)
+parser.add_argument('--split', type = int, default = 2)
 # minimum ratio of background in transfer dataset
 parser.add_argument('--min_ratio', default = 20)
 # exclude seizure types to include in training but not evaluation
-parser.add_argument('--onlytrainseiz', default = None)
-parser.add_argument('--transfer_subjects', nargs = '+', default = None)
 parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
 parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
@@ -62,6 +63,6 @@ trans_subjs = ['/test/00008174', '/test/00008544', '/train/00000609',
 
 args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2', 
-                          '--transfer_subjects', *trans_subjs, '--model_path', '/Users/theabrusch/Desktop/Speciale_data/final_model.pt'
+                          '--model_path', '/Users/theabrusch/Desktop/Speciale_data/final_model.pt'
                           ])
 main(args)

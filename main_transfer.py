@@ -31,14 +31,25 @@ def main(args):
     # get split on records for subjects in val set
     splitdict = dict()
     splitdict['hdf5_path'] = args.file_path
-    splitdict['subjects'] = args.transfer_subjects
+    splitdict['split'] = args.split
+    splitdict['only_train_seiz'] = False
+    splitdict['val_split'] = args.val_split
+    splitdict['n_val_splits'] = 5
+    splitdict['excl_seiz'] = False
     splitdict['seiz_classes'] = args.seiz_classes
+    splitdict['n_splits'] = 5
     splitdict['seed'] = args.seed
     splitdict['min_seiz'] = args.min_seiz
     if not args.bckg_rate_train is None:
         if args.min_ratio < args.bckg_rate_train:
             args.min_ratio = args.bckg_rate_train
     splitdict['min_ratio'] = args.min_ratio
+
+    train, val, test = train_val_split.get_kfold(**splitdict)
+    print('Train:', train)
+    print('Val:', val)
+    print('Test:', test)
+    splitdict['subjects'] = val
 
     transfer_subjects, transfer_records, test_records = train_val_split.get_transfer_subjects(**splitdict)
 
@@ -193,7 +204,8 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type = int, default = 20)
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
-    parser.add_argument('--transfer_subjects', nargs = '+', default = None)
+    parser.add_argument('--val_split', type = int, default = 1)
+    parser.add_argument('--split', type = int, default = 2)
     # minimum amount of seizure in transfer dataset
     parser.add_argument('--min_seiz', default = 20)
     # minimum ratio of background in transfer dataset
