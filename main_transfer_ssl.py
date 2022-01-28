@@ -6,7 +6,7 @@ from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
 from src.models import get_model, get_optim, get_loss, train_model, metrics
 from datetime import datetime
-from sklearn.metrics import f1_score, precision_score, sensitivity, specificity, accuracy
+from sklearn.metrics import classification_report, accuracy_score
 from torch.utils.tensorboard import SummaryWriter
 
 print('done loading packages')
@@ -149,11 +149,13 @@ def main(args):
         # evaluate test error before transfer
         y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
         # calculate metrics
-        sens_init = sensitivity(y_true, y_pred)
-        spec_init = specificity(y_true, y_pred)
-        f1_init = f1_score(y_true, y_pred)
-        prec_init = precision_score(y_true, y_pred)
-        acc_init = accuracy(y_true, y_pred)
+        report = classification_report(y_true, y_pred)
+        classes = list(report.keys())
+        sens_init = report[classes[1]]['recall']
+        spec_init = report[classes[0]]['recall']
+        f1_init = report[classes[1]]['f1-score']
+        prec_init = report[classes[1]]['precision']
+        acc_init = accuracy_score(y_true, y_pred)
         sensspec_init = 2*sens_init*spec_init/(sens_init+spec_init)
 
         writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
@@ -177,11 +179,13 @@ def main(args):
         y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
 
         # calculate metrics
-        sens_fin = sensitivity(y_true, y_pred)
-        spec_fin = specificity(y_true, y_pred)
-        f1_fin = f1_score(y_true, y_pred)
-        prec_fin = precision_score(y_true, y_pred)
-        acc_fin = accuracy(y_true, y_pred)
+        report = classification_report(y_true, y_pred)
+        classes = list(report.keys())
+        sens_fin = report[classes[1]]['recall']
+        spec_fin = report[classes[0]]['recall']
+        f1_fin = report[classes[1]]['f1-score']
+        prec_fin = report[classes[1]]['precision']
+        acc_fin = accuracy_score(y_true, y_pred)
         sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
 
 
