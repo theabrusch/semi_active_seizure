@@ -39,9 +39,9 @@ class TransferLoss(nn.Module):
             # choose examples that were correctly classified 
             # by the source model 
             source_pred = torch.argmax(out_source, dim = 1)
-            mask = (y_true.squeeze(1) == source_pred)
+            mask = (y_true == source_pred)
         
         mse = F.mse_loss(features_target, features_source, reduction = 'none')[mask,...].mean()
-        class_loss = self.classification_loss(out_target, y_true.squeeze(1))
+        class_loss = self.classification_loss(out_target, y_true)
 
         return class_loss + self.lambda_cons*mse

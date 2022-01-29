@@ -8,8 +8,7 @@ from dataapi import data_collection as dc
 from prettytable import PrettyTable
 
 class SeizSampler(Sampler):
-    """Samples elements sequentially, always in the same order.
-
+    """
     Args:
         data_source (Dataset): dataset to sample from
     """
@@ -33,6 +32,53 @@ class SeizSampler(Sampler):
         else:
             samples = np.append(self.seiz_samples, np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
         return iter(shuffle(samples))
+
+    def __len__(self) -> int:
+        return self.dataset.__len__()
+
+
+class SeizSamplerStruct(Sampler):
+    """
+    Args:
+        data_source (Dataset): dataset to sample from
+    """
+
+    def __init__(self, dataset, seed = None) -> None:
+        self.dataset = dataset
+        self.seiz_samples = list(range(self.dataset.seiz_samples))
+        self.bckg_rate = int(self.dataset.bckg_rate*self.dataset.seiz_samples)
+        self.orig_bckg_rate = int(self.dataset.bckg_rate)
+
+        if not seed:
+            self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
+        else:
+            self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.bckg_rate))
+            
+        self.seed = seed
+
+    def __iter__(self) -> Iterator[int]:
+        # sample all seizure samples and a fixed number of background samples
+        if self.seed:
+            bckg_samples = shuffle(self.bckg_samples)
+        else:
+            bckg_samples = shuffle(np.random.choice(self.bckg_samples, self.bckg_rate, replace = False))
+        # make sure that the batches are more or less balanced by distributing 
+        # seizure samples equally 
+        seiz_samples = shuffle(self.seiz_samples)
+        samples = []
+        if self.bckg_rate >= 1:
+            for i, seiz in enumerate(seiz_samples):
+                samples = np.append(samples, seiz)
+                bckg = bckg_samples[i*self.orig_bckg_rate:(i+1)*self.orig_bckg_rate]
+                samples = np.append(samples, bckg)
+        else:
+            seiz_rate = int(1/self.orig_bckg_rate)
+            for i, bckg in enumerate(bckg_samples):
+                samples = np.append(samples, bckg)
+                seiz = bckg_samples[i*seiz_rate:(i+1)*seiz_rate]
+                samples = np.append(samples, seiz)
+
+        return iter(samples.astype(int))
 
     def __len__(self) -> int:
         return self.dataset.__len__()
@@ -133,7 +179,7 @@ def get_dataset_transfer(data_gen, subjs_to_use, records_to_use, split = 'val', 
     segment, norm_coef = datasegment.segment_data_transfer()
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
                                           segments = segment, norm_coef = norm_coef)
-    sampler = SeizSampler(dataset, seed = True)
+    sampler = SeizSamplerStruct(dataset, seed = True)
     batchsize = data_gen['batch_size']
     val_dataloader = DataLoader(dataset, 
                                 batch_size = batchsize, 
