@@ -166,8 +166,8 @@ def main(args):
 
     study = optuna.study.create_study(study_name = job_name, 
                                       direction = 'maximize', 
-                                      pruner = optuna.pruners.PatientPruner(optuna.pruners.HyperbandPruner(max_resource=args.epochs), patience = 5),
-                                      storage = 'sqlite:///data/optuna_trials_final.db',
+                                      pruner = optuna.pruners.PatientPruner(optuna.pruners.MedianPruner(), patience = 5),
+                                      storage = 'sqlite:///data/optuna_trials_final_new.db',
                                       load_if_exists = args.load_existing)
     study.optimize(objective, 
                    args.n_trials, 
