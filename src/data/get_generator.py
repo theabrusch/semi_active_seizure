@@ -47,7 +47,7 @@ class SeizSamplerStruct(Sampler):
         self.dataset = dataset
         self.seiz_samples = list(range(self.dataset.seiz_samples))
         self.bckg_rate = int(self.dataset.bckg_rate*self.dataset.seiz_samples)
-        self.orig_bckg_rate = int(self.dataset.bckg_rate)
+        self.orig_bckg_rate = self.dataset.bckg_rate
 
         if not seed:
             self.bckg_samples = list(range(self.dataset.seiz_samples, self.dataset.seiz_samples+self.dataset.bckg_samples))
@@ -66,16 +66,17 @@ class SeizSamplerStruct(Sampler):
         # seizure samples equally 
         seiz_samples = shuffle(self.seiz_samples)
         samples = []
-        if self.bckg_rate >= 1:
+        if self.orig_bckg_rate >= 1:
+            bckg_rate = int(self.orig_bckg_rate)
             for i, seiz in enumerate(seiz_samples):
                 samples = np.append(samples, seiz)
-                bckg = bckg_samples[i*self.orig_bckg_rate:(i+1)*self.orig_bckg_rate]
+                bckg = bckg_samples[i*bckg_rate:(i+1)*bckg_rate]
                 samples = np.append(samples, bckg)
         else:
             seiz_rate = int(1/self.orig_bckg_rate)
             for i, bckg in enumerate(bckg_samples):
                 samples = np.append(samples, bckg)
-                seiz = bckg_samples[i*seiz_rate:(i+1)*seiz_rate]
+                seiz = seiz_samples[i*seiz_rate:(i+1)*seiz_rate]
                 samples = np.append(samples, seiz)
 
         return iter(samples.astype(int))
@@ -181,6 +182,7 @@ def get_dataset_transfer(data_gen, subjs_to_use, records_to_use, split = 'val', 
                                           segments = segment, norm_coef = norm_coef)
     sampler = SeizSamplerStruct(dataset, seed = True)
     batchsize = data_gen['batch_size']
+    temp = iter(sampler)
     val_dataloader = DataLoader(dataset, 
                                 batch_size = batchsize, 
                                 sampler = sampler,
