@@ -8,7 +8,7 @@ parser.add_argument('--job_name', default = 'None')
 parser.add_argument('--seed', type = int, default = 20)
 parser.add_argument('--min_seiz', default = 20)
 parser.add_argument('--onlytrainseiz', default = None)
-parser.add_argument('--val_split', type = int, default = 3)
+parser.add_argument('--val_split', type = int, default = 1)
 parser.add_argument('--split', type = int, default = 2)
 # minimum ratio of background in transfer dataset
 parser.add_argument('--min_ratio', default = 20)
