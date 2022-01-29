@@ -357,8 +357,8 @@ class model_train_ssltf():
             spec = specificity(y_true, y_pred)
             f1_val_new = f1_score(y_true, y_pred)
             prec = precision_score(y_true, y_pred)
-            cm = confusion_matrix(y_true, y_pred, normalize = 'true')
-            tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
+            #cm = confusion_matrix(y_true, y_pred, normalize = 'true')
+            #tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
             f1_scores[epoch] = f1_val_new
 
@@ -374,10 +374,10 @@ class model_train_ssltf():
                 self.writer.add_scalar('val/f1'+run, f1_val_new, epoch)
                 self.writer.add_scalar('val/sensspec'+run, sensspec_new, epoch)
                 self.writer.add_scalar('val/precision'+run, prec, epoch)
-                self.writer.add_scalar('val_raw/true_pos'+run, tp, epoch)
-                self.writer.add_scalar('val_raw/false_neg'+run, fn, epoch)
-                self.writer.add_scalar('val_raw/false_pos'+run, fp, epoch)
-                self.writer.add_scalar('val_raw/true_neg'+run, tn, epoch)
+                #self.writer.add_scalar('val_raw/true_pos'+run, tp, epoch)
+                #self.writer.add_scalar('val_raw/false_neg'+run, fn, epoch)
+                #self.writer.add_scalar('val_raw/false_pos'+run, fp, epoch)
+                #self.writer.add_scalar('val_raw/true_neg'+run, tn, epoch)
                 self.writer.add_scalar('val/loss' + run, val_loss[epoch], epoch)
 
             print('Validation loss:', val_loss[epoch])
