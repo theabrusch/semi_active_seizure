@@ -164,7 +164,10 @@ def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
     segment, norm_coef = datasegment.segment_data()
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
                                         segments = segment, norm_coef = norm_coef)
-    sampler = SeizSampler(dataset, seed = True)
+    if 'test' in split:
+        sampler = SequentialSampler(dataset)
+    else:
+        sampler = SeizSampler(dataset, seed = True)
     val_dataloader = DataLoader(dataset, 
                                 batch_size = data_gen['batch_size'], 
                                 sampler = sampler,
@@ -180,9 +183,12 @@ def get_dataset_transfer(data_gen, subjs_to_use, records_to_use, split = 'val', 
     segment, norm_coef = datasegment.segment_data_transfer()
     dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
                                           segments = segment, norm_coef = norm_coef)
-    sampler = SeizSamplerStruct(dataset, seed = True)
+    if 'test' == split.split('/')[0]:
+        sampler = SequentialSampler(dataset)
+    else:
+        sampler = SeizSamplerStruct(dataset, seed = True)
+
     batchsize = data_gen['batch_size']
-    temp = iter(sampler)
     val_dataloader = DataLoader(dataset, 
                                 batch_size = batchsize, 
                                 sampler = sampler,

@@ -83,7 +83,7 @@ def main(args):
         transfer_dataloader = get_generator.get_dataset_transfer(data_gen = train_datagen, 
                                                                 subjs_to_use = [subj], 
                                                                 records_to_use = transfer_records, 
-                                                                split = subj, 
+                                                                split = 'train/'+subj, 
                                                                 writer = writer)
         trans_seiz = transfer_dataloader.dataset.seiz_samples
         trans_bckg = transfer_dataloader.dataset.bckg_samples
@@ -95,7 +95,7 @@ def main(args):
         test_dataloader = get_generator.get_dataset_transfer(data_gen = test_datagen, 
                                                                 subjs_to_use = [subj], 
                                                                 records_to_use = test_records, 
-                                                                split = subj, 
+                                                                split = 'test/'+subj, 
                                                                 writer = writer)
         print('Test seiz samples', test_dataloader.dataset.seiz_samples)
         print('Test bckg samples', test_dataloader.dataset.bckg_samples)
