@@ -35,13 +35,15 @@ class TransferLoss(nn.Module):
                 features_source,
                 y_true):
 
-        if not self.use_entropy:
+        if not self.use_entropy and self.lambda_cons > 0:
             # choose examples that were correctly classified 
             # by the source model 
             source_pred = torch.argmax(out_source, dim = 1)
             mask = (y_true == source_pred)
         
-        mse = F.mse_loss(features_target, features_source, reduction = 'none')[mask,...].mean()
+            mse = F.mse_loss(features_target, features_source, reduction = 'none')[mask,...].mean()
         class_loss = self.classification_loss(out_target, y_true)
-
-        return class_loss + self.lambda_cons*mse
+        if self.lambda_cons > 0:
+            return class_loss + self.lambda_cons*mse
+        else:
+            return class_loss
