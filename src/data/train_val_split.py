@@ -391,7 +391,7 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
         seiz_recs = get_seiz_recs(subject, seiz_classes)
         if len(seiz_recs['seiz']['rec']) > 1:
             # choose 1 record with seizure to use for transferring
-            seiz_pd = pd.DataFrame(seiz_recs['seiz']).sample(frac=1, random_state = seed).reset_index(drop=True)
+            seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by='rec').reset_index(drop=True)
             n_seiz_recs = len(seiz_pd)
             dur = 0
             i = 0
@@ -418,7 +418,7 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
             # if any non seizure records, sample enough background records
             i = 0
             n_bckg = len(seiz_recs['non seiz']['rec'])
-            bckg_pd = pd.DataFrame(seiz_recs['non seiz']).sample(frac=1, random_state = seed).reset_index(drop=True)
+            bckg_pd = pd.DataFrame(seiz_recs['non seiz']).sort_values(by='rec').reset_index(drop=True)
             while transfer_ratio < min_ratio and  i < n_bckg:
                 transfer_records[subj].append(bckg_pd['rec'].values[i])
                 bckg_dur += bckg_pd['bckg dur'].values[i]
