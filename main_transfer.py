@@ -233,7 +233,7 @@ if __name__ == '__main__':
     # minimum amount of seizure in transfer dataset
     parser.add_argument('--min_recs', default = 1)
     # number of records to put in test set
-    parser.add_argument('--test_recs', type = int, default = 0)
+    parser.add_argument('--test_recs', type = int, default = 1)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
