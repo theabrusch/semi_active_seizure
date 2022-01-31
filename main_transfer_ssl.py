@@ -142,7 +142,7 @@ def main(args):
                                                     optimizer = optimizer, 
                                                     loss_fn = loss_fn, 
                                                     val_loss = test_loss,
-                                                    writer = writer,
+                                                    writer = None,
                                                     scheduler = scheduler,
                                                     choose_best = False)
         
@@ -217,7 +217,7 @@ if __name__ == '__main__':
     parser.add_argument('--val_split', type = int, default = 1)
     parser.add_argument('--split', type = int, default = 2)
     # minimum amount of seizure in transfer dataset
-    parser.add_argument('--min_seiz', default = 20)
+    parser.add_argument('--min_seiz', type = float, default = 20)
     # minimum ratio of background in transfer dataset
     parser.add_argument('--min_ratio', type = float, default = 2)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
