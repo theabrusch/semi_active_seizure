@@ -1,3 +1,4 @@
+from doctest import testmod, testsource
 from dataapi import data_collection as dc
 import pickle
 import numpy as np
@@ -376,8 +377,9 @@ def get_seiz_kfoldsubjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pick
             pickle.dump(seiz_subjs, fp)
     return seiz_subjs
 
-def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
-                          min_seiz = 20, min_ratio = 2, **kwargs):
+def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
+                          min_seiz = 20, min_ratio = 2, 
+                          test_recs = 0, **kwargs):
     '''
     Function for splitting subjects into seizure records to use
     for transferring knowledge and into testing 
@@ -392,41 +394,47 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes, seed,
         if len(seiz_recs['seiz']['rec']) > 1:
             # choose 1 record with seizure to use for transferring
             seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by='rec').reset_index(drop=True)
-            n_seiz_recs = len(seiz_pd)
-            dur = 0
-            i = 0
-            transfer = []
-            while (i+1) < n_seiz_recs and dur < min_seiz:
-                transfer.append(seiz_pd['rec'].values[i])
-                dur += seiz_pd['seiz dur'].values[i]
-                i += 1
-            test = seiz_pd['rec'].values[i:]
-            seiz_dur = np.sum(seiz_pd['seiz dur'].values[:i])
-            bckg_dur = np.sum(seiz_pd['bckg dur'].values[:i])
-            transfer_ratio = bckg_dur / seiz_dur
-
-            if not isinstance(test, np.ndarray) and not isinstance(test, list):
-                test_records[subj] = [test]
-            else:
-                test_records[subj] = test
-
-            if not isinstance(transfer, np.ndarray) and not isinstance(transfer, list):
-                transfer_records[subj] = [transfer]
-            else:
-                transfer_records[subj] = transfer
-    
-            # if any non seizure records, sample enough background records
-            i = 0
-            n_bckg = len(seiz_recs['non seiz']['rec'])
             bckg_pd = pd.DataFrame(seiz_recs['non seiz']).sort_values(by='rec').reset_index(drop=True)
-            while transfer_ratio < min_ratio and  i < n_bckg:
-                transfer_records[subj].append(bckg_pd['rec'].values[i])
-                bckg_dur += bckg_pd['bckg dur'].values[i]
+            n_seiz_recs = len(seiz_pd)
+            if test_recs == 0:
+                dur = 0
+                i = 0
+                transfer = []
+                while (i+1) < n_seiz_recs and dur < min_seiz:
+                    transfer.append(seiz_pd['rec'].values[i])
+                    dur += seiz_pd['seiz dur'].values[i]
+                    i += 1
+                test = np.array(seiz_pd['rec'].values[i:])
+                transfer = np.array(transfer)
+                seiz_dur = np.sum(seiz_pd['seiz dur'].values[:i])
+                bckg_dur = np.sum(seiz_pd['bckg dur'].values[:i])
                 transfer_ratio = bckg_dur / seiz_dur
-                i += 1
-            test_bckg = bckg_pd['rec'].values[i:]
-            test_records[subj] = np.append(test_records[subj], test_bckg)
 
+                # if any non seizure records, sample enough background records
+                i = 0
+                n_bckg = len(seiz_recs['non seiz']['rec'])
+                while transfer_ratio < min_ratio and  i < n_bckg:
+                    transfer=np.append(transfer,bckg_pd['rec'].values[i])
+                    bckg_dur += bckg_pd['bckg dur'].values[i]
+                    transfer_ratio = bckg_dur / seiz_dur
+                    i += 1
+                test_bckg = bckg_pd['rec'].values[i:]
+                test = np.append(test, test_bckg)
+                transfer_records[subj] = transfer
+            else:
+                # select last test_recs (int) for test and put the remaining in transfer
+                test = np.array(seiz_pd['rec'].values[-test_recs:])
+                transfer_seiz = np.array(seiz_pd['rec'].values[:-test_recs])
+                if len(bckg_pd) > 0:
+                    test = np.append(test, bckg_pd['rec'].values[-test_recs:])
+                    transfer_bckg = np.array(bckg_pd['rec'].values[:-test_recs])
+                    transfer = np.append(transfer_seiz, transfer_bckg)
+                
+                transfer_records[subj] = dict()
+                transfer_records[subj]['seiz'] = transfer_seiz
+                transfer_records[subj]['bckg'] = transfer_bckg
+
+            test_records[subj] = test
             transfer_subjects.append(subj)
 
     return transfer_subjects, transfer_records, test_records
