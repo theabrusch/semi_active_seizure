@@ -91,8 +91,12 @@ def main(args):
         t_dataset_subj = PrettyTable(['Round', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio'])
         t_res_subj = PrettyTable(['Round', 'Sensitivity', 'Specificity','F1',\
                                   'Sensspec'])
-                                  
-        for i in range(len(transfer_records[subj]['seiz'])):
+
+        if len(transfer_records[subj]['seiz']) > 10:
+            range_from = len(transfer_records[subj]['seiz'])-10
+        else:
+            range_from = 0
+        for i in range(range_from, len(transfer_records[subj]['seiz'])):
             # include one record at a time
             seiz = transfer_records[subj]['seiz'][:(i+1)]
             subj_transfer_recs = dict()
@@ -202,18 +206,18 @@ def main(args):
             sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
 
 
-            writer.add_scalar('test_final/sensitivity_' + subj, sens_fin)
-            writer.add_scalar('test_final/specificity_' + subj, spec_fin)
-            writer.add_scalar('test_final/f1_' + subj, f1_fin)
-            writer.add_scalar('test_initial/sensspec_' + subj, sensspec_fin)
-            writer.add_scalar('test_final/precision_' + subj, prec_fin)
-            writer.add_scalar('test_final/accuracy_' + subj, acc_fin)
+            writer.add_scalar('test_final/sensitivity_' + subj + '_' + str(i), sens_fin)
+            writer.add_scalar('test_final/specificity_' + subj + str(i), spec_fin)
+            writer.add_scalar('test_final/f1_' + subj + str(i), f1_fin)
+            writer.add_scalar('test_initial/sensspec_' + subj + str(i), sensspec_fin)
+            writer.add_scalar('test_final/precision_' + subj + str(i), prec_fin)
+            writer.add_scalar('test_final/accuracy_' + subj + str(i), acc_fin)
 
             t_res_subj.add_row([round, round(sens_fin,3), round(spec_fin,3), \
                                 round(f1_fin,3), round(sensspec_fin, 3)])
         # add overview for subject
         writer.add_text("transfer_datasets_" + subj, t_dataset_subj.get_html_string(), global_step=0)
-    writer.add_text("transfer_results_" + subj, t_res_subj.get_html_string(), global_step=0)
+        writer.add_text("transfer_results_" + subj, t_res_subj.get_html_string(), global_step=0)
     
     writer.close()
 
