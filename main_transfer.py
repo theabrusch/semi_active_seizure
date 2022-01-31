@@ -40,13 +40,7 @@ def main(args):
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = 5
     splitdict['seed'] = args.seed
-    splitdict['min_seiz'] = args.min_seiz
     splitdict['test_recs'] = args.test_recs
-
-    if not args.bckg_rate_train is None:
-        if args.min_ratio < args.bckg_rate_train:
-            args.min_ratio = args.bckg_rate_train
-    splitdict['min_ratio'] = args.min_ratio
 
     train, val, test = train_val_split.get_kfold(**splitdict)
     print('Train:', train)
@@ -58,9 +52,6 @@ def main(args):
 
     if not args.use_subjects == 'all':
         n_subjs = int(args.use_subjects)
-        np.random.seed(args.seed)
-        temp = np.random.choice(transfer_subjects, size = n_subjs, replace = False)
-        np.random.seed(None)
         np.random.seed(args.seed)
         transfer_subjects = np.random.choice(transfer_subjects, size = n_subjs, replace = False)
         np.random.seed(None)
@@ -100,6 +91,7 @@ def main(args):
         t_dataset_subj = PrettyTable(['Round', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio'])
         t_res_subj = PrettyTable(['Round', 'Sensitivity', 'Specificity','F1',\
                                   'Sensspec'])
+                                  
         for i in range(len(transfer_records[subj]['seiz'])):
             # include one record at a time
             seiz = transfer_records[subj]['seiz'][:(i+1)]
@@ -239,9 +231,7 @@ if __name__ == '__main__':
     parser.add_argument('--split', type = int, default = 2)
     parser.add_argument('--use_subjects', type = str, default = 'all')
     # minimum amount of seizure in transfer dataset
-    parser.add_argument('--min_seiz', default = 20)
-    # minimum ratio of background in transfer dataset
-    parser.add_argument('--min_ratio', type = float, default = 2)
+    parser.add_argument('--min_recs', default = 1)
     # number of records to put in test set
     parser.add_argument('--test_recs', type = int, default = 0)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
