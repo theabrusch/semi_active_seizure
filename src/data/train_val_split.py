@@ -421,7 +421,7 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
                 test_bckg = bckg_pd['rec'].values[i:]
                 test = np.append(test, test_bckg)
                 transfer_records[subj] = transfer
-            else:
+            else:                
                 # select last test_recs (int) for test and put the remaining in transfer
                 test = np.array(seiz_pd['rec'].values[-test_recs:])
                 transfer_seiz = np.array(seiz_pd['rec'].values[:-test_recs])

@@ -41,6 +41,7 @@ def main(args):
     splitdict['n_splits'] = 5
     splitdict['seed'] = args.seed
     splitdict['test_recs'] = args.test_recs
+    splitdict['max_recs'] = args.max_recs
 
     train, val, test = train_val_split.get_kfold(**splitdict)
     print('Train:', train)
@@ -91,12 +92,13 @@ def main(args):
         t_dataset_subj = PrettyTable(['Round', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio'])
         t_res_subj = PrettyTable(['Round', 'Sensitivity', 'Specificity','F1',\
                                   'Sensspec'])
-
-        if len(transfer_records[subj]['seiz']) > 10:
-            range_from = len(transfer_records[subj]['seiz'])-10
+        
+        if len(transfer_records[subj]['seiz']) > args.max_recs:
+            max_recs = args.max_recs
         else:
-            range_from = 0
-        for i in range(range_from, len(transfer_records[subj]['seiz'])):
+            max_recs = len(transfer_records[subj]['seiz'])
+
+        for i in range(max_recs):
             # include one record at a time
             seiz = transfer_records[subj]['seiz'][:(i+1)]
             subj_transfer_recs = dict()
@@ -156,7 +158,7 @@ def main(args):
                                                         optimizer = optimizer, 
                                                         loss_fn = loss_fn, 
                                                         val_loss = test_loss,
-                                                        writer = None,
+                                                        writer = writer,
                                                         scheduler = scheduler,
                                                         choose_best = False)
             if i == 0: # only evaluate on test set in first round of training 
@@ -186,6 +188,7 @@ def main(args):
             time = datetime.now()
             train_loss, val_loss = model_train.train_transfer(train_loader = transfer_dataloader,
                                                                 val_loader = test_dataloader,
+                                                                tol = args.tol,
                                                                 transfer_subj = subj,
                                                                 epochs = args.epochs)
                                                     
@@ -235,7 +238,7 @@ if __name__ == '__main__':
     parser.add_argument('--split', type = int, default = 2)
     parser.add_argument('--use_subjects', type = str, default = 'all')
     # minimum amount of seizure in transfer dataset
-    parser.add_argument('--min_recs', default = 1)
+    parser.add_argument('--max_recs', default = 10)
     # number of records to put in test set
     parser.add_argument('--test_recs', type = int, default = 1)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
@@ -264,6 +267,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
     parser.add_argument('--lambda_cons', type=float, default=1)
     parser.add_argument('--epochs', type=int, default=20)
+    parser.add_argument('--tol', type=int, default=0)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
 

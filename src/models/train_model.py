@@ -288,6 +288,7 @@ class model_train_ssltf():
                         val_loader, 
                         safe_best_model = False,
                         transfer_subj = None,
+                        tol = 0,
                         epochs = 10):
         '''
         Train model
@@ -295,7 +296,6 @@ class model_train_ssltf():
 
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
-        f1_scores = torch.zeros(epochs)
 
         for epoch in range(epochs):
             running_train_loss = 0
@@ -355,12 +355,6 @@ class model_train_ssltf():
             
             sens = sensitivity(y_true, y_pred)
             spec = specificity(y_true, y_pred)
-            f1_val_new = f1_score(y_true, y_pred)
-            prec = precision_score(y_true, y_pred)
-            #cm = confusion_matrix(y_true, y_pred, normalize = 'true')
-            #tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
-
-            f1_scores[epoch] = f1_val_new
 
             # harmonic mean between sens and spec
             sensspec_new = 2*sens*spec/(sens+spec)
@@ -369,18 +363,14 @@ class model_train_ssltf():
             if self.writer is not None:
                 run = transfer_subj
 
-                self.writer.add_scalar('val/sens'+run, sens, epoch)
-                self.writer.add_scalar('val/spec'+run, spec, epoch)
-                self.writer.add_scalar('val/f1'+run, f1_val_new, epoch)
                 self.writer.add_scalar('val/sensspec'+run, sensspec_new, epoch)
-                self.writer.add_scalar('val/precision'+run, prec, epoch)
-                #self.writer.add_scalar('val_raw/true_pos'+run, tp, epoch)
-                #self.writer.add_scalar('val_raw/false_neg'+run, fn, epoch)
-                #self.writer.add_scalar('val_raw/false_pos'+run, fp, epoch)
-                #self.writer.add_scalar('val_raw/true_neg'+run, tn, epoch)
                 self.writer.add_scalar('val/loss' + run, val_loss[epoch], epoch)
 
             print('Validation loss:', val_loss[epoch])
+
+            if epoch > 10:
+                if np.mean(abs(np.diff(train_loss[(epoch-4):(epoch+1)]))) <= tol:
+                    break
 
         if safe_best_model:
             checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + transfer_subj
