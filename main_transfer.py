@@ -115,7 +115,7 @@ def main(args):
             print('Trans. Seiz samples', trans_seiz)
             print('Trans. Bckg samples', trans_bckg)
             t_dataset_subj.add_row([i, trans_seiz, trans_bckg, trans_seiz + trans_bckg, \
-                                    trans_bckg/trans_seiz])
+                                    transfer_dataloader.dataset.bckg_rate])
             
             # load model
             model_config = config['model_kwargs']
