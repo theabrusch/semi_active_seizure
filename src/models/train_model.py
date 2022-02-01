@@ -369,7 +369,7 @@ class model_train_ssltf():
             print('Validation loss:', val_loss[epoch])
 
             if epoch > 10:
-                if np.mean(abs(np.diff(train_loss[(epoch-4):(epoch+1)]))) <= tol:
+                if np.mean(abs(np.diff(train_loss[(epoch-2):(epoch+1)]))) <= tol:
                     break
 
         if safe_best_model:
