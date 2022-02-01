@@ -213,7 +213,7 @@ def main(args):
             writer.add_scalar('test_final/precision_' + subj + str(i), prec_fin)
             writer.add_scalar('test_final/accuracy_' + subj + str(i), acc_fin)
 
-            t_res_subj.add_row([round, round(sens_fin,3), round(spec_fin,3), \
+            t_res_subj.add_row([str(i), round(sens_fin,3), round(spec_fin,3), \
                                 round(f1_fin,3), round(sensspec_fin, 3)])
         # add overview for subject
         writer.add_text("transfer_datasets_" + subj, t_dataset_subj.get_html_string(), global_step=0)
