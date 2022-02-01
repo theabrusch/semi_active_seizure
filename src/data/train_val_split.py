@@ -379,7 +379,7 @@ def get_seiz_kfoldsubjs(hdf5_path, protocol, seiz_classes, excl_seiz=False, pick
 
 def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
                           min_seiz = 20, min_ratio = 2, 
-                          test_recs = 0, **kwargs):
+                          test_frac = 1/3, **kwargs):
     '''
     Function for splitting subjects into seizure records to use
     for transferring knowledge and into testing 
@@ -396,7 +396,7 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
             seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by='rec').reset_index(drop=True)
             bckg_pd = pd.DataFrame(seiz_recs['non seiz']).sort_values(by='rec').reset_index(drop=True)
             n_seiz_recs = len(seiz_pd)
-            if test_recs == 0:
+            if test_frac == 0:
                 dur = 0
                 i = 0
                 transfer = []
@@ -422,14 +422,16 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
                 test = np.append(test, test_bckg)
                 transfer_records[subj] = transfer
             else:                
+                test_recs_seiz = int(np.ceil(test_frac*len(seiz_pd)))
                 # select last test_recs (int) for test and put the remaining in transfer
-                test = np.array(seiz_pd['rec'].values[-test_recs:])
-                transfer_seiz = np.array(seiz_pd['rec'].values[:-test_recs])
+                test = np.array(seiz_pd['rec'].values[-test_recs_seiz:])
+                transfer_seiz = np.array(seiz_pd['rec'].values[:-test_recs_seiz])
                 if len(bckg_pd) > 0:
-                    test = np.append(test, bckg_pd['rec'].values[-test_recs:])
-                    transfer_bckg = np.array(bckg_pd['rec'].values[:-test_recs])
+                    test_recs_bckg = int(np.ceil(test_frac*len(bckg_pd)))
+                    test = np.append(test, bckg_pd['rec'].values[-test_recs_bckg:])
+                    transfer_bckg = np.array(bckg_pd['rec'].values[:-test_recs_bckg])
                     transfer = np.append(transfer_seiz, transfer_bckg)
-                
+            
                 transfer_records[subj] = dict()
                 transfer_records[subj]['seiz'] = transfer_seiz
                 transfer_records[subj]['bckg'] = transfer_bckg

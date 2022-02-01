@@ -15,7 +15,7 @@ parser.add_argument('--use_subjects', type = str, default = 'all')
 # minimum amount of seizure in transfer dataset
 parser.add_argument('--min_recs', default = 1)
 # number of records to put in test set
-parser.add_argument('--test_recs', type = int, default = 1)
+parser.add_argument('--test_frac', type = float, default = 1/3)
 parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
 parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
@@ -44,6 +44,7 @@ parser.add_argument('--lambda_cons', type=float, default=1)
 parser.add_argument('--epochs', type=int, default=20)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
+parser.add_argument('--max_recs', type = int, default=10)
 
 args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', '--window_length', '2',
                           '--bckg_stride', '2', '--seiz_stride', '2', 
