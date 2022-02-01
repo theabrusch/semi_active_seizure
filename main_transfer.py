@@ -40,7 +40,7 @@ def main(args):
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = 5
     splitdict['seed'] = args.seed
-    splitdict['test_recs'] = args.test_recs
+    splitdict['test_frac'] = args.test_frac
     splitdict['max_recs'] = args.max_recs
 
     train, val, test = train_val_split.get_kfold(**splitdict)
@@ -101,8 +101,9 @@ def main(args):
         for i in range(max_recs):
             # include one record at a time
             seiz = transfer_records[subj]['seiz'][:(i+1)]
+            bckg = transfer_records[subj]['bckg'][:(i+1)]
             subj_transfer_recs = dict()
-            subj_transfer_recs[subj] = np.append(seiz, transfer_records[subj]['bckg'])
+            subj_transfer_recs[subj] = np.append(seiz, bckg)
 
             transfer_dataloader = get_generator.get_dataset_transfer(data_gen = train_datagen, 
                                                                     subjs_to_use = [subj], 
@@ -238,9 +239,9 @@ if __name__ == '__main__':
     parser.add_argument('--split', type = int, default = 2)
     parser.add_argument('--use_subjects', type = str, default = 'all')
     # minimum amount of seizure in transfer dataset
-    parser.add_argument('--max_recs', default = 10)
+    parser.add_argument('--max_recs', type = int, default = 10)
     # number of records to put in test set
-    parser.add_argument('--test_recs', type = int, default = 1)
+    parser.add_argument('--test_frac', type = float, default = 1/3)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--bckg_stride', type=eval, default=None)
