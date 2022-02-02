@@ -89,7 +89,7 @@ def main(args):
                                                                 writer = writer)
         print('Test seiz samples', test_dataloader.dataset.seiz_samples)
         print('Test bckg samples', test_dataloader.dataset.bckg_samples)
-        t_dataset_subj = PrettyTable(['Round', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio'])
+        t_dataset_subj = PrettyTable(['Round', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio', 'Bckg rate'])
         t_res_subj = PrettyTable(['Round', 'Sensitivity', 'Specificity','F1',\
                                   'Sensspec'])
         
@@ -115,7 +115,7 @@ def main(args):
             print('Trans. Seiz samples', trans_seiz)
             print('Trans. Bckg samples', trans_bckg)
             t_dataset_subj.add_row([i, trans_seiz, trans_bckg, trans_seiz + trans_bckg, \
-                                    transfer_dataloader.dataset.bckg_rate])
+                                    trans_bckg/trans_seiz,transfer_dataloader.dataset.bckg_rate])
             
             # load model
             model_config = config['model_kwargs']
