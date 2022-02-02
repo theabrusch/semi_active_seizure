@@ -70,7 +70,7 @@ def main(args):
     train_datagen['prefetch_data_from_seg'] = True
     train_datagen['protocol'] = 'all'
     train_datagen['batch_size'] = args.batch_size
-    train_datagen['use_train_seed'] = True
+    train_datagen['use_train_seed'] = False
 
     # get test loader
     test_datagen = train_datagen.copy()
