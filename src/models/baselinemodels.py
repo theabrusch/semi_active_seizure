@@ -75,8 +75,8 @@ class BaselineCNN(nn.Module):
             nn.Conv2d(in_channels = 40, out_channels = 80, 
                       kernel_size = (10, 10), padding = padding[3]),
             nn.BatchNorm2d(80),
+            nn.ELU(),
             nn.Dropout(dropoutprob),
-            nn.ELU()
         )
 
         if not glob_avg_pool:
