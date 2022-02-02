@@ -9,7 +9,7 @@ parser.add_argument('--file_path', type = str)
 parser.add_argument('--seed', type = int, default = 20)
 # exclude seizure types to include in training but not evaluation
 parser.add_argument('--onlytrainseiz', default = None)
-parser.add_argument('--val_split', type = int, default = 1)
+parser.add_argument('--val_split', type = int, default = 3)
 parser.add_argument('--split', type = int, default = 2)
 parser.add_argument('--use_subjects', type = str, default = 'all')
 # minimum amount of seizure in transfer dataset

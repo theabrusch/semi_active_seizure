@@ -54,6 +54,11 @@ for protocol in f.keys():
     for subj in prot.keys():
         subject = prot[subj]
         subj_recs.append(len(subject.attrs['time']))
+        for rec in subject.attrs['time']['Name']:
+            if 's027_t000' in rec:
+                print(protocol)
+                print(subj)
+                print(rec)
         rec_dur = np.append(rec_dur, subject.attrs['time']['Duration'])
         time_temp = max(subject.attrs['time']['Start'])-min(subject.attrs['time']['Start'])
         time_between.append(time_temp)

@@ -391,6 +391,8 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
     for subj in subjects:
         subject = file[subj]
         seiz_recs = get_seiz_recs(subject, seiz_classes)
+        if '7234' in subj:
+            print('hej')
         if len(seiz_recs['seiz']['rec']) > 1:
             # choose 1 record with seizure to use for transferring
             seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by='rec').reset_index(drop=True)
@@ -426,6 +428,7 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
                 # select last test_recs (int) for test and put the remaining in transfer
                 test = np.array(seiz_pd['rec'].values[-test_recs_seiz:])
                 transfer_seiz = np.array(seiz_pd['rec'].values[:-test_recs_seiz])
+                transfer_bckg = []
                 if len(bckg_pd) > 0:
                     test_recs_bckg = int(np.ceil(test_frac*len(bckg_pd)))
                     test = np.append(test, bckg_pd['rec'].values[-test_recs_bckg:])

@@ -82,6 +82,7 @@ def main(args):
     
     # initialise tabel for initial and final results
     for subj in transfer_subjects:
+        print(subj)
         test_dataloader = get_generator.get_dataset_transfer(data_gen = test_datagen, 
                                                                 subjs_to_use = [subj], 
                                                                 records_to_use = test_records, 
@@ -162,68 +163,68 @@ def main(args):
                                                         writer = writer,
                                                         scheduler = scheduler,
                                                         choose_best = False)
-            if i == 0: # only evaluate on test set in first round of training 
-                # evaluate test error before transfer
-                y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
+            #if i == 0: # only evaluate on test set in first round of training 
+            #    # evaluate test error before transfer
+            #    y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
                 # calculate metrics
-                report = classification_report(y_true = y_true, y_pred = y_pred, target_names = ['bckg', 'seiz'], output_dict = True)
-                classes = list(report.keys())
-                sens_init = report[classes[1]]['recall']
-                spec_init = report[classes[0]]['recall']
-                f1_init = report[classes[1]]['f1-score']
-                prec_init = report[classes[1]]['precision']
-                acc_init = accuracy_score(y_true, y_pred)
-                sensspec_init = 2*sens_init*spec_init/(sens_init+spec_init)
+            #    report = classification_report(y_true = y_true, y_pred = y_pred, target_names = ['bckg', 'seiz'], output_dict = True)
+            #    classes = list(report.keys())
+            #    sens_init = report[classes[1]]['recall']
+            #    spec_init = report[classes[0]]['recall']
+            #    f1_init = report[classes[1]]['f1-score']
+            #    prec_init = report[classes[1]]['precision']
+            #    acc_init = accuracy_score(y_true, y_pred)
+            #    sensspec_init = 2*sens_init*spec_init/(sens_init+spec_init)
 
-                writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
-                writer.add_scalar('test_initial/specificity_' + subj, spec_init)
-                writer.add_scalar('test_initial/f1_' + subj, f1_init)
-                writer.add_scalar('test_initial/precision_' + subj, prec_init)
-                writer.add_scalar('test_initial/sensspec_' + subj, sensspec_init)
-                writer.add_scalar('test_initial/accuracy_' + subj, acc_init)
+            #    writer.add_scalar('test_initial/sensitivity_' + subj, sens_init)
+            #    writer.add_scalar('test_initial/specificity_' + subj, spec_init)
+            #    writer.add_scalar('test_initial/f1_' + subj, f1_init)
+            #    writer.add_scalar('test_initial/precision_' + subj, prec_init)
+            #    writer.add_scalar('test_initial/sensspec_' + subj, sensspec_init)
+            #    writer.add_scalar('test_initial/accuracy_' + subj, acc_init)
 
-                t_res_subj.add_row(['Initial res', round(sens_init,3), round(spec_init,3),\
-                                    round(f1_init,3), round(sensspec_init,3)])
+            #    t_res_subj.add_row(['Initial res', round(sens_init,3), round(spec_init,3),\
+            #                        round(f1_init,3), round(sensspec_init,3)])
 
 
-            time = datetime.now()
-            train_loss, val_loss = model_train.train_transfer(train_loader = transfer_dataloader,
-                                                                val_loader = test_dataloader,
-                                                                tol = args.tol,
-                                                                transfer_subj = subj,
-                                                                epochs = args.epochs)
+            #time = datetime.now()
+            #train_loss, val_loss = model_train.train_transfer(train_loader = transfer_dataloader,
+            #                                                    val_loader = test_dataloader,
+            #                                                    tol = args.tol,
+            #                                                    transfer_subj = subj,
+            #                                                    epochs = args.epochs)
                                                     
-            print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
-            print('Total time', datetime.now()-time_start, '.')
+            #print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
+            #print('Total time', datetime.now()-time_start, '.')
 
             # test model after transfer
-            y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
+            #y_pred, y_true = model_train.eval(test_dataloader, return_seiz_type = False)
 
             # calculate metrics
-            report = classification_report(y_true = y_true, y_pred = y_pred, target_names = ['bckg', 'seiz'], output_dict = True)
-            classes = list(report.keys())
-            sens_fin = report[classes[1]]['recall']
-            spec_fin = report[classes[0]]['recall']
-            f1_fin = report[classes[1]]['f1-score']
-            prec_fin = report[classes[1]]['precision']
-            acc_fin = accuracy_score(y_true, y_pred)
-            sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
+            ##report = classification_report(y_true = y_true, y_pred = y_pred, target_names = ['bckg', 'seiz'], output_dict = True)
+            #classes = list(report.keys())
+            #sens_fin = report[classes[1]]['recall']
+            #spec_fin = report[classes[0]]['recall']
+            #f1_fin = report[classes[1]]['f1-score']
+            #prec_fin = report[classes[1]]['precision']
+            #acc_fin = accuracy_score(y_true, y_pred)
+            #sensspec_fin = 2*sens_fin*spec_fin/(sens_fin+spec_fin)
 
 
-            writer.add_scalar('test_final/sensitivity_' + subj + '_' + str(i), sens_fin)
-            writer.add_scalar('test_final/specificity_' + subj + str(i), spec_fin)
-            writer.add_scalar('test_final/f1_' + subj + str(i), f1_fin)
-            writer.add_scalar('test_initial/sensspec_' + subj + str(i), sensspec_fin)
-            writer.add_scalar('test_final/precision_' + subj + str(i), prec_fin)
-            writer.add_scalar('test_final/accuracy_' + subj + str(i), acc_fin)
+            #writer.add_scalar('test_final/sensitivity_' + subj + '_' + str(i), sens_fin)
+            #writer.add_scalar('test_final/specificity_' + subj + str(i), spec_fin)
+            ##writer.add_scalar('test_final/f1_' + subj + str(i), f1_fin)
+            #writer.add_scalar('test_initial/sensspec_' + subj + str(i), sensspec_fin)
+            #writer.add_scalar('test_final/precision_' + subj + str(i), prec_fin)
+            #writer.add_scalar('test_final/accuracy_' + subj + str(i), acc_fin)
 
-            t_res_subj.add_row([str(i), round(sens_fin,3), round(spec_fin,3), \
-                                round(f1_fin,3), round(sensspec_fin, 3)])
+            #t_res_subj.add_row([str(i), round(sens_fin,3), round(spec_fin,3), \
+            #                    round(f1_fin,3), round(sensspec_fin, 3)])
         # add overview for subject
-        writer.add_text("transfer_datasets_" + subj, t_dataset_subj.get_html_string(), global_step=0)
-        writer.add_text("transfer_results_" + subj, t_res_subj.get_html_string(), global_step=0)
+        #writer.add_text("transfer_datasets_" + subj, t_dataset_subj.get_html_string(), global_step=0)
+        #writer.add_text("transfer_results_" + subj, t_res_subj.get_html_string(), global_step=0)
     
-    writer.close()
+    #writer.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
