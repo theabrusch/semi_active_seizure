@@ -269,7 +269,7 @@ if __name__ == '__main__':
     parser.add_argument('--use_weighted_loss', type=eval, default=True)
     parser.add_argument('--lambda_cons', type=float, default=1)
     parser.add_argument('--epochs', type=int, default=20)
-    parser.add_argument('--tol', type=int, default=0)
+    parser.add_argument('--tol', type=float, default=0)
     parser.add_argument('--lr', type=float, default=3e-4)
     parser.add_argument('--weight_decay', type = float, default=1e-3)
 
