@@ -82,7 +82,7 @@ def main(args):
     
     # initialise tabel for initial and final results
     for subj in transfer_subjects:
-        print(subj)
+        print('Subject:', subj)
         test_dataloader = get_generator.get_dataset_transfer(data_gen = test_datagen, 
                                                                 subjs_to_use = [subj], 
                                                                 records_to_use = test_records, 
@@ -185,6 +185,8 @@ def main(args):
 
                 t_res_subj.add_row(['Initial res', round(sens_init,3), round(spec_init,3),\
                                     round(f1_init,3), round(sensspec_init,3)])
+                print('Initial results. Sensitivity:', sens_init, '. Specificity:', spec_init,
+                      '. Sensspec:', sensspec_init, 'F1:', f1_init)
 
 
             time = datetime.now()
@@ -220,6 +222,8 @@ def main(args):
 
             t_res_subj.add_row([str(i), round(sens_fin,3), round(spec_fin,3), \
                                 round(f1_fin,3), round(sensspec_fin, 3)])
+            print('Results from round:', i, '. Sensitivity:', sens_fin, '. Specificity:', spec_fin,
+                  '. Sensspec:', sensspec_fin, 'F1:', f1_fin)
         # add overview for subject
         writer.add_text("transfer_datasets_" + subj, t_dataset_subj.get_html_string(), global_step=0)
         writer.add_text("transfer_results_" + subj, t_res_subj.get_html_string(), global_step=0)

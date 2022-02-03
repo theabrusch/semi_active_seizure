@@ -154,8 +154,8 @@ class DataGenerator(Dataset):
         samples = []
 
         for i in range(len(seg)):
-            if (i+1)%1000 == 0:
-                print('Prefetching segment', (i+1), 'out of', len(seg))
+            #if (i+1)%1000 == 0:
+            #    print('Prefetching segment', (i+1), 'out of', len(seg))
             item = seg.loc[i,:]
             sample = self._get_segment(item)
             label = item['label']
@@ -641,7 +641,7 @@ class SegmentData():
         subjects = self.subjects_to_use
 
         for subj in subjects:
-            print('Segmenting data for subject', i + 1, 'out of', len(subjects))
+            #print('Segmenting data for subject', i + 1, 'out of', len(subjects))
             i+=1
             subj_name = subj.split('/')[-1]
             subj_seg = dict()

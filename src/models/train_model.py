@@ -302,7 +302,7 @@ class model_train_ssltf():
             running_val_loss = 0
 
             num_batch = 1
-            print('Epoch', epoch + 1, 'out of', epochs)
+            #print('Epoch', epoch + 1, 'out of', epochs)
             self.target_model.train()
             self.source_model.eval()
             for batch in train_loader:
