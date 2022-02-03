@@ -87,7 +87,7 @@ def main(args):
                                                                 subjs_to_use = [subj], 
                                                                 records_to_use = test_records, 
                                                                 split = 'test/'+subj, 
-                                                                writer = writer)
+                                                                writer = None)
         print('Test seiz samples', test_dataloader.dataset.seiz_samples)
         print('Test bckg samples', test_dataloader.dataset.bckg_samples)
         t_dataset_subj = PrettyTable(['Round', 'Transfer seiz', 'Transfer bckg', 'Total', 'Ratio', 'Bckg rate'])
@@ -110,7 +110,7 @@ def main(args):
                                                                     subjs_to_use = [subj], 
                                                                     records_to_use = subj_transfer_recs, 
                                                                     split = 'train/'+subj + '_' + str(i+1), 
-                                                                    writer = writer)
+                                                                    writer = None)
             trans_seiz = transfer_dataloader.dataset.seiz_samples
             trans_bckg = transfer_dataloader.dataset.bckg_samples
             print('Trans. Seiz samples', trans_seiz)
@@ -160,7 +160,7 @@ def main(args):
                                                         optimizer = optimizer, 
                                                         loss_fn = loss_fn, 
                                                         val_loss = test_loss,
-                                                        writer = writer,
+                                                        writer = None,
                                                         scheduler = scheduler,
                                                         choose_best = False)
             if i == 0: # only evaluate on test set in first round of training 
