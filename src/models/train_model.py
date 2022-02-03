@@ -390,7 +390,7 @@ class model_train_ssltf():
         self.target_model.eval()
         i = 1
         for batch in data_loader:
-            print('Batch', i, 'out of',  data_loader.__len__())
+            #print('Batch', i, 'out of',  data_loader.__len__())
             i+=1
             x = batch[0].float().to(self.device)
             out = self.target_model(x)
