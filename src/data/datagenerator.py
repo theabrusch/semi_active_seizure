@@ -61,11 +61,11 @@ class DataGenerator(Dataset):
         # Create weights for sampling. If background rate is 
         # 1 a batch should contain 50% background and 50% 
         # seizure. 
-        bckg_weight = 1/self.bckg_samples*self.bckg_rate
-        seiz_weight = 1/self.seiz_samples
+        #bckg_weight = 1/self.bckg_samples*self.bckg_rate
+        #seiz_weight = 1/self.seiz_samples
 
-        self.segments['bckg']['weight'] = bckg_weight
-        self.segments['seiz']['weight'] = seiz_weight
+        #self.segments['bckg']['weight'] = bckg_weight
+        #self.segments['seiz']['weight'] = seiz_weight
         
         samptemp = self.segments['seiz'].append(self.segments['bckg'], 
                                                     ignore_index = True)

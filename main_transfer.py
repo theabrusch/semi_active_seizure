@@ -80,6 +80,7 @@ def main(args):
     test_datagen['anno_based_seg'] = False
     test_datagen['batch_size'] = 512
     
+    subj_n = 0
     # initialise tabel for initial and final results
     for subj in transfer_subjects:
         print('Subject:', subj)
@@ -98,6 +99,25 @@ def main(args):
             max_recs = args.max_recs
         else:
             max_recs = len(transfer_records[subj]['seiz'])
+        
+        if subj_n == 0:
+            # load source model
+            model_config = config['model_kwargs']
+            model_config['model'] = args.model_type
+            model_config['dropoutprob'] = args.dropoutprob
+            model_config['glob_avg_pool'] = args.glob_avg_pool
+            model_config['padding'] = args.padding
+            model_config['input_shape'] = test_dataloader.dataset._get_X_shape()
+            
+            # source model
+            checkpoint = torch.load(args.model_path, map_location = 'cpu')
+            source_model = get_model.get_model(model_config)
+            source_model.load_state_dict(checkpoint['model_state_dict'])
+
+            # make sure that the parameters of the source
+            # model are not updated
+            for param in source_model.parameters():
+                param.requires_grad = False 
 
         for i in range(max_recs):
             # include one record at a time
@@ -118,20 +138,9 @@ def main(args):
             t_dataset_subj.add_row([i, trans_seiz, trans_bckg, trans_seiz + trans_bckg, \
                                     trans_bckg/trans_seiz,transfer_dataloader.dataset.bckg_rate])
             
-            # load model
-            model_config = config['model_kwargs']
-            model_config['model'] = args.model_type
-            model_config['dropoutprob'] = args.dropoutprob
-            model_config['glob_avg_pool'] = args.glob_avg_pool
-            model_config['padding'] = args.padding
-            model_config['input_shape'] = transfer_dataloader.dataset._get_X_shape()
-            target_model = get_model.get_model(model_config)
-            source_model = get_model.get_model(model_config)
-
             # load weights of trained model
-            checkpoint = torch.load(args.model_path, map_location = 'cpu')
+            target_model = get_model.get_model(model_config)
             target_model.load_state_dict(checkpoint['model_state_dict'])
-            source_model.load_state_dict(checkpoint['model_state_dict'])
 
             # train model
             optim_config = config['fit']['optimizer']

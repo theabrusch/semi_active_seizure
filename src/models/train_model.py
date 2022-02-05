@@ -132,11 +132,13 @@ class model_train():
             sensspec_old = sensspec_new
 
             if trial is not None:
-                trial.report(sensspec, epoch)
+                trial.report(f1_val, epoch)
                 if epoch > 9:
                     if trial.should_prune():
                         trial.set_user_attr('sens', sens)
                         trial.set_user_attr('spec', spec)
+                        trial.set_user_attr('prec', spec)
+                        trial.set_user_attr('sensspec', spec)
                         raise optuna.exceptions.TrialPruned()
 
             if self.writer is not None:
@@ -230,7 +232,7 @@ class model_train():
         if self.writer is not None:
             self.writer.flush()
         if trial is not None:
-            return sensspec, sens, spec
+            return sensspec, sens, spec, f1, prec
         else:
             return train_loss, val_loss
     
@@ -383,6 +385,124 @@ class model_train_ssltf():
             self.writer.flush()
 
         return train_loss, val_loss
+    
+    def train_transfer_ssl(self,
+                            train_loader,
+                            unlabeled_loader,
+                            val_loader, 
+                            safe_best_model = False,
+                            transfer_subj = None,
+                            tol = 0,
+                            epochs = 10):
+        '''
+        Train model
+        '''
+
+        train_loss = torch.zeros(epochs)
+        val_loss = torch.zeros(epochs)
+
+        for epoch in range(epochs):
+            running_train_loss = 0
+            running_val_loss = 0
+
+            num_batch = 1
+            #print('Epoch', epoch + 1, 'out of', epochs)
+            self.target_model.train()
+            self.source_model.eval()
+            for (batch, unlab_batch) in zip(train_loader, unlabeled_loader):
+                x = batch[0].float().to(self.device)
+                y = batch[1].long().to(self.device)
+                self.optimizer.zero_grad()
+                # get output of target model to be trained
+                out_target, features_target = self.target_model(x, return_features = True)
+                
+                # get unlabeled output
+                x_unlab = unlab_batch[0].float().to(self.device)
+                out_target_unlab, features_target_unlab = self.target_model(x_unlab, return_features = True)
+
+                # get output of source model
+                with torch.no_grad():
+                    out_source, features_source = self.source_model(x, return_features = True)
+                    out_source_unlab, features_source_unlab = self.source_model(x_unlab, return_features = True)
+
+                # compute loss using predictions and features from target and source model
+                # for both labeled and unlabeled batches
+                loss = self.loss_fn(out_target_labeled = out_target, 
+                                    features_target_labeled = features_target, 
+                                    out_target_unlabeled = out_target_unlab,
+                                    features_target_unlabeled = features_target_unlab,
+                                    out_source_labeled = out_source,
+                                    features_source_labeled = features_source,
+                                    out_source_unlabeled = out_source_unlab,
+                                    features_source_unlabeled = features_source_unlab,
+                                    y_true = y)
+                loss.backward()
+                self.optimizer.step()
+
+                running_train_loss += loss.detach().cpu()
+                num_batch += 1
+                
+            if self.scheduler is not None:
+                self.scheduler.step()
+
+            train_loss[epoch] = running_train_loss/num_batch
+            if self.writer is not None: 
+                run = transfer_subj
+                self.writer.add_scalar('train/loss'+run, train_loss[epoch], epoch)
+            print('Training loss:', train_loss[epoch])
+
+            # Compute validation loss and metrics
+            num_batch = 1
+            self.target_model.eval()
+            for batch in val_loader:
+                x = batch[0].float().to(self.device)
+                y = batch[1].long().to(self.device)
+                out = self.target_model(x)
+                if self.val_loss is None:
+                    loss = self.loss_fn(out, y)
+                else:
+                    loss = self.val_loss(out, y)
+
+                running_val_loss += loss.detach().cpu()
+                if num_batch == 1:
+                    y_true = y.detach().cpu().numpy()
+                    y_pred = torch.argmax(out, axis = -1).detach().cpu().numpy()
+                else:
+                    y_true = np.append(y_true, y.detach().cpu().numpy(), axis = 0)
+                    y_pred = np.append(y_pred, torch.argmax(out, axis = -1).detach().cpu().numpy(), axis = 0)
+                num_batch += 1
+            
+            sens = sensitivity(y_true, y_pred)
+            spec = specificity(y_true, y_pred)
+
+            # harmonic mean between sens and spec
+            sensspec_new = 2*sens*spec/(sens+spec)
+            val_loss[epoch] = running_val_loss/num_batch
+
+            if self.writer is not None:
+                run = transfer_subj
+
+                self.writer.add_scalar('val/sensspec'+run, sensspec_new, epoch)
+                self.writer.add_scalar('val/loss' + run, val_loss[epoch], epoch)
+
+            print('Validation loss:', val_loss[epoch])
+
+            if epoch > 10:
+                if np.mean(abs(np.diff(train_loss[(epoch-2):(epoch+1)]))) <= tol:
+                    break
+
+        if safe_best_model:
+            checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + transfer_subj
+            p = Path(checkpoint_path)
+            p.mkdir(parents=True, exist_ok=True)
+            model_check = checkpoint_path + '/final_model' + '.pt'
+            torch.save({'model_state_dict': self.model.state_dict()},
+                        model_check)
+        if self.writer is not None:
+            self.writer.flush()
+
+        return train_loss, val_loss
+    
     
     def eval(self, data_loader, return_seiz_type = False):
         y_pred = None

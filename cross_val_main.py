@@ -146,7 +146,7 @@ def main(args):
                                                 scheduler = scheduler,
                                                 choose_best = choose_best)
 
-        sensspec, sens, spec = model_train.train(train_loader = train_dataloader,
+        sensspec, sens, spec, f1, prec = model_train.train(train_loader = train_dataloader,
                                                 val_loader = val_dataloader,
                                                 test_loader = None,
                                                 epochs = args.epochs,
@@ -154,7 +154,9 @@ def main(args):
                                                 trial = trial)
         trial.set_user_attr('sens', sens)
         trial.set_user_attr('spec', spec)
-        return sensspec
+        trial.set_user_attr('sensspec', sensspec)
+        trial.set_user_attr('prec', prec)
+        return f1
 
     optuna.logging.get_logger("optuna").addHandler(logging.StreamHandler(sys.stdout))
     callback = LogParamsToTB(writer)
