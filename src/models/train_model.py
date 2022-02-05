@@ -232,7 +232,7 @@ class model_train():
         if self.writer is not None:
             self.writer.flush()
         if trial is not None:
-            return sensspec, sens, spec, f1, prec
+            return sensspec, sens, spec, f1_val, prec
         else:
             return train_loss, val_loss
     

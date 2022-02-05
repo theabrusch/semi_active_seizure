@@ -23,6 +23,8 @@ bckg_splits = list(kfold.split(seiz_subjs['non seiz']))
 
 f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
 overview = dict()
+seiz_durs = []
+bckg_durs = []
 for split in range(5):
     test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seizsplits[split][1]])
     test_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_splits[split][1]])
@@ -30,6 +32,8 @@ for split in range(5):
     overview[split] = dict()
     overview[split]['Seizures'] = dict()
     overview[split]['Subjects'] = dict()
+    bckg_dur = 0
+    seiz_dur = 0
     print('Split', split, '. N subjects:', len(test_seiz) + len(test_bckg))
     for subj in test:
         subject = f[subj]
@@ -38,11 +42,16 @@ for split in range(5):
         for anno in annos:
             for an in anno:
                 if an['Name'] in splitdict['seiz_classes']:
+                    seiz_dur += an['Duration']
                     overview[split]['Subjects'][subj].append(an['Name'])
                     if an['Name'] in overview[split]:
                         overview[split]['Seizures'][an['Name']] += 1
                     else:
                         overview[split]['Seizures'][an['Name']] = 1
+                else:
+                    bckg_dur += an['Duration']
+    seiz_durs.append(seiz_dur)
+    bckg_durs.append(bckg_dur)
 
 test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seizsplits[3][1]])
 tnsz_subjs = []
