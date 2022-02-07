@@ -161,8 +161,8 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
 def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
     datasegment = datagenerator.SegmentData(**data_gen,
                                                 subjects_to_use = subjs_to_use)
-    segment, norm_coef = datasegment.segment_data()
-    dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use,
+    segment, norm_coef = datasegment.segment_data(split = split)
+    dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=subjs_to_use, split = split,
                                         segments = segment, norm_coef = norm_coef)
     if 'test' in split:
         sampler = SequentialSampler(dataset)
@@ -173,7 +173,10 @@ def get_dataset_cross_val(data_gen, subjs_to_use, split = 'val', writer = None):
                                 sampler = sampler,
                                 pin_memory = True)
     if writer is not None:
-        seizure_types = dataset.segments['seiz']['seiz_types']
+        if not 'test' in split:
+            seizure_types = dataset.segments['seiz']['seiz_types']
+        else:
+            seizure_types = dataset.segments[dataset.segments['label']==1]['seiz_types']
         add_seiztypes_to_summary(seizure_types, writer, split)
     return val_dataloader
 

@@ -1,6 +1,7 @@
 from dataapi import data_collection as dc
 import argparse
 import yaml
+import pickle
 from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
 from src.models import get_model, get_optim, get_loss, train_model, metrics
@@ -140,6 +141,15 @@ def main(args):
     if config['general']['run_test']:
         test_dataloader.dataset.return_seiz_type = True
         y_pred, y_true, seiz_types = model_train.eval(test_dataloader, return_seiz_type = True)
+
+        segments = test_dataloader.dataset.segments
+        segments['y pred'] = y_pred
+
+        # save results for further analysis
+        pickle_path = args.job_name + '_split_' + str(args.split) + '_results.pickle'
+
+        with open(pickle_path, 'wb') as fp:
+            pickle.dump(segments, fp)
 
         # calculate metrics
         sens = sensitivity(y_true, y_pred)
