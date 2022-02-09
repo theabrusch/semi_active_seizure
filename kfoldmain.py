@@ -108,7 +108,7 @@ def main(args):
         fit_config['weight'] = None
 
     loss_fn = get_loss.get_loss(**fit_config)
-    fit_config['weight'] = val_dataloader.dataset.bckg_rate
+    fit_config['weight'] = test_dataloader.dataset.bckg_rate
     test_loss = get_loss.get_loss(**fit_config)
 
     model_train = train_model.model_train(model = model, 

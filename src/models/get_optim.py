@@ -3,8 +3,8 @@ import torch.optim as optim
 
 def get_optim(model, optim_kwargs):
     if optim_kwargs['optimizer'].lower() == 'adam':
-        optimizer = optim.Adam(model.parameters(), lr = optim_kwargs['lr'],
-                               weight_decay=optim_kwargs['weight_decay'])
+        optimizer = optim.AdamW(model.parameters(), lr = optim_kwargs['lr'],
+                                weight_decay=optim_kwargs['weight_decay'])
     elif optim_kwargs['optimizer'].lower() == 'rmsprop':
         if optim_kwargs['model'] == 'AttBiLSTM':
             params = [{'params': model.att.parameters()},
