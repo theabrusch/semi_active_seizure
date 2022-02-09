@@ -53,7 +53,7 @@ def main(args):
     train_datagen['seiz_stride'] = args.seiz_stride
     train_datagen['bckg_rate'] = args.bckg_rate_train
     train_datagen['anno_based_seg'] = args.anno_based_seg
-    train_datagen['prefetch_data_from_seg'] = False
+    train_datagen['prefetch_data_from_seg'] = True
     train_datagen['protocol'] = args.protocol
     train_datagen['batch_size'] = args.batch_size
     train_datagen['use_train_seed'] = True
