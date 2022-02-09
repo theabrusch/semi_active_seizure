@@ -20,7 +20,8 @@ class model_train():
         self.scheduler = scheduler
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
-        self.loss_fn.to(self.device)
+        if self.loss_fn is not None:
+            self.loss_fn.to(self.device)
         self.writer = writer
         self.choose_best = choose_best
         if val_loss is not None:
@@ -43,12 +44,15 @@ class model_train():
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
         f1_scores = torch.zeros(epochs)
-        if job_name is not None:
-            checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + job_name
-        else:
-            checkpoint_path = 'models/checkpoints/' + str(datetime.now())     
-        p = Path(checkpoint_path)
-        p.mkdir(parents=True, exist_ok=True)
+
+        if safe_best_model or self.choose_best:    
+            if safe_best_model:
+                checkpoint_path = 'models/final_models/' + str(datetime.now())  + str(job_name)
+            else:
+                checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + str(job_name)
+            p = Path(checkpoint_path)
+            p.mkdir(parents=True, exist_ok=True)
+
         f1_val_old = 0 
         sensspec_old = 0
         sens_old = 0
@@ -236,7 +240,7 @@ class model_train():
         else:
             return train_loss, val_loss
     
-    def eval(self, data_loader, return_seiz_type = False):
+    def eval(self, data_loader, return_probability = True, return_seiz_type = False):
         y_pred = None
 
         self.model.eval()
@@ -247,21 +251,32 @@ class model_train():
             x = batch[0].float().to(self.device)
             out = self.model(x)
             y_class = torch.argmax(out, axis = -1).cpu().numpy()
+            proba = out[:,1].cpu().numpy()
 
             if y_pred is None:
                 y_pred = y_class
                 y_true = batch[1]
+                probability = proba
                 if len(batch) > 2:
                     seiz_type = batch[2]
             else:
                 y_pred = np.append(y_pred, y_class, axis = 0)
                 y_true = np.append(y_true, batch[1], axis = 0)
+                probability = np.append(probability, proba, axis = 0)
                 if len(batch) > 2:
                     seiz_type = np.append(seiz_type, batch[2], axis = 0)
+                    
         if return_seiz_type:
-            return y_pred, y_true, seiz_type
+            if return_probability:
+                return y_pred, y_true, seiz_type, probability
+            else:
+                return y_pred, y_true, seiz_type
         else:
-            return y_pred, y_true
+            if return_probability:
+                return y_pred, y_true, probability
+            else:
+                return y_pred, y_true
+        
 
 
 class model_train_ssltf():

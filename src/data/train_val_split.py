@@ -391,8 +391,6 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
     for subj in subjects:
         subject = file[subj]
         seiz_recs = get_seiz_recs(subject, seiz_classes)
-        if '7234' in subj:
-            print('hej')
         if len(seiz_recs['seiz']['rec']) > 1:
             # choose 1 record with seizure to use for transferring
             seiz_pd = pd.DataFrame(seiz_recs['seiz']).sort_values(by='rec').reset_index(drop=True)
@@ -443,6 +441,49 @@ def get_transfer_subjects(hdf5_path, subjects, seiz_classes,
             transfer_subjects.append(subj)
 
     return transfer_subjects, transfer_records, test_records
+
+
+def get_inter_subjects(hdf5_path, subjects, seiz_classes, seed,
+                       test_frac = 1/3, **kwargs):
+    '''
+    Function for splitting subjects into seizure records to use
+    for transferring knowledge and into testing 
+    '''
+    file = dc.File(hdf5_path, 'r')
+    train_subjects = []
+    train_records = dict()
+    test_records = dict()
+    for subj in subjects:
+        subject = file[subj]
+        seiz_recs = get_seiz_recs(subject, seiz_classes)
+        train_recs_seiz = np.array([])
+        test_recs_seiz = np.array([])
+        test_recs_bckg = np.array([])
+        train_recs_bckg = np.array([])
+
+        if len(seiz_recs['seiz']['rec']) > 1:
+            # randomnly choose test_frac of seizure records to use for testing
+            n_seiz = int(np.ceil(len(seiz_recs['seiz']['rec'])*test_frac))
+            train_recs_seiz, test_recs_seiz  = train_test_split(seiz_recs['seiz']['rec'], 
+                                                                test_size = n_seiz,
+                                                                random_state = seed)
+        elif len(seiz_recs['seiz']['rec']) == 1:
+            train_recs_seiz = np.array(seiz_recs['seiz']['rec'])
+
+        if len(seiz_recs['non seiz']['rec']) > 1:
+            n_bckg = int(np.ceil(test_frac*len(seiz_recs['non seiz']['rec'])*test_frac))
+            train_recs_bckg, test_recs_bckg  = train_test_split(seiz_recs['non seiz']['rec'], 
+                                                                test_size = n_bckg,
+                                                                random_state = seed)
+        elif len(seiz_recs['non seiz']['rec']) == 0:
+            train_recs_bckg = np.array(seiz_recs['non seiz']['rec'])
+
+        train_recs = np.append(train_recs_seiz, train_recs_bckg)
+        test_recs = np.append(test_recs_seiz, test_recs_bckg)
+        train_records[subj] = train_recs
+        test_records[subj] = test_recs
+
+    return train_records, test_records
 
 
 def get_seiz_recs(subject, seiz_classes, pickle_path=None):

@@ -11,6 +11,7 @@ class DataGenerator(Dataset):
                  hdf5_path, 
                  signal_name,
                  subjects_to_use,
+                 split = 'train',
                  return_seiz_type = False,
                  norm_coef = None,
                  segments = None,
@@ -46,29 +47,24 @@ class DataGenerator(Dataset):
             
         self.segments = segments
 
-        self.bckg_samples = len(self.segments['bckg'])
-        self.seiz_samples = len(self.segments['seiz'])
+        if not 'test' in split:
+            self.bckg_samples = len(self.segments['bckg'])
+            self.seiz_samples = len(self.segments['seiz'])
+            
+            # Set the background rate to the 
+            if self.bckg_rate == 'None' or self.bckg_rate is None:
+                self.bckg_rate = self.bckg_samples/self.seiz_samples
+            elif self.bckg_rate > self.bckg_samples/self.seiz_samples:
+                print('Background rate is too high compared to ratio.',
+                    'Setting background rate to', 
+                    self.bckg_samples/self.seiz_samples, '.')
+                self.bckg_rate = self.bckg_samples/self.seiz_samples
         
-        # Set the background rate to the 
-        if self.bckg_rate == 'None' or self.bckg_rate is None:
-            self.bckg_rate = self.bckg_samples/self.seiz_samples
-        elif self.bckg_rate > self.bckg_samples/self.seiz_samples:
-            print('Background rate is too high compared to ratio.',
-                  'Setting background rate to', 
-                  self.bckg_samples/self.seiz_samples, '.')
-            self.bckg_rate = self.bckg_samples/self.seiz_samples
-
-        # Create weights for sampling. If background rate is 
-        # 1 a batch should contain 50% background and 50% 
-        # seizure. 
-        #bckg_weight = 1/self.bckg_samples*self.bckg_rate
-        #seiz_weight = 1/self.seiz_samples
-
-        #self.segments['bckg']['weight'] = bckg_weight
-        #self.segments['seiz']['weight'] = seiz_weight
-        
-        samptemp = self.segments['seiz'].append(self.segments['bckg'], 
+            samptemp = self.segments['seiz'].append(self.segments['bckg'], 
                                                     ignore_index = True)
+        else:
+            samptemp = self.segments
+
         if self.prefetch_data_from_seg:                
             print('Starting prefetch of data from segmentation...')
             samples = self._prefetch_from_seg(samptemp)
@@ -85,7 +81,10 @@ class DataGenerator(Dataset):
         are not heavily oversampled in each epoch. This is passed 
         to the sampler. 
         ''' 
-        return int((1+self.bckg_rate)*self.seiz_samples)
+        if not self.bckg_rate is None:
+            return int((1+self.bckg_rate)*self.seiz_samples)
+        else:
+            return len(self.samples)
 
     def __getitem__(self, idx):
         '''
@@ -525,14 +524,17 @@ class SegmentData():
         else:
             self.calc_norm_coef = False
 
-    def segment_data(self):
+    def segment_data(self, split = 'train'):
         '''
         Build pandas DataFrame containing pointers to the different
         segments to sample when generating data. 
         '''
-        segments = dict() 
-        segments['seiz'] = pd.DataFrame()
-        segments['bckg'] = pd.DataFrame()
+        if 'test' in split:
+            segments = pd.DataFrame()
+        else:
+            segments = dict() 
+            segments['seiz'] = pd.DataFrame()
+            segments['bckg'] = pd.DataFrame()
         labels = ['bckg', 'seiz']
 
         if self.calc_norm_coef:
@@ -550,7 +552,10 @@ class SegmentData():
             print('Segmenting data for subject', i + 1, 'out of', len(subjects))
             i+=1
             subj_name = subj.split('/')[-1]
-            subj_path = self.pickle_path + '_' + subj_name + '.pickle'
+            if 'test' in split:
+                subj_path = self.pickle_path + '_' + subj_name + '_' + split + '.pickle'
+            else:
+                subj_path = self.pickle_path + '_' + subj_name + '.pickle'
             compute_subj = False
             try:
                 with open(subj_path, 'rb') as fp:
@@ -559,9 +564,13 @@ class SegmentData():
                 compute_subj = True
             
             if compute_subj:
-                subj_seg = dict()
-                subj_seg['seiz'] = pd.DataFrame()
-                subj_seg['bckg'] = pd.DataFrame()
+                if 'test' in split:
+                    subj_seg = dict()
+                    subj_seg['segments'] = pd.DataFrame()
+                else:
+                    subj_seg = dict()
+                    subj_seg['seiz'] = pd.DataFrame()
+                    subj_seg['bckg'] = pd.DataFrame()
                 subj_seg['norm_coef'] = dict()
                 for rec in self.data_file[subj].keys():
                     record = self.data_file[subj][rec]
@@ -591,10 +600,13 @@ class SegmentData():
                     subj_seg['norm_coef'][path]['mean'] = mean
                     subj_seg['norm_coef'][path]['std'] = std
 
-                    seg_rec_pos = seg_rec[seg_rec['label'] == 1]
-                    seg_rec_neg = seg_rec[seg_rec['label'] == 0]
-                    subj_seg['seiz'] = subj_seg['seiz'].append(seg_rec_pos)
-                    subj_seg['bckg'] = subj_seg['bckg'].append(seg_rec_neg)
+                    if 'test' in split:
+                        subj_seg['segments'] = subj_seg['segments'].append(seg_rec, ignore_index = True)
+                    else:
+                        seg_rec_pos = seg_rec[seg_rec['label'] == 1]
+                        seg_rec_neg = seg_rec[seg_rec['label'] == 0]
+                        subj_seg['seiz'] = subj_seg['seiz'].append(seg_rec_pos)
+                        subj_seg['bckg'] = subj_seg['bckg'].append(seg_rec_neg)
 
                 with open(subj_path, 'wb') as fp:
                     pickle.dump(subj_seg, fp)
@@ -602,20 +614,24 @@ class SegmentData():
             if self.calc_norm_coef:
                 self.norm_coef.update(subj_seg['norm_coef'])
             
-            segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
-            if not self.bckg_rate is None and self.use_train_seed and self.subj_strat:
-                seiz_samples = len(subj_seg['seiz'])
-                bckg_tot = int(self.bckg_rate*seiz_samples)
-                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n=bckg_tot))
+            if not 'test' in split:
+                segments['seiz'] = segments['seiz'].append(subj_seg['seiz'])
+                if not self.bckg_rate is None and self.use_train_seed and self.subj_strat:
+                    seiz_samples = len(subj_seg['seiz'])
+                    bckg_tot = int(self.bckg_rate*seiz_samples)
+                    segments['bckg'] = segments['bckg'].append(subj_seg['bckg'].sample(n=bckg_tot))
+                else:
+                    segments['bckg'] = segments['bckg'].append(subj_seg['bckg'], ignore_index=True)
             else:
-                segments['bckg'] = segments['bckg'].append(subj_seg['bckg'])
+                segments = segments.append(subj_seg['segments'], ignore_index = True)
         
         self.segments = segments
 
-        if not self.bckg_rate is None and self.use_train_seed and not self.subj_strat:
-            seiz_samples = len(self.segments['seiz'])
-            bckg_tot = int(self.bckg_rate*seiz_samples)
-            self.segments['bckg'] = self.segments['bckg'].sample(n = bckg_tot)
+        if not 'test' in split:
+            if not self.bckg_rate is None and self.use_train_seed and not self.subj_strat:
+                seiz_samples = len(self.segments['seiz'])
+                bckg_tot = int(self.bckg_rate*seiz_samples)
+                self.segments['bckg'] = self.segments['bckg'].sample(n = bckg_tot)
 
         return self.segments, self.norm_coef
     
@@ -739,7 +755,7 @@ class SegmentData():
                 lab = 1
                 use_sample = True
                 incl_seiz = True
-            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>0.95*window_samples:
+            elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>self.sens*window_samples:
                 lab = 0
                 use_sample = True
             else:
