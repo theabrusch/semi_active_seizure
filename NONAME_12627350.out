@@ -1,0 +1,38 @@
+/bin/bash: ./kfold_job.sh: Permission denied
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 12627350: <NONAME> in cluster <dcc> Exited
+
+Job <NONAME> was submitted from host <n-62-30-4> by user <theb> in cluster <dcc> at Wed Feb  9 11:41:10 2022
+Job was executed on host(s) <n-62-31-1>, in queue <hpc>, as user <theb> in cluster <dcc> at Wed Feb  9 11:41:12 2022
+</zhome/89/a/117273> was used as the home directory.
+</zhome/89/a/117273/Desktop/semi_active_seizure> was used as the working directory.
+Started at Wed Feb  9 11:41:12 2022
+Terminated at Wed Feb  9 11:41:12 2022
+Results reported at Wed Feb  9 11:41:12 2022
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+kfold_job.sh
+------------------------------------------------------------
+
+Exited with exit code 126.
+
+Resource usage summary:
+
+    CPU time :                                   0.23 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     1024.00 MB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   5 sec.
+    Turnaround time :                            2 sec.
+
+The output (if any) is above this job summary.
+
