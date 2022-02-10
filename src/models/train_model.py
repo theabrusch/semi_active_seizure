@@ -22,6 +22,8 @@ class model_train():
         self.model.to(self.device)
         if self.loss_fn is not None:
             self.loss_fn.to(self.device)
+        else:
+            self.loss_fn = None
         self.writer = writer
         self.choose_best = choose_best
         if val_loss is not None:
