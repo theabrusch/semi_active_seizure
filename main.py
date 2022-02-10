@@ -216,7 +216,7 @@ if __name__ == '__main__':
     parser.add_argument('--standardise', type = eval, default=False)
     parser.add_argument('--sens', type = eval, default=0)
     parser.add_argument('--seizure_strat', type = eval, default = False)
-    parser.add_argument('--batch_size', type=eval, default=512)
+    parser.add_argument('--batch_size', type=eval, default=1024)
     # protocol(s) to use for training
     parser.add_argument('--protocol', type=str, default= 'all')
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J test_subj_14_lowstride
+#BSUB -J test_Adam
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -19,4 +19,8 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 main.py --run_folder boston_grid --job_name test_subj_14_lowstride --file_path /work3/theb/boston_scalp.hdf5 --bckg_stride 2 --seiz_stride 0.05 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test False --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --test_subj [6]
+python3 main.py --run_folder boston_grid --job_name test_subj_14_Adam --file_path /work3/theb/boston_scalp.hdf5 --bckg_stride 2 --seiz_stride 0.1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test False --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --test_subj [13] --optimizer Adam
+
+python3 main.py --run_folder boston_grid --job_name test_subj_7_Adam --file_path /work3/theb/boston_scalp.hdf5 --bckg_stride 2 --seiz_stride 0.1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test False --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --test_subj [6] --optimizer Adam
+
+python3 main.py --run_folder boston_grid --job_name test_subj_6_Adam --file_path /work3/theb/boston_scalp.hdf5 --bckg_stride 2 --seiz_stride 0.1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --prefetch_data_from_seg True --epochs 150 --weight_decay 1e-2 --train_val_test False --glob_avg_pool False --padding True --standardise False --anno_based_seg True --dropoutprob 0.6 --test_subj [5] --optimizer Adam

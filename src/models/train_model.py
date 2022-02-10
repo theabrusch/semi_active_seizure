@@ -26,6 +26,8 @@ class model_train():
         self.choose_best = choose_best
         if val_loss is not None:
             self.val_loss = val_loss.to(self.device)
+        else:
+            self.val_loss = None
 
     def train(self,
               train_loader,

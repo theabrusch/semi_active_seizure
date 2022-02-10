@@ -1,7 +1,7 @@
 #!/bin/sh
 #BSUB -q gpuv100
 #BSUB -gpu "num=1"
-#BSUB -J kfold_split2_excl_val3
+#BSUB -J kfold_split34
 ### number of core
 #BSUB -n 1 
 ### specify that all cores should be on the same host
@@ -19,4 +19,6 @@ echo "Runnin script..."
 
 source $HOME/miniconda3/bin/activate
 conda activate semi_active_seiz
-python3 kfoldmain.py --run_folder kfold_temple --job_name test_kfold_exclval3 --file_path /work3/theb/temple_seiz_full.hdf5 --window_length 2 --bckg_stride 1 --seiz_stride 1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --epochs 150 --weight_decay 1e-2 --glob_avg_pool False --padding False --anno_based_seg True --dropoutprob 0.6 --optimizer Adam --milestones [50,120,150] --scheduler None --seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz' --eval_seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz' --split 2 --n_splits 5 --onlytrainseiz None --save_best_model True --val_split None
+python3 kfoldmain.py --run_folder kfold_temple --job_name test_kfold_split3 --file_path /work3/theb/temple_seiz_full.hdf5 --window_length 2 --bckg_stride 1 --seiz_stride 1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --epochs 150 --weight_decay 1e-2 --glob_avg_pool False --padding False --anno_based_seg True --dropoutprob 0.6 --optimizer Adam --milestones [50,120,150] --scheduler None --seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz' --eval_seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz' --split 3 --n_splits 5 --onlytrainseiz None --save_best_model True --val_split None
+
+python3 kfoldmain.py --run_folder kfold_temple --job_name test_kfold_split4 --file_path /work3/theb/temple_seiz_full.hdf5 --window_length 2 --bckg_stride 1 --seiz_stride 1 --bckg_rate_val 1 --bckg_rate_train 1 --lr 1e-5 --epochs 150 --weight_decay 1e-2 --glob_avg_pool False --padding False --anno_based_seg True --dropoutprob 0.6 --optimizer Adam --milestones [50,120,150] --scheduler None --seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz' --eval_seiz_classes 'fnsz' 'gnsz' 'cpsz' 'spsz' 'tcsz' 'seiz' 'absz' 'tnsz' 'mysz' --split 4 --n_splits 5 --onlytrainseiz None --save_best_model True --val_split None
