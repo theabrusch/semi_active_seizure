@@ -51,7 +51,7 @@ def main(args):
     with open('configuration.yml', 'r') as file:
         config = yaml.safe_load(file)
 
-    splitdict = config['data_gen']
+    splitdict = config['data_gen'].copy()
     splitdict['hdf5_path'] = args.file_path
     splitdict['split'] = args.split
     splitdict['seiz_classes'] = args.seiz_classes
@@ -68,7 +68,7 @@ def main(args):
     print('Test:', test)
 
     # validation loader
-    datagen = config['data_gen']
+    datagen = config['data_gen'].copy()
     datagen['seiz_classes'] = args.seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length

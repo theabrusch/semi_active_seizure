@@ -40,11 +40,15 @@ for anno in annos:
         else:
             anno_names[an['Name']].append(an['Duration'])
 
+n_stat_epi = 0
 for name in anno_names.keys():
     print(name)
     print('Mean', np.mean(anno_names[name]))
     print('Min', np.min(anno_names[name]))
     print('Max', np.max(anno_names[name]), '\n')
+    anno = np.array(anno_names[name])
+    n_stat_epi += len(anno[anno>5*60])
+    print('N. status epilepticus', len(anno[anno>5*60]))
 
 subj_recs = []
 rec_dur = np.array([])

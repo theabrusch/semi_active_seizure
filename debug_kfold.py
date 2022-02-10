@@ -1,4 +1,4 @@
-from main_inter_subject import main
+from kfoldmain import main
 import argparse
 # job name
 parser = argparse.ArgumentParser()
@@ -8,7 +8,8 @@ parser.add_argument('--run_folder', type = str, default='notspec')
 parser.add_argument('--file_path', type = str)
 parser.add_argument('--seed', type = int, default = 20)
 parser.add_argument('--split', type = int, default = 0)
-parser.add_argument('--test_frac', type = float, default = 1/3)
+parser.add_argument('--val_split', type = eval, default = None)
+parser.add_argument('--n_splits', type = int, default = 5)
 # exclude subjects that have 1 or more seizures not included in analysis
 parser.add_argument('--excl_seiz', type = eval, default = False) 
 # exclude seizure types to include in training but not evaluation
