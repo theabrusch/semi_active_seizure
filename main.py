@@ -96,6 +96,7 @@ def main(args):
     model_config['lstm_units'] = args.lstm_units
     model_config['dense_units'] = args.dense_units
     model_config['dropoutprob'] = args.dropoutprob
+    model_config['cnn_dropoutprob'] = args.cnn_dropoutprob
     model_config['glob_avg_pool'] = args.glob_avg_pool
     model_config['padding'] = args.padding
     model_config['input_shape'] = train_dataset._get_X_shape()
@@ -224,6 +225,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
+    parser.add_argument('--cnn_dropoutprob', type=float, default=0.4)
     parser.add_argument('--lstm_units', type=eval, default=140)
     parser.add_argument('--dense_units', type=eval, default=70)
     parser.add_argument('--padding', type=eval, default=False)       
