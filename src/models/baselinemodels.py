@@ -65,27 +65,28 @@ class BaselineCNN(nn.Module):
             nn.BatchNorm2d(20),
             nn.ELU(),
             nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
-            nn.Dropout(dropoutprob),
+            nn.Dropout(cnn_dropoutprob),
             nn.Conv2d(in_channels = 20, out_channels = 40, 
                       kernel_size = (10, 10), padding = padding[2]),
             nn.BatchNorm2d(40),
             nn.ELU(),
             nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
-            nn.Dropout(dropoutprob),
+            nn.Dropout(cnn_dropoutprob),
             nn.Conv2d(in_channels = 40, out_channels = 80, 
                       kernel_size = (10, 10), padding = padding[3]),
             nn.BatchNorm2d(80),
             nn.ELU(),
-            nn.Dropout(dropoutprob),
         )
 
         if not glob_avg_pool:
             self.final_layer = nn.Sequential(nn.Flatten(),
+                                             nn.Dropout(dropoutprob),
                                              nn.Linear(in_features=h*w*80, out_features=2))
         else:
             self.final_layer = nn.Sequential(nn.AvgPool2d(kernel_size=(h,w),
                                                           stride = (h,w)),
                                              nn.Flatten(),
+                                             nn.Dropout(dropoutprob),
                                              nn.Linear(in_features=80, out_features=2))
     
     def forward(self, x, training = True, return_features=False):
