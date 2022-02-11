@@ -40,7 +40,7 @@ def conv_size(input_size, kernel, padding, stride=1):
 
 class BaselineCNN(nn.Module):
 
-    def __init__(self, input_shape, dropoutprob = 0.2, padding=True, 
+    def __init__(self, input_shape, cnn_dropoutprob = 0.2, dropoutprob = 0.6, padding=True, 
                  glob_avg_pool = True, **kwargs):
         super(BaselineCNN, self).__init__() 
         ch_dim = input_shape[0]
