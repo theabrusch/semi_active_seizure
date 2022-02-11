@@ -114,7 +114,14 @@ def main(args):
         # load model
         model_config = config['model_kwargs']
         model_config['model'] = args.model_type
-        model_config['dropoutprob'] = trial.suggest_float('dropout', 0, 0.7)
+        if not args.separate_dropout:
+            dropout = trial.suggest_float('dropout', 0, 0.7)
+            model_config['dropoutprob'] = dropout
+            model_config['cnn_dropoutprob'] = dropout
+        else:
+            model_config['dropoutprob'] = trial.suggest_float('dropout', 0, 0.7)
+            model_config['cnn_dropoutprob'] = trial.suggest_float('cnn_dropout', 0, 0.7)
+            
         model_config['glob_avg_pool'] = trial.suggest_categorical('glob_avg_pool', [True, False])
         model_config['padding'] = trial.suggest_categorical('padding', [True, False])
         model_config['input_shape'] = train_dataloader.dataset._get_X_shape()
@@ -204,6 +211,7 @@ if __name__ == '__main__':
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')      
+    parser.add_argument('--separate_dropout', type=eval, default=False)      
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
