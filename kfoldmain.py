@@ -85,6 +85,7 @@ def main(args):
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
     model_config['dropoutprob'] = args.dropoutprob
+    model_config['cnn_dropoutprob'] = args.cnn_dropoutprob
     model_config['glob_avg_pool'] = args.glob_avg_pool
     model_config['padding'] = args.padding
     model_config['input_shape'] = train_dataloader.dataset._get_X_shape()
@@ -213,6 +214,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
+    parser.add_argument('--cnn_dropoutprob', type=float, default=0.4)
     parser.add_argument('--padding', type=eval, default=False)       
     parser.add_argument('--save_best_model', type=eval, default=False)       
 
