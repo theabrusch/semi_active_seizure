@@ -244,7 +244,7 @@ class model_train():
         else:
             return train_loss, val_loss
     
-    def eval(self, data_loader, return_probability = True, return_seiz_type = False):
+    def eval(self, data_loader, return_probability = False, return_seiz_type = False):
         y_pred = None
 
         self.model.eval()
