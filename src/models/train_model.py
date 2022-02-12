@@ -255,7 +255,7 @@ class model_train():
             x = batch[0].float().to(self.device)
             out = self.model(x)
             y_class = torch.argmax(out, axis = -1).cpu().numpy()
-            proba = out[:,1].cpu().numpy()
+            proba = out[:,1].detach().cpu().numpy()
 
             if y_pred is None:
                 y_pred = y_class
