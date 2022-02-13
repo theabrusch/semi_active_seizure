@@ -27,14 +27,14 @@ signal = record['TCP']
 annos = record['Annotations']
 #start = int((annos[1]['Start']-record.start_time - 20)*signal.fs)
 start = 25*signal.fs
-end = 35*signal.fs
+end = 27*signal.fs
 anno_start_line = annos[1]['Start']-record.start_time
 anno_end_line = anno_start_line + annos[1]['Duration']
 scale_sig = signal[0:40*signal.fs,:]
 
-fig, ax = plt.subplots(nrows = 10, figsize = (15,5), sharex = 'row', gridspec_kw = {'hspace': 0})
-
-for ch in range(10):
+fig, ax = plt.subplots(nrows = 20, figsize = (5,5), sharex = 'row',
+                        sharey = True, gridspec_kw = {'hspace': 0})
+for ch in range(20):
     channel = signal[start:end, ch]
     time = np.linspace(start/signal.fs, end/signal.fs, len(channel))
     ax[ch].plot(time, channel, linewidth = 0.7)
@@ -45,17 +45,37 @@ for ch in range(10):
     ax[ch].spines['right'].set_visible(False)
     ax[ch].spines['left'].set_visible(False)
     ax[ch].spines['top'].set_visible(False)
-    ax[ch].spines['bottom'].set_visible(False)
-    if not ch == 9:
+    #
+    if not ch == 19:
         ax[ch].get_xaxis().set_ticks([])
     else:
+        ax[ch].spines['bottom'].set_visible(False)
         ax[ch].set_xlabel('Time (s)', fontsize = 14)
         ax[ch].tick_params(axis = 'x', labelsize = 14)
+    #if ch == 10:
+    #    text_string = 'Y-range: [' + str(np.min(scale_sig)) + ', ' + str(np.max(scale_sig))
+    #    plt.subplot_adjust(right = 2)
+    #    ax[ch].text(29, 0, text_string)
     ax[ch].get_yaxis().set_ticks([])
+    #ax[ch].tick_params(axis = 'y', labelsize = 14)
+
 
     ax[ch].set_ylabel(signal.attrs['chNames'][ch], rotation = 0, labelpad = 30, fontsize = 14)
     ax[ch].axvspan(anno_start_line, anno_end_line, np.min(signal), np.max(signal), facecolor = 'bisque')
 
+plt.show()
+
+fig, ax = plt.subplots(figsize=(8,5))
+
+subsig = signal[start:end, :]
+im = ax.imshow(subsig.T, aspect = 'auto', extent = [25,27, 20, 0])
+ax.tick_params(axis = 'x', labelsize = 14)
+ax.set_xlabel('Time (s)', fontsize = 14)
+ax.set_ylabel('Channel number', fontsize = 14)
+ax.get_xaxis().set_ticks(np.arange(25,27.5,0.5))
+ax.tick_params(axis = 'y', labelsize = 14)
+ax.get_yaxis().set_ticks(np.arange(0,20,2).astype(int))
+plt.colorbar(im)
 plt.show()
 
 #CPSZ

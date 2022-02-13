@@ -141,7 +141,7 @@ def main(args):
 
     test_dataloader.dataset.return_seiz_type = True
     y_pred, y_true, seiz_type, probability = model_train.eval(test_dataloader, 
-                                                              return_probability=True, 
+                                                              return_probability = True, 
                                                               return_seiz_type = True)
 
     segments = test_dataloader.dataset.segments

@@ -145,51 +145,23 @@ def main(args):
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
     print('Total time', datetime.now()-time_start, '.')
 
-    if config['general']['run_test']:
-        y_pred, y_true, seiz_types = model_train.eval(test_loader, return_seiz_type = True)
+    y_pred, y_true = model_train.eval(test_loader, return_probability = False,
+                                        return_seiz_type = False)
 
-        # calculate metrics
-        sens = sensitivity(y_true, y_pred)
-        spec = specificity(y_true, y_pred)
-        f1 = f1_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred)
-        acc = accuracy(y_true, y_pred)
+    # calculate metrics
+    sens = sensitivity(y_true, y_pred)
+    spec = specificity(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
+    prec = precision_score(y_true, y_pred)
+    acc = accuracy(y_true, y_pred)
 
-        writer.add_scalar('test_final/sensitivity', sens)
-        writer.add_scalar('test_final/specificity', spec)
-        writer.add_scalar('test_final/f1', f1)
-        writer.add_scalar('test_final/precision', prec)
-        writer.add_scalar('test_final/accuracy', acc)
+    writer.add_scalar('test_final/sensitivity', sens)
+    writer.add_scalar('test_final/specificity', spec)
+    writer.add_scalar('test_final/f1', f1)
+    writer.add_scalar('test_final/precision', prec)
+    writer.add_scalar('test_final/accuracy', acc)
 
-        # calculate metrics for different seizure types
-        import numpy as np
-        uni_seiz_types = np.unique(seiz_types)
-        t = PrettyTable(['Seizure type', 'Sensitivity', 'Number of segments'])        
-        for seiz in uni_seiz_types:
-            if seiz != 'bckg':
-                idx = seiz_types == seiz
-                y_true_temp = y_true[idx]
-                y_pred_temp = y_pred[idx]
-                sens_temp = sensitivity(y_true_temp, y_pred_temp)
-                t.add_row([seiz, sens_temp, len(y_true_temp)])
-
-        writer.add_text("Seizure specific performance", t.get_html_string(), global_step=0)
-
-        # get seizure specific performance on validation set
-        val_dataloader.dataset.return_seiz_type = True
-        y_pred, y_true, seiz_types = model_train.eval(val_dataloader, return_seiz_type = True)
-        uni_seiz_types = np.unique(seiz_types)
-        t = PrettyTable(['Seizure type', 'Sensitivity', 'Number of segments'])        
-        for seiz in uni_seiz_types:
-            if seiz != 'bckg':
-                idx = seiz_types == seiz
-                y_true_temp = y_true[idx]
-                y_pred_temp = y_pred[idx]
-                sens_temp = sensitivity(y_true_temp, y_pred_temp)
-                t.add_row([seiz, sens_temp, len(y_true_temp)])
-
-        writer.add_text("Seizure specific performance, validation", t.get_html_string(), global_step=0)
-
+    
     writer.close()
 
 if __name__ == '__main__':
