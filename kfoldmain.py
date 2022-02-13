@@ -7,7 +7,7 @@ from src.data import get_generator, train_val_split
 from src.models import get_model, get_optim, get_loss, train_model, metrics
 from datetime import datetime
 from src.models.metrics import sensitivity, specificity, accuracy
-from sklearn.metrics import f1_score, precision_score
+from sklearn.metrics import f1_score, precision_score, confusion_matrix
 from torch.utils.tensorboard import SummaryWriter
 
 print('done loading packages')
@@ -140,8 +140,8 @@ def main(args):
     print('Total time', datetime.now()-time_start, '.')
 
     test_dataloader.dataset.return_seiz_type = True
-    y_pred, y_true, seiz_type, probability = model_train.eval(test_dataloader, 
-                                                              return_probability=True, 
+    y_pred, y_true, seiz_types, probability = model_train.eval(test_dataloader, 
+                                                              return_probability = True, 
                                                               return_seiz_type = True)
 
     segments = test_dataloader.dataset.segments
@@ -159,12 +159,18 @@ def main(args):
     f1 = f1_score(y_true, y_pred)
     prec = precision_score(y_true, y_pred)
     acc = accuracy(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred)
+    tn, fp, fn, tp = cm[0,0], cm[0,1], cm[1,0], cm[1,1]
 
     writer.add_scalar('test_final/sensitivity', sens)
     writer.add_scalar('test_final/specificity', spec)
     writer.add_scalar('test_final/f1', f1)
     writer.add_scalar('test_final/precision', prec)
     writer.add_scalar('test_final/accuracy', acc)
+    writer.add_scalar('test_final/tp', tp)
+    writer.add_scalar('test_final/fp', fp)
+    writer.add_scalar('test_final/tn', tn)
+    writer.add_scalar('test_final/fn', fn)
 
     # calculate metrics for different seizure types
     import numpy as np
