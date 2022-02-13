@@ -8,11 +8,11 @@ from sklearn.model_selection import train_test_split, StratifiedGroupKFold, KFol
 from sklearn.utils import shuffle
 
 def train_val_split(hdf5_path, 
-                    train_percent, 
                     protocol,
                     seed, 
                     seiz_strat = False, 
                     test_subj = None, 
+                    train_percent =0.5, 
                     excl_seiz_classes = [], 
                     **kwargs):
 

@@ -14,7 +14,7 @@ data_gen:
   signal_name: [EEG, TCP]
   seiz_classes: ['fnsz','gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
   excl_seiz_classes: []
-  train_percent: 0.70
+  train_percent: 0.5
   val_percent: 0.15
 
 generator_kwargs:
