@@ -2,6 +2,7 @@ from dataapi import data_collection as dc
 import argparse
 import yaml
 import pickle
+from pathlib import Path
 from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
 from src.models import get_model, get_optim, get_loss, train_model, metrics
@@ -148,6 +149,8 @@ def main(args):
     segments['y pred'] = probability
 
     # save results for further analysis
+    p = Path('data/predictions/')
+    p.mkdir(parents=True, exist_ok=True)
     pickle_path = 'data/predictions/' + args.job_name + '_split_' + str(args.split) + '_results.pickle'
 
     with open(pickle_path, 'wb') as fp:

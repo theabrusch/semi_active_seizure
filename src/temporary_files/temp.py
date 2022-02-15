@@ -1,6 +1,7 @@
 import numpy as np
 import pyedflib
 from dataapi import data_collection as dc
+import matplotlib.pyplot as plt
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists
@@ -49,6 +50,14 @@ for name in anno_names.keys():
     anno = np.array(anno_names[name])
     n_stat_epi += len(anno[anno>5*60])
     print('N. status epilepticus', len(anno[anno>5*60]))
+
+seiz_dur = []
+for name in anno_names.keys():
+    if name != 'bckg':
+        seiz_dur = np.append(seiz_dur, anno_names[name])
+
+plt.hist(seiz_dur, bins = 100, range = (0,300))
+plt.show()
 
 subj_recs = []
 rec_dur = np.array([])

@@ -146,7 +146,7 @@ def main(args):
     print('Total time', datetime.now()-time_start, '.')
 
     y_pred, y_true = model_train.eval(test_loader, return_probability = False,
-                                        return_seiz_type = False)
+                                      return_seiz_type = False)
 
     # calculate metrics
     sens = sensitivity(y_true, y_pred)
