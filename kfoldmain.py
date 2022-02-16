@@ -2,6 +2,7 @@ from dataapi import data_collection as dc
 import argparse
 import yaml
 import pickle
+import torch
 from pathlib import Path
 from prettytable import PrettyTable
 from src.data import get_generator, train_val_split
@@ -57,7 +58,7 @@ def main(args):
     datagen['seiz_stride'] = args.seiz_stride
     datagen['bckg_rate'] = args.bckg_rate_train
     datagen['anno_based_seg'] = args.anno_based_seg
-    datagen['prefetch_data_from_seg'] = True
+    datagen['prefetch_data_from_seg'] = False
     datagen['protocol'] = args.protocol
     datagen['batch_size'] = args.batch_size
     datagen['use_train_seed'] = True
@@ -91,6 +92,10 @@ def main(args):
     model_config['padding'] = args.padding
     model_config['input_shape'] = train_dataloader.dataset._get_X_shape()
     model = get_model.get_model(model_config)
+    if args.model_path is not None:
+        checkpoint = torch.load(args.model_path, map_location = 'cpu')
+        model.load_state_dict(checkpoint['model_state_dict'])
+
 
     # train model
     optim_config = config['fit']['optimizer']
@@ -226,7 +231,8 @@ if __name__ == '__main__':
     parser.add_argument('--dropoutprob', type=float, default=0.4)
     parser.add_argument('--cnn_dropoutprob', type=float, default=0.4)
     parser.add_argument('--padding', type=eval, default=False)       
-    parser.add_argument('--save_best_model', type=eval, default=False)       
+    parser.add_argument('--save_best_model', type=eval, default=False)      
+    parser.add_argument('--model_path', type=str, default=None)
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')

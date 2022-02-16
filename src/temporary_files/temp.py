@@ -80,3 +80,22 @@ for protocol in f.keys():
 
 
 pd.to_datetime(max(time_between), unit='s')
+
+sens = np.array([0.8171, 0.7568, 0.5453, 0.3070, 0.4523])
+spec = np.array([0.7672, 0.9025, 0.9019, 0.9262, 0.8637])
+prec = np.array([0.11, 0.3385, 0.3667, 0.2535, 0.1113])
+f1 = np.array([19.39, 46.78, 43.85, 27.77, 17.86])
+seiz = np.array([5407, 10511, 15858, 17128, 9616])
+bckg = np.array([153508, 148033, 152268, 209861, 229772])
+tp_temp = sens*seiz
+tn_temp = bckg*spec
+fn_temp = seiz-tp_temp
+fp_temp = bckg-tn_temp
+fn = sum(seiz-tp_temp)
+fp = sum(bckg-tn_temp)
+tp = sum(tp_temp)
+tn = sum(tn_temp)
+tot_sens = tp/(tp+fn)
+tot_spec = tn/(tn+fp)
+
+tot_sens_new = sum(tp_temp/) 

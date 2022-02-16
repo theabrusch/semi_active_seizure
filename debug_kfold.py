@@ -7,7 +7,7 @@ parser.add_argument('--run_folder', type = str, default='notspec')
 # datagen
 parser.add_argument('--file_path', type = str)
 parser.add_argument('--seed', type = int, default = 20)
-parser.add_argument('--split', type = int, default = 0)
+parser.add_argument('--split', type = int, default = 3)
 parser.add_argument('--val_split', type = eval, default = None)
 parser.add_argument('--n_splits', type = int, default = 5)
 # exclude subjects that have 1 or more seizures not included in analysis
@@ -43,9 +43,7 @@ parser.add_argument('--epochs', type=int, default=150)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)
 
-args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', '--window_length', '2',
-                          '--bckg_stride', '2', '--seiz_stride', '2',
-                          '--anno_based_seg', 'True', '--model_type', 'BaselineCNN',
-                          '--seiz_classes', 'fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz',
-                          '--onlytrainseiz', None])
+args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
+                          ])
 main(args)
+
