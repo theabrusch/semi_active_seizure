@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from collections import namedtuple
+from dataapi import data_collection as dc
 
 class Postprocessing():
     def __init__(self, 
@@ -16,14 +17,11 @@ class Postprocessing():
         self.dur_thresh = dur_thresh
         self.post_proces = post_proces
 
-        proba = segments['seiz prob'].values
-        recs = segments['path'].values
-        self.annos = self.post_proces(proba, recs)
-
-        return self.annos
-
-    def postproces(self, proba, recs):
+    def postproces(self):
+        proba = self.segments['seiz prob'].values
+        recs = self.segments['rec'].values
         uni_recs = np.unique(recs)
+        annos_collect = dict()
         for rec in uni_recs:
             rec_idx = np.array(recs) == rec
             rec_pred = proba[rec_idx]
@@ -33,7 +31,8 @@ class Postprocessing():
             annos = self._to_events(y_pred)
             if 'target_agg' in self.post_proces:
                 annos = self._target_aggregation(annos)
-        return annos
+            annos_collect[rec] = annos
+        return annos_collect
     
     def _probabilistic_filtering(self, probability):
         '''
@@ -99,7 +98,7 @@ class Postprocessing():
         Set duration filtering for seizure prediction
         '''
         # convert threshold from seconds to number of windows
-        threshold = self.dur_thresh/self.fs
+        threshold = self.dur_thresh*self.fs
         starts, lengths, values = self._rle(rec_pred)
         for i in range(len(starts)):
             if values[i] == 1:
@@ -108,3 +107,90 @@ class Postprocessing():
                     rec_pred[starts[i]:end] = 0
         return rec_pred.astype(int)
 
+class AnyOverlap():
+    def __init__(self, pred_annos, segments, hdf5_path) -> None:
+        self.pred_annos = pred_annos
+        self.segments = segments
+        self.hdf5_path = hdf5_path
+    
+    def compute_performance(self):
+        recs = self.pred_annos.keys()
+        file = dc.File(self.hdf5_path, 'r')
+        seiz_classes = ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
+        TP = 0
+        FN = 0
+        FP = 0
+        TN = 0
+        total_recdur = 0
+        anno_stats = dict()
+        for rec in recs:
+            record = file[rec]
+            rec_true_annos = record['Annotations']
+            rec_true_annos = self._convert_true_anno(rec_true_annos, record.start_time, seiz_classes)
+            rec_pred_annos = self.pred_annos[rec]
+            FN_annos, TP_annos, FP_annos, TN_annos = self._ovlp(rec_true_annos, rec_pred_annos)
+            anno_stats[rec] = dict()
+            anno_stats[rec]['TP annos'] = TP_annos
+            anno_stats[rec]['FP annos'] = FP_annos
+            anno_stats[rec]['FN annos'] = FN_annos
+            TP += len(TP_annos)
+            FN += len(FN_annos)
+            FP += len(FP_annos)
+            TN += len(TN_annos)
+            total_recdur += record.duration
+            
+        
+        return TP, FN, FP, TN, total_recdur
+
+
+    def _convert_true_anno(self, annos, rec_start, seiz_classes):
+        conv_annos = []
+        for anno in annos:
+            start = anno['Start']-rec_start
+            if anno['Name'] in seiz_classes:
+                lab = 1
+            else:
+                lab = 0
+            an = {'Name': lab, 'Start': start, 'Duration': anno['Duration']}
+            conv_annos.append(an)
+        return conv_annos
+
+    def _ovlp(self, rec_true_annos, rec_pred_annos):
+        FN_annos = []
+        TP_annos = []
+        FP_annos = []
+        TN_annos = []
+
+        for anno in rec_true_annos:
+            true_stop = anno['Start'] + anno['Duration']
+            hit = False
+            for pred_anno in rec_pred_annos:
+                if pred_anno['Name'] == anno['Name']:
+                    pred_stop = pred_anno['Start'] + pred_anno['Duration']
+                    if anno['Start'] < pred_stop and  true_stop > pred_anno['Start']:
+                        hit = True
+                        break
+            if hit:
+                if anno['Name'] ==1:
+                    TP_annos.append(anno)
+                else:
+                    TN_annos.append(anno)
+            else:
+                if anno['Name'] == 1:
+                    FN_annos.append(anno)
+
+        for anno in rec_pred_annos:
+            true_stop = anno['Start'] + anno['Duration']
+            hit = False
+            if anno['Name'] == 1:
+                for pred_anno in rec_true_annos:
+                    if pred_anno['Name'] == 1:
+                        pred_stop = pred_anno['Start'] + pred_anno['Duration']
+                        if anno['Start'] < pred_stop and  true_stop > pred_anno['Start']:
+                            hit = True
+                            break
+                if not hit:
+                    FP_annos.append(anno)
+
+        return FN_annos, TP_annos, FP_annos, TN_annos
+                    

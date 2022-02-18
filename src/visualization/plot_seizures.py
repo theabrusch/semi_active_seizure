@@ -154,7 +154,20 @@ for ch in range(10, 20):
     ax[ch].get_yaxis().set_ticks([])
 plt.show()
 
-#FNSZ
+#eventbased scoring
+fig, ax =plt.subplots(figsize=(10,2))
+time = np.arange(0, len(signal)/250, step=1/250) 
+ax.plot(time, signal[:,0].T)
+ax.vlines([610,620,630,640,650,660,670, 680, 690], ymin=-100, ymax=150, color ='black', linewidth=1)
+ax.axvspan(630, 650,-100, 150, facecolor = 'bisque')
+ax.axvspan(670, 690,-100, 150, facecolor = 'bisque')
+ax.axvspan(610, 620,-100, 150, facecolor = 'bisque')
+#ax.axvspan(660, 700,-100, 150, facecolor = 'bisque')
+ax.set_xlim([600,700])
+ax.set_ylim([-100,150])
+ax.set_yticks([])
+ax.set_xticks([])
+plt.show()
 
 record = file[seizure_types['fnsz'][0]]
 signal = record['TCP']
