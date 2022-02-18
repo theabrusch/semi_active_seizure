@@ -8,7 +8,7 @@ from sqlalchemy_utils import database_exists
 import scipy
 import pandas as pd
 
-file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5'
+file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp_newnew.hdf5'
 f = dc.File(file_name, 'r')
 
 annos = f.get_children(object_type=dc.Annotations, get_obj = True)

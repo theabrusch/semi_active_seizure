@@ -46,7 +46,7 @@ parser.add_argument('--epochs', type=int, default=0)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)  
 
-args = parser.parse_args(['--file_path','data/hdf5/boston_scalp_sub.hdf5', 
+args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp_newnew.hdf5', 
                           '--model_type', 'BaselineCNN','--test_subj', '[0]' ])
 
                           #'--model_path', '/Users/theabrusch/Desktop/Speciale_data/final_model.pt'])
