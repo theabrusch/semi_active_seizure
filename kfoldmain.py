@@ -58,7 +58,7 @@ def main(args):
     datagen['seiz_stride'] = args.seiz_stride
     datagen['bckg_rate'] = args.bckg_rate_train
     datagen['anno_based_seg'] = args.anno_based_seg
-    datagen['prefetch_data_from_seg'] = False
+    datagen['prefetch_data_from_seg'] = True
     datagen['protocol'] = args.protocol
     datagen['batch_size'] = args.batch_size
     datagen['use_train_seed'] = True
