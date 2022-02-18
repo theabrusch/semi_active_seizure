@@ -511,13 +511,13 @@ class SegmentData():
 
         # Define paths for saving the segmentation
         self.signal_name = signal_name
-        dset = hdf5_path.split('/')[-1].split('.')[0]
+        self.dset = hdf5_path.split('/')[-1].split('.')[0]
         stride_string = ''.join(str(self.stride).split(' '))
-        self.pickle_path = 'data/' + dset  + \
+        self.pickle_path = 'data/' + self.dset  + \
                            '_winlen_' + str(window_length) + '_anno_seg_'\
                            + str(anno_based_seg)+'_stride_' + stride_string + \
                             'seiz_classes_' + str(self.seiz_classes)
-        self.norm_coef_path = 'data/' + dset + \
+        self.norm_coef_path = 'data/' + self.dset + \
                               '_norm_coef.pickle'
         if self.standardise:
             self.calc_norm_coef = True
@@ -756,6 +756,9 @@ class SegmentData():
                 use_sample = True
                 incl_seiz = True
             elif np.sum(one_hot_label[sw:ew,:], axis = 0)[0]>self.sens*window_samples:
+                lab = 0
+                use_sample = True
+            elif 'boston' in self.dset:
                 lab = 0
                 use_sample = True
             else:
