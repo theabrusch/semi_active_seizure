@@ -125,7 +125,7 @@ def main(args):
                                             val_loss = test_loss,
                                             writer = writer,
                                             scheduler = scheduler,
-                                            choose_best = False)
+                                            choose_best = args.choose_best)
 
     time = datetime.now()
     if args.val_split is not None:
@@ -235,6 +235,7 @@ if __name__ == '__main__':
     parser.add_argument('--padding', type=eval, default=False)       
     parser.add_argument('--save_best_model', type=eval, default=False)      
     parser.add_argument('--model_path', type=str, default=None)
+    parser.add_argument('--choose_best', type=eval, default=False)
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')
