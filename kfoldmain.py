@@ -68,11 +68,7 @@ def main(args):
                                                             subjs_to_use = train,
                                                             split = 'train',
                                                             writer = writer)
-    if args.val_split is not None:
-        val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
-                                                            subjs_to_use = val,
-                                                            split = 'val',
-                                                            writer = writer)
+
     # get test loader
     datagen['bckg_stride'] = None
     datagen['seiz_stride'] = None
@@ -83,7 +79,11 @@ def main(args):
                                                             subjs_to_use = test,
                                                             split = 'test',
                                                             writer = writer)
-    
+    if args.val_split is not None:
+        val_dataloader = get_generator.get_dataset_cross_val(data_gen = datagen, 
+                                                            subjs_to_use = val,
+                                                            split = 'val',
+                                                            writer = writer)
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
