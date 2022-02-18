@@ -35,7 +35,7 @@ def main(args):
     splitdict['split'] = args.split
     splitdict['only_train_seiz'] = args.onlytrainseiz
     splitdict['val_split'] = args.val_split
-    splitdict['n_val_splits'] = 5
+    splitdict['n_val_splits'] = 7
     splitdict['excl_seiz'] = args.excl_seiz
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = args.n_splits
