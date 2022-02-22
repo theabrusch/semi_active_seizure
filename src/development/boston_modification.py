@@ -8,7 +8,17 @@ rereference = False
 create_new_file = False
 create_bckg_anno = True
 
-F = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp.hdf5', 'r')
+F = dc.File('/Volumes/SED/Thea speciale data/hdf5/boston_scalp.hdf5', 'r')
+annos = F.get_children(dc.Annotations, get_obj=True)
+seiz = 0
+seiz_rec = 0
+for anno in annos:
+    if len(anno) >1:
+        seiz_rec+=1
+    for an in anno:
+        if an['Name'].lower() == 'seiz':
+            seiz+=1
+
 record = F['train']['chb01/01']
 sig = record['EEG']
 dur23 = 0
