@@ -1,6 +1,6 @@
 from dataapi import data_collection as dc
 
-F = dc.File('/work3/theb/boston_scalp_newnew.hdf5', 'r+')
+F = dc.File('/work3/theb/boston_scalp_18ch.hdf5', 'r+')
 records = F.get_children(dc.Record, get_obj=False)
 i=1
 for rec in records:
