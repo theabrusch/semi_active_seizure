@@ -35,7 +35,7 @@ def main(args):
     splitdict['split'] = args.split
     splitdict['only_train_seiz'] = args.onlytrainseiz
     splitdict['val_split'] = args.val_split
-    splitdict['n_val_splits'] = 5
+    splitdict['n_val_splits'] = 7
     splitdict['excl_seiz'] = args.excl_seiz
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = args.n_splits
@@ -59,7 +59,7 @@ def main(args):
     datagen['seiz_stride'] = args.seiz_stride
     datagen['bckg_rate'] = args.bckg_rate_train
     datagen['anno_based_seg'] = args.anno_based_seg
-    datagen['prefetch_data_from_seg'] = False
+    datagen['prefetch_data_from_seg'] = True
     datagen['protocol'] = args.protocol
     datagen['batch_size'] = args.batch_size
     datagen['use_train_seed'] = True

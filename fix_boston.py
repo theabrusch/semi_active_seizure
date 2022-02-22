@@ -58,4 +58,3 @@ for subj in f_subj24['train'].keys():
 
         F.flush()
 F.close()
-
