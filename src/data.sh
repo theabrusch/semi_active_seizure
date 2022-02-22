@@ -1,1 +1,1 @@
-rsync -Pav -a ~/Desktop/Speciale_data/hdf5/ --rsh=ssh theb@transfer.gbar.dtu.dk:/work3/theb/
+rsync -Pav -a ~/Desktop/Speciale_data/hdf5/boston_scalp_subj24.hdf5 --rsh=ssh theb@transfer.gbar.dtu.dk:/work3/theb/
