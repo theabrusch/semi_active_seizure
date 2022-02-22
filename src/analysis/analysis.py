@@ -9,13 +9,17 @@ class Postprocessing():
                 fs, 
                 prob_thresh = 0.75, 
                 dur_thresh = 1,
+                p_up = 0.1,
+                statemachine = False,
                 post_proces = ['duration_filt', 'target_agg']):
                 
         self.segments = segments
         self.fs = fs
         self.prob_thresh = prob_thresh
+        self.p_up = p_up,
         self.dur_thresh = dur_thresh
         self.post_proces = post_proces
+        self.statemachine = statemachine
 
     def postproces(self):
         proba = self.segments['seiz prob'].values
@@ -25,7 +29,10 @@ class Postprocessing():
         for rec in uni_recs:
             rec_idx = np.array(recs) == rec
             rec_pred = proba[rec_idx]
-            y_pred = self._probabilistic_filtering(rec_pred)
+            if self.statemachine:
+                y_pred = self.statemachinepostprocess(rec_pred)
+            else:
+                y_pred = self._probabilistic_filtering(rec_pred)
             if 'duration_filt' in self.post_proces:
                 y_pred = self._duration_filtering(y_pred)
             annos = self._to_events(y_pred)
@@ -107,11 +114,42 @@ class Postprocessing():
                     rec_pred[starts[i]:end] = 0
         return rec_pred.astype(int)
 
+    def statemachinepostprocess(self, rec_pred):
+        state = 'neg'
+        new_pred = np.zeros(len(rec_pred))
+        for i in range(len(rec_pred)):
+            if state == 'neg':
+                if rec_pred[i] < self.prob_thresh:
+                    new_pred[i] = 0
+                else:
+                    state = 'pos'
+                    new_pred[i] = 1
+            elif state == 'pos':
+                if rec_pred[i] + self.p_up < self.prob_thresh:
+                    state = 'smooth'
+                    new_pred[i] = 0
+                else:
+                    new_pred[i] = 1
+            elif state == 'smooth':
+                if rec_pred[i] + self.p_up < self.prob_thresh:
+                    state = 'neg'
+                    new_pred[i] = 0
+                    new_pred[i-1] = 0
+                else:
+                    state = 'pos'
+                    new_pred[i] = 1
+                    new_pred[i-1] = 1
+        
+        return new_pred
+
+
+
 class AnyOverlap():
-    def __init__(self, pred_annos, segments, hdf5_path) -> None:
+    def __init__(self, pred_annos, segments, hdf5_path, margin = 1) -> None:
         self.pred_annos = pred_annos
         self.segments = segments
         self.hdf5_path = hdf5_path
+        self.margin = margin
     
     def compute_performance(self):
         recs = self.pred_annos.keys()
@@ -123,24 +161,36 @@ class AnyOverlap():
         TN = 0
         total_recdur = 0
         anno_stats = dict()
+        recstats_seiz = pd.DataFrame()
+        recstats_collect = pd.DataFrame()
         for rec in recs:
             record = file[rec]
             rec_true_annos = record['Annotations']
             rec_true_annos = self._convert_true_anno(rec_true_annos, record.start_time, seiz_classes)
             rec_pred_annos = self.pred_annos[rec]
-            FN_annos, TP_annos, FP_annos, TN_annos = self._ovlp(rec_true_annos, rec_pred_annos)
+            FN_annos, TP_annos, FP_annos, TN_annos, recstat = self._ovlp(rec_true_annos, rec_pred_annos)
+            recstat['rec'] = rec
+            recstats_seiz = recstats_seiz.append(recstat, ignore_index=True)
+
             anno_stats[rec] = dict()
             anno_stats[rec]['TP annos'] = TP_annos
             anno_stats[rec]['FP annos'] = FP_annos
             anno_stats[rec]['FN annos'] = FN_annos
+
+            temp = pd.DataFrame({'rec': rec, 'TP': len(TP_annos), 'FP': len(FP_annos),
+                                 'FN': len(FN_annos), 'TN': len(TN_annos), 'dur': record.duration,
+                                 'seizures':len(TP_annos)+ len(FN_annos)}, index = [0])
+
+            recstats_collect = recstats_collect.append(temp, ignore_index=True)
             TP += len(TP_annos)
             FN += len(FN_annos)
             FP += len(FP_annos)
             TN += len(TN_annos)
             total_recdur += record.duration
+
             
         
-        return TP, FN, FP, TN, total_recdur
+        return TP, FN, FP, TN, total_recdur, anno_stats, recstats_collect, recstats_seiz
 
 
     def _convert_true_anno(self, annos, rec_start, seiz_classes):
@@ -151,7 +201,7 @@ class AnyOverlap():
                 lab = 1
             else:
                 lab = 0
-            an = {'Name': lab, 'Start': start, 'Duration': anno['Duration']}
+            an = {'Name': lab, 'Start': start, 'Duration': anno['Duration'], 'class': anno['Name']}
             conv_annos.append(an)
         return conv_annos
 
@@ -160,6 +210,7 @@ class AnyOverlap():
         TP_annos = []
         FP_annos = []
         TN_annos = []
+        rec_stat = pd.DataFrame()
 
         for anno in rec_true_annos:
             true_stop = anno['Start'] + anno['Duration']
@@ -167,17 +218,21 @@ class AnyOverlap():
             for pred_anno in rec_pred_annos:
                 if pred_anno['Name'] == anno['Name']:
                     pred_stop = pred_anno['Start'] + pred_anno['Duration']
-                    if anno['Start'] < pred_stop and  true_stop > pred_anno['Start']:
+                    if anno['Start'] < pred_stop + self.margin and  true_stop > pred_anno['Start']-self.margin:
                         hit = True
                         break
             if hit:
                 if anno['Name'] ==1:
                     TP_annos.append(anno)
+                    temp = pd.DataFrame({'seiz_type': anno['class'], 'hit': 1, 'dur' : anno['Duration']}, index =[0])
+                    rec_stat = rec_stat.append(temp, ignore_index=True)
                 else:
                     TN_annos.append(anno)
             else:
                 if anno['Name'] == 1:
                     FN_annos.append(anno)
+                    temp = pd.DataFrame({'seiz_type': anno['class'], 'hit': 0, 'dur' : anno['Duration']}, index =[0])
+                    rec_stat = rec_stat.append(temp, ignore_index=True)
 
         for anno in rec_pred_annos:
             true_stop = anno['Start'] + anno['Duration']
@@ -186,11 +241,11 @@ class AnyOverlap():
                 for pred_anno in rec_true_annos:
                     if pred_anno['Name'] == 1:
                         pred_stop = pred_anno['Start'] + pred_anno['Duration']
-                        if anno['Start'] < pred_stop and  true_stop > pred_anno['Start']:
+                        if anno['Start'] < pred_stop + self.margin and  true_stop > pred_anno['Start']-self.margin:
                             hit = True
                             break
                 if not hit:
                     FP_annos.append(anno)
 
-        return FN_annos, TP_annos, FP_annos, TN_annos
+        return FN_annos, TP_annos, FP_annos, TN_annos, rec_stat
                     

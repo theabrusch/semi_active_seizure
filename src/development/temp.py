@@ -9,7 +9,7 @@ import scipy
 import pandas as pd
 
 file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp_newnew.hdf5'
-f = dc.File(file_name, 'r')
+f = dc.File(file_name, 'r+')
 
 annos = f.get_children(object_type=dc.Annotations, get_obj = True)
 window_length = 2
@@ -113,3 +113,7 @@ acc_7 = [95.85, 97.78, 96.40, 96.51]
 sens_14 = [11.11, 10, 10, 5.56]
 spec_14 = [66.56, 71.18, 88.65, 69.57]
 acc_14 = [66.45, 71.06, 88.49, 69.46]
+
+sens = [71.69,91.46,55.5,83.77,20.96,60,87.07,85.4,
+        28.14, 80.46, 91.84,68.66, 27.11,51.53,98.58,
+        50.74,15.66,74.17,37.5, 52.98, 83.81, 5.56]
