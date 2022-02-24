@@ -130,7 +130,7 @@ def get_dataset(data_gen, split = None, summarywriter=None):
                                                 subjects_to_use = val)
         segment, norm_coef = datasegment.segment_data(split = 'test')
         val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=val,split ='test',
-                                                  #bckg_rate=data_gen['bckg_rate_val'],
+                                                  bckg_rate=None,
                                                   segments = segment, norm_coef=norm_coef)
         #if not summarywriter is None:
         #    seizure_types = val_dataset.segments['seiz']['seiz_types']
