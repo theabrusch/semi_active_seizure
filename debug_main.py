@@ -12,7 +12,7 @@ parser.add_argument('--file_path', type = str)
 parser.add_argument('--window_length', type=float, default = 2)
 parser.add_argument('--bckg_stride', type=eval, default=None)
 parser.add_argument('--seiz_stride', type=eval, default=None)
-parser.add_argument('--bckg_rate_val', type=eval, default=20) # None or value
+parser.add_argument('--bckg_rate_val', type=eval, default=None) # None or value
 parser.add_argument('--bckg_rate_train', type=eval, default=1)
 parser.add_argument('--use_train_seed', type=eval, default=True)
 parser.add_argument('--subj_strat', type=eval, default=False)
@@ -46,8 +46,8 @@ parser.add_argument('--epochs', type=int, default=0)
 parser.add_argument('--lr', type=float, default=3e-4)
 parser.add_argument('--weight_decay', type = float, default=1e-3)  
 
-args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp_newnew.hdf5', 
-                          '--model_type', 'BaselineCNN','--test_subj', '[0]' ])
+args = parser.parse_args(['--file_path','/Volumes/GoogleDrive/Mit drev/Matematisk modellering/Speciale/semi_active_seizure/data/hdf5/temple_seiz_small_1.hdf5', 
+                          '--model_type', 'BaselineCNNV2','--test_subj', '[0]' ])
 
                           #'--model_path', '/Users/theabrusch/Desktop/Speciale_data/final_model.pt'])
                           #'--test_subj', '/train/00012742', '/train/00006546', '/train/00003760', '/test/00005625', '/train/00007095', '/train/00002445', '/train/00005371', '/train/00000529', '/train/00004569', '/train/00008345', '/train/00006811', '/train/00005044', '/train/00005347', '/test/00008544', '/train/00010861', '/train/00009994', '/train/00008204', '/train/00008480', '/train/00001891', '/test/00006546', '/train/00000630', '/train/00007296', '/train/00005411', '/train/00012695', '/train/00004657' ,'/train/00011684', '/train/00004842' ,'/train/00004126', '/train/00009245', '/train/00011981', '/train/00000216', '/train/00010678', '/train/00002348', '/train/00006774', '/train/00007313', '/train/00012786', '/train/00010061', '/train/00000107', '/train/00002365', '/train/00011596', '/train/00007795', '/train/00010480', '/train/00010412', '/train/00008188', '/train/00008487', '/train/00005526', '/train/00009881', '/train/00003061','/train/00002044', '/train/00007279', '/train/00010639', '/train/00002235', '/train/00009297', '/train/00003036' ,'/train/00004030' ,'/train/00004045','/train/00004047', '/train/00008835', '/train/00003282', '/train/00010209', '/train/00009880', '/test/00003281',

@@ -163,7 +163,7 @@ class BaselineCNNV2(nn.Module):
 
     def __init__(self, input_shape, cnn_dropoutprob = 0.2, dropoutprob = 0.6, padding=True, 
                  glob_avg_pool = True, **kwargs):
-        super(BaselineCNN, self).__init__() 
+        super(BaselineCNNV2, self).__init__() 
         ch_dim = input_shape[0]
 
         if padding:
@@ -172,11 +172,10 @@ class BaselineCNNV2(nn.Module):
             padding = [(0,0), (int(ch_dim/2),0), (5,0), (5,0)]
 
         h, w = conv_size(input_shape, (1, 10), 0, stride = 1)
-        h = conv_size1d(h, 2, 0, stride = 2)
+        h = conv_size1d(w, 2, 0, stride = 2)
         h = conv_size1d(h, 10, 0, stride = 1)
         h = conv_size1d(h, 2, 0, stride = 2)
         h = conv_size1d(h, 10, 0, stride = 1)
-        h = conv_size1d(h, 2, 0, stride = 2)
         
         self.convblock1 = nn.Sequential(
             nn.Conv2d(in_channels = 1, out_channels = 20, 
@@ -197,7 +196,7 @@ class BaselineCNNV2(nn.Module):
             nn.Dropout(cnn_dropoutprob),
             nn.Conv1d(in_channels = 40, out_channels = 80, 
                       kernel_size = 10, padding = 0),
-            nn.BatchNorm2d(80),
+            nn.BatchNorm1d(80),
             nn.ELU(),)
 
         if not glob_avg_pool:
@@ -213,7 +212,7 @@ class BaselineCNNV2(nn.Module):
     
     def forward(self, x, training = True, return_features=False):
         features = self.convblock1(x.unsqueeze(1))
-        features = self.convblock12(x.squeeze(1))
+        features = self.convblock12(features.squeeze(2))
         x = self.final_layer(features)
         out = F.softmax(x, dim = 1)
 

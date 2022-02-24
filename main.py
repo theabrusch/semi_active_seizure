@@ -80,10 +80,7 @@ def main(args):
     test_datagen['use_train_seed'] = False
 
     if not args.train_val_test:
-        test_loader = get_generator.get_test_generator(test_datagen,
-                                                       gen_args,
-                                                       val_dataset.subjects_to_use, 
-                                                       summarywriter=writer)
+        test_loader = val_dataloader
     else:
         test_loader = get_generator.get_test_generator(test_datagen, 
                                                        gen_args, 

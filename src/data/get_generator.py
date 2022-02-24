@@ -126,15 +126,15 @@ def get_dataset(data_gen, split = None, summarywriter=None):
         data_gen['bckg_rate'] = data_gen['bckg_rate_val']
         if data_gen['eval_seiz_classes'] is not None:
             data_gen['seiz_classes'] = data_gen['eval_seiz_classes']
-        datasegment = datagenerator.SegmentData(**data_gen,
+        datasegment = datagenerator.SegmentData(**data_gen, 
                                                 subjects_to_use = val)
-        segment, norm_coef = datasegment.segment_data()
-        val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=val,
+        segment, norm_coef = datasegment.segment_data(split = 'test')
+        val_dataset = datagenerator.DataGenerator(**data_gen, subjects_to_use=val,split ='test',
                                                   #bckg_rate=data_gen['bckg_rate_val'],
                                                   segments = segment, norm_coef=norm_coef)
-        if not summarywriter is None:
-            seizure_types = val_dataset.segments['seiz']['seiz_types']
-            add_seiztypes_to_summary(seizure_types, summarywriter, 'validation')
+        #if not summarywriter is None:
+        #    seizure_types = val_dataset.segments['seiz']['seiz_types']
+        #    add_seiztypes_to_summary(seizure_types, summarywriter, 'validation')
 
     if split is None:
         if data_gen['train_val_test']:
@@ -150,7 +150,7 @@ def get_generator(train_dataset, val_dataset, generator_kwargs):
                                   batch_size = generator_kwargs['batch_size'], 
                                   sampler = train_sampler,
                                   pin_memory = True)
-    val_sampler = SeizSampler(val_dataset, seed = True)
+    val_sampler = SequentialSampler(val_dataset)
     val_dataloader = DataLoader(val_dataset, 
                                 batch_size = generator_kwargs['val_batch_size'], 
                                 sampler = val_sampler,
