@@ -134,10 +134,16 @@ def main(args):
                                             choose_best = choose_best)
 
     time = datetime.now()
-    train_loss, val_loss = model_train.train(train_loader = train_dataloader,
-                                            val_loader = val_dataloader,
-                                            test_loader = test_loader,
-                                            epochs = args.epochs)
+    if args.train_val_test:
+        train_loss, val_loss = model_train.train(train_loader = train_dataloader,
+                                                val_loader = val_dataloader,
+                                                test_loader = test_loader,
+                                                epochs = args.epochs)
+    else:
+        train_loss, val_loss = model_train.train(train_loader = train_dataloader,
+                                                val_loader = val_dataloader,
+                                                test_loader = None,
+                                                epochs = args.epochs)
                                             
     print('Training model for', args.epochs, 'epochs took', datetime.now()-time, '.')
     print('Total time', datetime.now()-time_start, '.')
