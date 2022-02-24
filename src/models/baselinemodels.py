@@ -38,6 +38,16 @@ def conv_size(input_size, kernel, padding, stride=1):
 
     return h_out, w_out
 
+
+def conv_size1d(h, kernel, padding, stride=1):
+    '''
+    Return output shape after convolution based on input
+    size, kernel size, padding and stride. 
+    '''
+    out = int((h + 2*padding - kernel)/stride) + 1
+
+    return out
+
 class BaselineCNN(nn.Module):
 
     def __init__(self, input_shape, cnn_dropoutprob = 0.2, dropoutprob = 0.6, padding=True, 
@@ -146,3 +156,87 @@ class AttentionBiLSTM(nn.Module):
         x = self.globAvg(x.unsqueeze(1)).squeeze(2).squeeze(1)
         x = self.fc2(x)
         return F.softmax(x, dim = 1)
+
+
+
+class BaselineCNNV2(nn.Module):
+
+    def __init__(self, input_shape, cnn_dropoutprob = 0.2, dropoutprob = 0.6, padding=True, 
+                 glob_avg_pool = True, **kwargs):
+        super(BaselineCNN, self).__init__() 
+        ch_dim = input_shape[0]
+
+        if padding:
+            padding = [(0,5), (int(ch_dim/2),0), (5,5), (5,5)]
+        else:
+            padding = [(0,0), (int(ch_dim/2),0), (5,0), (5,0)]
+
+        h, w = conv_size(input_shape, (1, 10), 0, stride = 1)
+        h = conv_size1d(h, 2, 0, stride = 2)
+        h = conv_size1d(h, 10, 0, stride = 1)
+        h = conv_size1d(h, 2, 0, stride = 2)
+        h = conv_size1d(h, 10, 0, stride = 1)
+        h = conv_size1d(h, 2, 0, stride = 2)
+        
+        self.convblock1 = nn.Sequential(
+            nn.Conv2d(in_channels = 1, out_channels = 20, 
+                      kernel_size = (1,10), padding = 0),
+            nn.Conv2d(in_channels = 20, out_channels = 20, 
+                      kernel_size=(ch_dim, 1), padding = 0),
+            nn.BatchNorm2d(20),
+            nn.ELU(),
+            nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
+            nn.Dropout(cnn_dropoutprob),
+        )
+        self.convblock12 = nn.Sequential(
+            nn.Conv1d(in_channels = 20, out_channels = 40, 
+                      kernel_size = 10, padding = 0),
+            nn.BatchNorm1d(40),
+            nn.ELU(),
+            nn.MaxPool1d(kernel_size = 2, stride = 2),
+            nn.Dropout(cnn_dropoutprob),
+            nn.Conv1d(in_channels = 40, out_channels = 80, 
+                      kernel_size = 10, padding = 0),
+            nn.BatchNorm2d(80),
+            nn.ELU(),)
+
+        if not glob_avg_pool:
+            self.final_layer = nn.Sequential(nn.Flatten(),
+                                             nn.Dropout(dropoutprob),
+                                             nn.Linear(in_features=h*80, out_features=2))
+        else:
+            self.final_layer = nn.Sequential(nn.AvgPool2d(kernel_size=(h,w),
+                                                          stride = (h,w)),
+                                             nn.Flatten(),
+                                             nn.Dropout(dropoutprob),
+                                             nn.Linear(in_features=80, out_features=2))
+    
+    def forward(self, x, training = True, return_features=False):
+        features = self.convblock1(x.unsqueeze(1))
+        features = self.convblock12(x.squeeze(1))
+        x = self.final_layer(features)
+        out = F.softmax(x, dim = 1)
+
+        if return_features:
+            return out, features
+        else:
+            return out
+    
+class AttentionModule(nn.Module):
+    def __init__(self, input_shape):
+        super(AttentionModule, self).__init__()
+        self.time_steps, self.channels = input_shape[1], input_shape[0]
+        # attention weights
+        self.fc = nn.Linear(in_features = self.channels, 
+                            out_features = self.channels)
+        # draw weights from truncated normal
+        truncated_normal_init = truncnorm(0, 10, scale = 0.1)
+        self.fc.weight = Parameter(torch.Tensor(truncated_normal_init.rvs(size = self.fc.weight.shape)).float())
+    
+    def forward(self, x):
+        a = self.fc(x)
+        a = F.softmax(a, dim = 2)
+        # apply same attention across timesteps
+        a = torch.mean(a, axis = 1).unsqueeze(1)
+        x = x*a
+        return x

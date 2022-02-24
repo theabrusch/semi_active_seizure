@@ -3,6 +3,8 @@ from src.models import baselinemodels
 def get_model(model_kwargs):
     if model_kwargs['model'] == 'BaselineCNN':
         model = baselinemodels.BaselineCNN(**model_kwargs)
+    elif model_kwargs['model'] == 'BaselineCNNV2':
+        model = baselinemodels.BaselineCNNV2(**model_kwargs)
     elif model_kwargs['model'] == 'AttBiLSTM':
         model = baselinemodels.AttentionBiLSTM(**model_kwargs)
     if model_kwargs['model_summary']:
