@@ -7,7 +7,7 @@ import numpy as np
 from dataapi import data_collection as dc
 from src.visualization import plot_predictions
 
-with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_choosebest_split_3_results.pickle', 'rb') as rb:
+with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_tcsz_split_3_results.pickle', 'rb') as rb:
     res = pickle.load(rb)
 
 recs = res['rec'].unique()
@@ -46,14 +46,14 @@ channels = list(range(len(record['TCP'].attrs['chNames'])))
 fig = plot_predictions.visualize_seizures(rec_name=rec, 
                                           rec_pred = res_badtcsz['seiz prob'],  
                                           channels = channels, 
-                                          time_start = 210, 
+                                          time_start = 0, 
                                           time_end = 230, 
                                           y_min = -500, 
                                           y_max = 500)
 plt.show()
 
 
-rec = '/train/00008889/s002_t002'
+rec = '/train/00008889/s002_t008'
 res_goodtcsz = res[res['rec']==rec]
 seiz_goodtcsz = res_goodtcsz[res_goodtcsz['seiz_types']=='tcsz']
 record = f[rec]
@@ -62,7 +62,7 @@ annos = record['Annotations']
 channels = [0,1,2,3,4]
 fig = plot_predictions.plot_predictions(rec, res_goodtcsz['seiz prob'], 
                                         annos_pred[2][rec], channels,
-                                        0, 440, -200, 200)
+                                        0, 560, -500, 500)
 plt.show()
 
 channels = list(range(20))
@@ -70,8 +70,8 @@ channels = list(range(20))
 fig = plot_predictions.visualize_seizures(rec_name=rec, 
                                           rec_pred = res_goodtcsz['seiz prob'],  
                                           channels = channels, 
-                                          time_start = 170, 
-                                          time_end = 200, 
+                                          time_start = 200, 
+                                          time_end = 220, 
                                           y_min = -500, 
                                           y_max = 500)
 plt.show()
