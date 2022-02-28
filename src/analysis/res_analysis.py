@@ -133,21 +133,3 @@ fig = plot_predictions.plot_predictions(rec, res_rec, annos_pred[2][rec], channe
                                         0, 1000, -200, 200)
 plt.show()
 
-
-# Analyse TCSZ
-TCSZ0 =  rec_stats_seiz_collect[0][rec_stats_seiz_collect[0]['seiz_type'] == 'tcsz']
-TCSZ2 =  rec_stats_seiz_collect[2][rec_stats_seiz_collect[2]['seiz_type'] == 'tcsz']
-rec = '/train/00008889/s002_t005'
-res_badtcsz = res[res['rec']==rec]
-record = f[rec]
-annos = record['Annotations']
-sig_seiz = np.mean(np.abs(record['TCP'][66000:70500,:]))
-temp = np.mean(np.abs(record['TCP'][0:500,:]))
-
-rec = '/train/00008889/s002_t005'
-res_goodtcsz = res[res['rec']==rec]
-seiz_goodtcsz = res_goodtcsz[res_goodtcsz['seiz_types']=='tcsz']
-record = f[rec]
-annos = record['Annotations']
-sig_seiz = np.mean(np.abs(record['TCP'][48500:49000,:]))
-temp = np.mean(np.abs(record['TCP'][0:500,:]))

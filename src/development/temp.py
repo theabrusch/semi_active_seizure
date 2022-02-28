@@ -8,8 +8,28 @@ from sqlalchemy_utils import database_exists
 import scipy
 import pandas as pd
 
-file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/boston_scalp_newnew.hdf5'
-f = dc.File(file_name, 'r+')
+file_name = '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
+f = dc.File(file_name, 'r')
+
+subjects = f.get_children(object_type=dc.Subject, get_obj = False)
+tcsz_subjs = dict()
+seizs = []
+for subj in subjects:
+    subject = f[subj]
+    tcsz = False
+    seizures = []
+    for rec in subject.keys():
+        for anno in subject[rec]['Annotations']:
+            if anno['Name'] in ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']:
+                seizures.append(anno['Name'])
+                if anno['Name'] == 'tcsz':
+                    tcsz = True
+    if tcsz:
+        tcsz_subjs[subj] = seizures
+        seizs = np.append(seizs, seizures)
+
+
+se, count = np.unique(seizs, return_counts = True)
 
 annos = f.get_children(object_type=dc.Annotations, get_obj = True)
 window_length = 2

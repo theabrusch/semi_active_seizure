@@ -3,6 +3,7 @@ import glob
 import pandas as pd
 import numpy as np
 import os
+from matplotlib.gridspec import SubplotSpec
 
 csv_files = glob.glob('src/visualization/tensorboard_do/*.csv')
 
@@ -35,40 +36,63 @@ for file in csv_files:
     else:
         runs[subj][experiment][measure][exp] = df['Value'].values[:100]
 
+
+
+def create_subtitle(fig: plt.Figure, grid: SubplotSpec, title: str):
+    "Sign sets of subplots with title"
+    row = fig.add_subplot(grid)
+    # the '\n' is important
+    row.set_title(f'{title}\n', fontsize = 16)
+    # hide subplot
+    row.set_frame_on(False)
+    row.axis('off')
+
 # plot sensitivity stride subject 14
-plt.plot(runs['14']['stride']['test_sens'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.05s', 'Stride 0.1s', 'Stride 0.5s', 'Stride 1s'], loc = 'upper right', fontsize =14)
-plt.ylabel('Sensitivity', fontsize = 14)
-plt.xlabel('Epoch', fontsize = 14)
-plt.show()
+fig, ax = plt.subplots(nrows = 2, ncols = 2, figsize = (9,7))
+
+ax[0,0].plot(runs['14']['stride']['test_sens'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100], label = ['Stride 0.05s', 'Stride 0.1s', 'Stride 0.5s', 'Stride 1s'])
+ax[0,0].set_ylim([0,1])
+ax[0,0].set_ylabel('Sensitivity', fontsize = 14)
+ax[0,0].set_xlabel('Epoch', fontsize = 14)
+ax[0,0].tick_params('x', labelsize=12)
+ax[0,0].tick_params('y', labelsize=12)
 
 # plot specificity stride subject 14
-plt.plot(runs['14']['stride']['test_spec'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.05s', 'Stride 0.1s', 'Stride 0.5s', 'Stride 1s'], loc = 'upper left', fontsize =14)
-plt.ylabel('Specificity', fontsize =14)
-plt.xlabel('Epoch', fontsize =14)
-plt.show()
+ax[0,1].plot(runs['14']['stride']['test_spec'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
+ax[0,1].set_ylim([0,1])
+ax[0,1].set_ylabel('Specificity', fontsize =14)
+ax[0,1].set_xlabel('Epoch', fontsize =14)
+ax[0,1].tick_params('x', labelsize=12)
+ax[0,1].tick_params('y', labelsize=12)
 
+# plot specificity stride subject 7
+ax[1,0].plot(runs['7']['stride']['test_sens'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
+ax[1,0].set_ylim([0,1])
+ax[1,0].set_ylabel('Sensitivity', fontsize =14)
+ax[1,0].set_xlabel('Epoch',fontsize=14)
+ax[1,0].tick_params('x', labelsize=12)
+ax[1,0].tick_params('y', labelsize=12)
 
 
 # plot specificity stride subject 7
-plt.plot(runs['7']['stride']['test_sens'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.05s', 'Stride 0.1s', 'Stride 0.5s', 'Stride 1s'], loc = 'center left', fontsize =14)
-plt.ylabel('Sensitivity', fontsize =14)
-plt.xlabel('Epoch',fontsize=14)
+ax[1,1].plot(runs['7']['stride']['test_spec'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
+ax[1,1].set_ylim([0,1])
+ax[1,1].set_ylabel('Specificity',fontsize=14)
+ax[1,1].set_xlabel('Epoch', fontsize=14)
+ax[1,1].tick_params('x', labelsize=12)
+ax[1,1].tick_params('y', labelsize=12)
+
+lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+fig.subplots_adjust(bottom = 0.15, hspace = 0.4, wspace = 0.3)
+fig.legend(lines, labels, loc = 'lower center', bbox_to_anchor=(0.5, 0), borderaxespad=0.5,
+            bbox_transform = plt.gcf().transFigure, ncol = 4, fontsize = 14)
+grid = plt.GridSpec(2, 2)
+create_subtitle(fig, grid[0, ::], 'Subject 14')
+create_subtitle(fig, grid[1, ::], 'Subject 7')
+#fig.tight_layout()
 plt.show()
 
-
-# plot specificity stride subject 7
-plt.plot(runs['7']['stride']['test_spec'][['stride_005', 'stride_01', 'stride_05', 'stride_1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.05s', 'Stride 0.1s', 'Stride 0.5s', 'Stride 1s'], loc = 'center left', fontsize=14)
-plt.ylabel('Specificity',fontsize=14)
-plt.xlabel('Epoch', fontsize=14)
-plt.show()
 
 # add balance
 runs['14']['balance']['test_sens']['bal05'] = runs['14']['stride']['test_sens']['stride_05']
@@ -87,73 +111,96 @@ runs['14']['dropout']['test_spec']['dropout06'] = runs['14']['stride']['test_spe
 runs['7']['dropout']['test_spec']['dropout06'] = runs['7']['stride']['test_spec']['stride_01']
 
 # plot balance subject 14
-plt.plot(runs['14']['balance']['test_sens'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.1s, unbalanced', 'Stride 1s, unbalanced', 'Stride 0.1s, balanced', 'Stride 1s, balanced'], 
-           loc = 'upper right', fontsize =14)
-plt.ylabel('Sensitivity', fontsize =14)
-plt.xlabel('Epoch', fontsize =14)
+
+fig, ax = plt.subplots(nrows = 2, ncols = 2, figsize = (9,7))
+
+ax[0,0].plot(runs['14']['balance']['test_sens'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100], label = ['Stride 0.1s, unbalanced', 'Stride 1s, unbalanced', 'Stride 0.1s, balanced', 'Stride 1s, balanced'])
+ax[0,0].set_ylim([0,1])
+ax[0,0].set_ylabel('Sensitivity', fontsize = 14)
+ax[0,0].set_xlabel('Epoch', fontsize = 14)
+ax[0,0].tick_params('x', labelsize=12)
+ax[0,0].tick_params('y', labelsize=12)
+
+# plot specificity stride subject 14
+ax[0,1].plot(runs['14']['balance']['test_spec'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
+ax[0,1].set_ylim([0,1])
+ax[0,1].set_ylabel('Specificity', fontsize =14)
+ax[0,1].set_xlabel('Epoch', fontsize =14)
+ax[0,1].tick_params('x', labelsize=12)
+ax[0,1].tick_params('y', labelsize=12)
+
+# plot specificity stride subject 7
+ax[1,0].plot(runs['7']['balance']['test_sens'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
+ax[1,0].set_ylim([0,1])
+ax[1,0].set_ylabel('Sensitivity', fontsize =14)
+ax[1,0].set_xlabel('Epoch',fontsize=14)
+ax[1,0].tick_params('x', labelsize=12)
+ax[1,0].tick_params('y', labelsize=12)
+
+
+# plot specificity stride subject 7
+ax[1,1].plot(runs['7']['balance']['test_spec'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
+ax[1,1].set_ylim([0,1])
+ax[1,1].set_ylabel('Specificity',fontsize=14)
+ax[1,1].set_xlabel('Epoch', fontsize=14)
+ax[1,1].tick_params('x', labelsize=12)
+ax[1,1].tick_params('y', labelsize=12)
+
+lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+fig.subplots_adjust(bottom = 0.2, hspace = 0.4, wspace = 0.3)
+fig.legend(lines, labels, loc = 'lower center', bbox_to_anchor=(0.5, 0), borderaxespad=0.5,
+            bbox_transform = plt.gcf().transFigure, ncol = 2, fontsize = 14)
+grid = plt.GridSpec(2, 2)
+create_subtitle(fig, grid[0, ::], 'Subject 14')
+create_subtitle(fig, grid[1, ::], 'Subject 7')
+#fig.tight_layout()
 plt.show()
 
-# plot balance stride subject 14
-plt.plot(runs['14']['balance']['test_spec'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.1s, unbalanced', 'Stride 1s, unbalanced', 'Stride 0.1s, balanced', 'Stride 1s, balanced'], 
-           loc = 'lower left', fontsize=14)
-plt.ylabel('Specificity',fontsize=14)
-plt.xlabel('Epoch',fontsize=14)
+# plot dropout
+fig, ax = plt.subplots(nrows = 2, ncols = 2, figsize = (9,7))
+
+ax[0,0].plot(runs['14']['dropout']['test_sens'][['14_dropout01', '14_dropout02', '14_dropout04', 'dropout06']][0:100], label = ['Dropout 0.1', 'Dropout 0.2', 'Dropout 0.4', 'Dropout 0.6'])
+ax[0,0].set_ylim([0,1])
+ax[0,0].set_ylabel('Sensitivity', fontsize = 14)
+ax[0,0].set_xlabel('Epoch', fontsize = 14)
+ax[0,0].tick_params('x', labelsize=12)
+ax[0,0].tick_params('y', labelsize=12)
+
+# plot specificity stride subject 14
+ax[0,1].plot(runs['14']['dropout']['test_spec'][['14_dropout01', '14_dropout02', '14_dropout04', 'dropout06']][0:100])
+ax[0,1].set_ylim([0,1])
+ax[0,1].set_ylabel('Specificity', fontsize =14)
+ax[0,1].set_xlabel('Epoch', fontsize =14)
+ax[0,1].tick_params('x', labelsize=12)
+ax[0,1].tick_params('y', labelsize=12)
+
+# plot specificity stride subject 7
+ax[1,0].plot(runs['7']['dropout']['test_sens'][['7_dropout01', '7_dropout02', '7_dropout04', 'dropout06']][0:100])
+ax[1,0].set_ylim([0,1])
+ax[1,0].set_ylabel('Sensitivity', fontsize =14)
+ax[1,0].set_xlabel('Epoch',fontsize=14)
+ax[1,0].tick_params('x', labelsize=12)
+ax[1,0].tick_params('y', labelsize=12)
+
+
+# plot specificity stride subject 7
+ax[1,1].plot(runs['7']['dropout']['test_spec'][['7_dropout01', '7_dropout02', '7_dropout04', 'dropout06']][0:100])
+ax[1,1].set_ylim([0,1])
+ax[1,1].set_ylabel('Specificity',fontsize=14)
+ax[1,1].set_xlabel('Epoch', fontsize=14)
+ax[1,1].tick_params('x', labelsize=12)
+ax[1,1].tick_params('y', labelsize=12)
+
+lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+fig.subplots_adjust(bottom = 0.2, hspace = 0.4, wspace = 0.3)
+fig.legend(lines, labels, loc = 'lower center', bbox_to_anchor=(0.5, 0), borderaxespad=0.5,
+            bbox_transform = plt.gcf().transFigure, ncol = 4, fontsize = 14)
+grid = plt.GridSpec(2, 2)
+create_subtitle(fig, grid[0, ::], 'Subject 14')
+create_subtitle(fig, grid[1, ::], 'Subject 7')
+#fig.tight_layout()
 plt.show()
 
 
-# plot balance subject 7
-plt.plot(runs['7']['balance']['test_sens'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.1s, unbalanced', 'Stride 1s, unbalanced', 'Stride 0.1s, balanced', 'Stride 1s, balanced'], 
-           loc = 'lower left',fontsize=14)
-plt.ylabel('Sensitivity',fontsize=14)
-plt.xlabel('Epoch',fontsize=14)
-plt.show()
-
-# plot balance stride subject 7
-plt.plot(runs['7']['balance']['test_spec'][['bckgrate_stride01','bckgrate_stride1', 'bal05', 'bal1']][0:100])
-plt.ylim([0,1])
-plt.legend(['Stride 0.1s, unbalanced', 'Stride 1s, unbalanced', 'Stride 0.1s, balanced', 'Stride 1s, balanced'], 
-           loc = 'lower left', fontsize=14)
-plt.ylabel('Specificity',fontsize=14)
-plt.xlabel('Epoch',fontsize=14)
-plt.show()
-
-# plot dropout subject 14
-plt.plot(runs['14']['dropout']['test_sens'][['14_dropout01', '14_dropout02', '14_dropout04', 'dropout06']][0:100])
-plt.ylim([0,1])
-plt.legend(['Dropout 0.1', 'Dropout 0.2', 'Dropout 0.4', 'Dropout 0.6'], 
-           loc = 'upper left', fontsize=14)
-plt.ylabel('Sensitivity',fontsize=14)
-plt.xlabel('Epoch',fontsize=14)
-plt.show()
-
-plt.plot(runs['14']['dropout']['test_spec'][['14_dropout01', '14_dropout02', '14_dropout04', 'dropout06']][0:100])
-plt.ylim([0,1])
-plt.legend(['Dropout 0.1', 'Dropout 0.2', 'Dropout 0.4', 'Dropout 0.6'], 
-           loc = 'upper left', fontsize=14)
-plt.ylabel('Specificity',fontsize=14)
-plt.xlabel('Epoch',fontsize=14)
-plt.show()
-
-
-# plot dropout subject 7
-plt.plot(runs['7']['dropout']['test_sens'][['7_dropout01', '7_dropout02', '7_dropout04', 'dropout06']][0:100])
-plt.ylim([0,1])
-plt.legend(['Dropout 0.1', 'Dropout 0.2', 'Dropout 0.4', 'Dropout 0.6'], 
-           loc = 'lower right', fontsize=14)
-plt.ylabel('Sensitivity',fontsize=14)
-plt.xlabel('Epoch',fontsize=14)
-plt.show()
-
-plt.plot(runs['7']['dropout']['test_spec'][['7_dropout01', '7_dropout02', '7_dropout04', 'dropout06']][0:100])
-plt.ylim([0,1])
-plt.legend(['Dropout 0.1', 'Dropout 0.2', 'Dropout 0.4', 'Dropout 0.6'], 
-           loc = 'lower right',fontsize=14)
-plt.ylabel('Specificity',fontsize=14)
-plt.xlabel('Epoch', fontsize=14)
-plt.show()

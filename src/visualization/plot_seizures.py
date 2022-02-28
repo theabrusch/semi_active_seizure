@@ -155,20 +155,36 @@ for ch in range(10, 20):
 plt.show()
 
 #eventbased scoring
-fig, ax =plt.subplots(figsize=(10,2))
+fig, ax =plt.subplots(nrows = 2, figsize=(10,4))
 time = np.arange(0, len(signal)/250, step=1/250) 
-ax.plot(time, signal[:,0].T)
-ax.vlines([610,620,630,640,650,660,670, 680, 690], ymin=-100, ymax=150, color ='black', linewidth=1)
-ax.axvspan(630, 650,-100, 150, facecolor = 'bisque')
-ax.axvspan(670, 690,-100, 150, facecolor = 'bisque')
-ax.axvspan(610, 620,-100, 150, facecolor = 'bisque')
+# reference
+ax[0].plot(time, signal[:,0].T)
+ax[0].vlines([2,4,6,8,10,12,14, 16, 18], ymin=-100, ymax=150, color ='black', linewidth=1)
+ax[0].axvspan(5, 15,-100, 150, facecolor = 'bisque')
 #ax.axvspan(660, 700,-100, 150, facecolor = 'bisque')
-ax.set_xlim([600,700])
-ax.set_ylim([-100,150])
-ax.set_yticks([])
-ax.set_xticks([])
+ax[0].set_xlim([0,20])
+ax[0].set_ylim([-10,30])
+ax[0].set_yticks([])
+ax[0].set_xticks([])
+ax[0].set_title('Reference annotation', fontsize = 14)
+# hypothesis
+ax[1].plot(time, signal[:,0].T)
+ax[1].vlines([2,4,6,8,10,12,14, 16, 18], ymin=-100, ymax=150, color ='black', linewidth=1)
+ax[1].axvspan(6, 10,-100, 150, facecolor = 'bisque')
+ax[1].axvspan(14, 18,-100, 150, facecolor = 'bisque')
+ax[1].axvspan(2, 4,-100, 150, facecolor = 'bisque')
+ax[1].set_title('Hypothesis annotation', fontsize = 14)
+#ax.axvspan(660, 700,-100, 150, facecolor = 'bisque')
+ax[1].set_xlim([0,20])
+ax[1].set_ylim([-10,30])
+ax[1].set_yticks([])
+ax[1].set_xticks(list(range(21)))
+ax[1].tick_params('x', labelsize = 12)
+ax[1].set_xlabel('Time (s)', fontsize = 14)
+plt.subplots_adjust(bottom = 0.2, hspace = 0.4)
 plt.show()
 
+#[610,620,630,640,650,660,670, 680, 690]
 record = file[seizure_types['fnsz'][0]]
 signal = record['TCP']
 # read labels per channel
@@ -234,3 +250,102 @@ for ch in range(20):
         ax[ch].tick_params(axis = 'x', labelsize = 14)
     ax[ch].get_yaxis().set_ticks([])
 plt.show()
+
+
+## Plot postprocessing
+
+#eventbased scoring
+fig, ax =plt.subplots(nrows = 4, figsize=(20,5))
+time = np.arange(0, 50, step=1) 
+# reference
+ax_n = 0
+ax[ax_n].set_xticks(np.arange(0, 51, step=2), labels=[])
+ax[ax_n].set_yticks([])
+ax[ax_n].axvspan(0, 10,-1, 2, facecolor = 'lightsalmon', label = 'Background (p<0.50)')
+ax[ax_n].text(4,0.5,'0.11', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(10, 22,-1, 2, facecolor = 'lightgreen', label = 'Seizure (p>0.50)')
+ax[ax_n].text(15,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(22, 24,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(22.2,0.5,'0.18', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(24, 28,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(25,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(28, 32,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(29,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(32, 36,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(33.3,0.5,'0.59', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(36, 42,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(38,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(42, 44,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(42.2,0.5,'0.90', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(44, 50,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(45.5,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+
+ax[ax_n].set_ylim([0,1])
+ax[ax_n].set_xlim([0,50])
+
+# reference
+ax_n = 1
+ax[ax_n].set_xticks(np.arange(0, 51, step=2), labels=[])
+ax[ax_n].set_yticks([])
+ax[ax_n].axvspan(0, 10,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(4,0.5,'0.11', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(10, 22,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(15,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(22, 24,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(22.2,0.5,'0.18', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(24, 28,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(25,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(28, 42,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(34,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(42, 44,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(42.2,0.5,'0.90', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(44, 50,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(45.5,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+
+ax[ax_n].set_ylim([0,1])
+ax[ax_n].set_xlim([0,50])
+
+# reference
+ax_n = 2
+ax[ax_n].set_xticks(np.arange(0, 51, step=2), labels=[])
+ax[ax_n].set_yticks([])
+ax[ax_n].axvspan(0, 10,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(4,0.5,'0.11', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(10, 22,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(15,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(22, 24,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(22.2,0.5,'0.18', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(24, 28,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(25,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(28, 50,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(38,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+
+ax[ax_n].set_ylim([0,1])
+ax[ax_n].set_xlim([0,50])
+
+# reference
+ax_n = 3
+ax[ax_n].set_yticks([])
+ax[ax_n].axvspan(0, 10,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(4,0.5,'0.11', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(10, 28,-1, 2, facecolor = 'lightgreen')
+ax[ax_n].text(18,0.5,'0.80', fontsize = 10, fontweight = 'semibold')
+ax[ax_n].axvspan(28, 50,-1, 2, facecolor = 'lightsalmon')
+ax[ax_n].text(38,0.5,'0.39', fontsize = 10, fontweight = 'semibold')
+
+ax[ax_n].set_xticks(np.arange(0, 51, step=2), fontsize = 12)
+ax[ax_n].set_xlabel('Time (s)', fontsize = 14)
+
+ax[ax_n].set_ylim([0,1])
+ax[ax_n].set_xlim([0,50])
+
+fig.subplots_adjust(bottom = 0.2, hspace = 1)
+
+lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+fig.legend(lines, labels, loc = 'lower center', bbox_to_anchor=(0.5, 0), borderaxespad=0.5,
+            bbox_transform = plt.gcf().transFigure, ncol = 4, fontsize = 14)
+
+plt.show()
+
+
