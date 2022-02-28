@@ -246,10 +246,15 @@ def get_kfold(hdf5_path,
                 n_splits = 5,
                 n_val_splits = 7,
                 choose_orig_val = True,
+                orig_split = False,
                 **kwargs):
 
+    if orig_split:
+        split_seiz_classes = ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
+    else:
+        split_seiz_classes = seiz_classes
     seiz_subjs = get_seiz_kfoldsubjs(hdf5_path, 'all',
-                                     seiz_classes = seiz_classes,
+                                     seiz_classes = split_seiz_classes,
                                      excl_seiz = excl_seiz, 
                                      pickle_path = None)
 
@@ -265,6 +270,13 @@ def get_kfold(hdf5_path,
     test_seiz = np.unique(np.array(seiz_subjs['seiz']['subjects'])[seiz_split[1]])
     train_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[0]])
     test_bckg = np.unique(np.array(seiz_subjs['non seiz'])[bckg_split[1]])
+
+    if orig_split:
+        seiz_idx = [i for i in range(len(seiz_subjs['seiz']['seizures'])) if seiz_subjs['seiz']['seizures'][i] in seiz_classes]
+        spec_seiz_subjs = np.unique(seiz_subjs['seiz']['subjects'][seiz_idx])
+        test_seiz = [subj for subj in test_seiz if subj in spec_seiz_subjs]
+        test_bckg = np.random.choice(train_bckg, size = int(len(test_seiz)*3))
+
     test = np.append(test_seiz, test_bckg)
 
     if val_split is None:
@@ -327,6 +339,12 @@ def get_kfold(hdf5_path,
         # get train and val background
         val_bckg = np.unique(np.array(train_bckg)[bckg_split[1]])
         train_bckg = np.unique(np.array(train_bckg)[bckg_split[0]])
+
+        if orig_split:
+            train_seiz = [subj for subj in train_seiz if subj in spec_seiz_subjs]
+            val_seiz = [subj for subj in val_seiz if subj in spec_seiz_subjs]
+            train_bckg = np.random.choice(train_bckg, size = int(len(train_seiz)*3))
+            val_bckg = np.random.choice(val_bckg, size = int(len(val_seiz)*3))
         
         train = np.append(train_seiz, train_bckg)
         val = np.append(val_seiz, val_bckg)

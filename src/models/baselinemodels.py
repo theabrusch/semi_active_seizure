@@ -98,14 +98,20 @@ class BaselineCNN(nn.Module):
                                              nn.Flatten(),
                                              nn.Dropout(dropoutprob),
                                              nn.Linear(in_features=80, out_features=2))
+    def activations_hook(self, grad):
+        self.gradients = grad
     
+    def get_activations_gradient(self):
+        return self.gradients
+
     def forward(self, x, training = True, return_features=False):
         features = self.convblock(x.unsqueeze(1))
+        features.register_hook(self.activations_hook)
         x = self.final_layer(features)
         out = F.softmax(x, dim = 1)
 
         if return_features:
-            return out, features
+            return out, features, x
         else:
             return out
     
