@@ -211,7 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--val_split', type = eval, default = None)
     parser.add_argument('--n_splits', type = int, default = 5)
     parser.add_argument('--choose_orig_val', type = eval, default = False)
-    parser.add_argument('--orig_split', nargs = eval, default=False)
+    parser.add_argument('--orig_split', type = eval, default=False)
     # exclude subjects that have 1 or more seizures not included in analysis
     parser.add_argument('--excl_seiz', type = eval, default = False) 
     # exclude seizure types to include in training but not evaluation
