@@ -26,7 +26,7 @@ final_model.eval()
 f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
 
 
-rec = '/train/00008889/s002_t008'
+rec = '/train/00008889/s002_t005'
 res_goodtcsz = res[res['rec']==rec]
 seiz_goodtcsz = res_goodtcsz[res_goodtcsz['seiz_types']=='tcsz']
 record = f[rec]
@@ -35,13 +35,13 @@ channels = list(range(len(record['TCP'].attrs['chNames'])))
 fig = plot_predictions.visualize_seizures(rec_name=rec, 
                                           rec_pred = res_goodtcsz['y pred'],  
                                           channels = channels, 
-                                          time_start = 208, 
-                                          time_end = 220, 
+                                          time_start = 195, 
+                                          time_end = 205, 
                                           y_min = -500, 
                                           y_max = 500)
 plt.show()
 prev_seg =  record['TCP'][270*250:272*250,:]
-segment = record['TCP'][210*250:212*250,:]
+segment = record['TCP'][198*250:200*250,:]
 
 bad_ch = np.where(np.sum(((segment>500) | (segment <-500)),axis =0)>0)[0]
 good_ch = np.array([0,1,2,3,4,6,17])
@@ -53,12 +53,15 @@ mod_seg_torch = torch.Tensor(segment.T).unsqueeze(0)
 
 _, features, out = final_model(mod_seg_torch, return_features = True)
 
-out[:,0].backward()
+out[:,1].backward()
 gradients = final_model.get_activations_gradient()
 mean_gradients = torch.mean(gradients, dim=[0, 2, 3]).unsqueeze(0).unsqueeze(2).unsqueeze(3)
 
 features = features.detach()
 actmap = torch.mean(torch.nn.functional.relu(mean_gradients*features), dim = 1).detach()
 actmap /= torch.max(actmap)
-plt.imshow(actmap.squeeze(), vmin = 0, vmax = 1)
+
+fig, ax = plt.subplots(figsize = (10,8))
+ax.imshow(actmap.squeeze(), vmin = 0, vmax = 1, aspect = 'auto')
+ax.yaxis.set_ticks(np.linspace(0, 22, 20), record['TCP'].attrs['chNames'])
 plt.show()

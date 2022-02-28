@@ -275,7 +275,7 @@ def get_kfold(hdf5_path,
         seiz_idx = [i for i in range(len(seiz_subjs['seiz']['seizures'])) if seiz_subjs['seiz']['seizures'][i] in seiz_classes]
         spec_seiz_subjs = np.unique(seiz_subjs['seiz']['subjects'][seiz_idx])
         test_seiz = [subj for subj in test_seiz if subj in spec_seiz_subjs]
-        test_bckg = np.random.choice(train_bckg, size = int(len(test_seiz)*3))
+        test_bckg = []
 
     test = np.append(test_seiz, test_bckg)
 
@@ -343,8 +343,8 @@ def get_kfold(hdf5_path,
         if orig_split:
             train_seiz = [subj for subj in train_seiz if subj in spec_seiz_subjs]
             val_seiz = [subj for subj in val_seiz if subj in spec_seiz_subjs]
-            train_bckg = np.random.choice(train_bckg, size = int(len(train_seiz)*3))
-            val_bckg = np.random.choice(val_bckg, size = int(len(val_seiz)*3))
+            train_bckg = np.random.choice(train_bckg, size = int(len(train_seiz)*2))
+            val_bckg = []
         
         train = np.append(train_seiz, train_bckg)
         val = np.append(val_seiz, val_bckg)

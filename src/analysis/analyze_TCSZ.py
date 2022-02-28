@@ -10,7 +10,6 @@ from src.visualization import plot_predictions
 with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_choosebest_split_3_results.pickle', 'rb') as rb:
     res = pickle.load(rb)
 
-
 recs = res['rec'].unique()
 res['seiz prob'] = res['y pred']
 rec_stats = []
@@ -38,7 +37,7 @@ f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
 
 TCSZ0 =  rec_stats_seiz_collect[0][rec_stats_seiz_collect[0]['seiz_type'] == 'tcsz']
 TCSZ2 =  rec_stats_seiz_collect[2][rec_stats_seiz_collect[2]['seiz_type'] == 'tcsz']
-rec = '/train/00008889/s003_t006'
+rec = '/train/00008889/s002_t008'
 res_badtcsz = res[res['rec']==rec]
 record = f[rec]
 annos = record['Annotations']
@@ -47,8 +46,8 @@ channels = list(range(len(record['TCP'].attrs['chNames'])))
 fig = plot_predictions.visualize_seizures(rec_name=rec, 
                                           rec_pred = res_badtcsz['seiz prob'],  
                                           channels = channels, 
-                                          time_start = 260, 
-                                          time_end = 285, 
+                                          time_start = 210, 
+                                          time_end = 230, 
                                           y_min = -500, 
                                           y_max = 500)
 plt.show()
