@@ -29,9 +29,9 @@ class model_train():
         self.writer = writer
         self.choose_best = choose_best
         self.choose_best_metric = choose_best_metric
-        if self.choose_best_metric not in ['f1', 'sensspec']:
+        if self.choose_best_metric not in ['f1', 'sensspec', 'both']:
             raise ValueError('Accepted metrics are f1 and sensspec.')
-            
+
         if val_loss is not None:
             self.val_loss = val_loss.to(self.device)
         else:
@@ -244,15 +244,37 @@ class model_train():
                 best_epoch = torch.argmax(f1_scores).item()
             elif self.choose_best_metric == 'sensspec':
                 best_epoch = torch.argmax(sensspec_scores).item()
+            if self.choose_best_metric == 'both':
+                # save the model with the highest f1 score and the model with
+                # the best sens spec score. 
+                best_epoch_f1 = torch.argmax(f1_scores).item()
+                best_epoch_sensspec = torch.argmax(sensspec_scores).item()
+                best_model_f1 = checkpoint_path + '/epoch_' + str(best_epoch_f1) + '.pt'
+                best_model_sensspec = checkpoint_path + '/epoch_' + str(best_epoch_sensspec) + '.pt'
 
-            best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
-            checkpoint = torch.load(best_model_path)
-            self.model.load_state_dict(checkpoint['model_state_dict'])
-            # Save final model as final model
-            model_check = best_model_path + '/final_model_' + str(best_epoch) + '.pt'
-            torch.save({'model_state_dict': self.model.state_dict()},
-                        model_check)
-            # remove checkpoints
+                checkpoint = torch.load(best_model_f1)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                # Save final model as final model
+                model_check = best_model_path + '/final_model_' + str(best_epoch_f1) + '_f1.pt'
+                torch.save({'model_state_dict': self.model.state_dict()},
+                            model_check)
+
+                checkpoint = torch.load(best_model_sensspec)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                # Save final model as final model
+                model_check = best_model_path + '/final_model_' + str(best_epoch_f1) + '_sensspec.pt'
+                torch.save({'model_state_dict': self.model.state_dict()},
+                            model_check)
+
+            else:
+                best_model = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
+                checkpoint = torch.load(best_model)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                # Save final model as final model
+                model_check = best_model_path + '/final_model_' + str(best_epoch) + '.pt'
+                torch.save({'model_state_dict': self.model.state_dict()},
+                            model_check)
+                # remove checkpoints
             shutil.rmtree(checkpoint_path)
         elif safe_best_model:
             model_check = checkpoint_path + '/final_model' + '.pt'
