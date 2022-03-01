@@ -6,6 +6,7 @@ from pathlib import Path
 from src.models.metrics import sensitivity, specificity
 from sklearn.metrics import f1_score, confusion_matrix, precision_score
 import optuna
+import shutil
 
 
 class model_train():
@@ -248,6 +249,8 @@ class model_train():
             model_check = best_model_path + '/final_model_' + str(best_epoch) + '.pt'
             torch.save({'model_state_dict': self.model.state_dict()},
                         model_check)
+            # remove checkpoints
+            shutil.rmtree(checkpoint_path)
         elif safe_best_model:
             model_check = checkpoint_path + '/final_model' + '.pt'
             torch.save({'model_state_dict': self.model.state_dict()},

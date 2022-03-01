@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from dataapi import data_collection as dc
 from src.visualization import plot_predictions
+import shutil
+
+dir_path = '/Volumes/GoogleDrive/Mit drev/Matematisk modellering/Speciale/semi_active_seizure/models/checkpoints/2021-11-30 12:18:52.182086'
+shutil.rmtree(dir_path)
 
 with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_tcsz_split_3_results.pickle', 'rb') as rb:
     res = pickle.load(rb)
