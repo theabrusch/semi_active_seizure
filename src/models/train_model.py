@@ -57,7 +57,7 @@ class model_train():
         sensspec_scores = torch.zeros(epochs)
 
         if safe_best_model or self.choose_best:    
-            if safe_best_model:
+            if not self.choose_best:
                 checkpoint_path = 'models/final_models/' + str(datetime.now())  + str(job_name)
             else:
                 checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + str(job_name)
