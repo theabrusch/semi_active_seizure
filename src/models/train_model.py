@@ -13,7 +13,8 @@ class model_train():
     Class for training pytorch model
     '''
     def __init__(self, model, optimizer, loss_fn, val_loss = None,
-                 choose_best = True, writer = None, scheduler = None):
+                 choose_best = True, choose_best_metric = 'f1', writer = None, 
+                 scheduler = None):
         self.model = model
         self.optimizer = optimizer
         self.loss_fn = loss_fn
@@ -26,6 +27,7 @@ class model_train():
             self.loss_fn = None
         self.writer = writer
         self.choose_best = choose_best
+        self.choose_best_metric = choose_best_metric
         if val_loss is not None:
             self.val_loss = val_loss.to(self.device)
         else:
@@ -48,12 +50,16 @@ class model_train():
         train_loss = torch.zeros(epochs)
         val_loss = torch.zeros(epochs)
         f1_scores = torch.zeros(epochs)
+        sensspec_scores = torch.zeros(epochs)
 
         if safe_best_model or self.choose_best:    
             if safe_best_model:
                 checkpoint_path = 'models/final_models/' + str(datetime.now())  + str(job_name)
             else:
                 checkpoint_path = 'models/checkpoints/' + str(datetime.now())  + str(job_name)
+                best_model_path = 'models/final_models/' + str(datetime.now())  + str(job_name)
+                p = Path(best_model_path)
+                p.mkdir(parents=True, exist_ok=True)
             p = Path(checkpoint_path)
             p.mkdir(parents=True, exist_ok=True)
 
@@ -138,15 +144,15 @@ class model_train():
             sensspec_new = 2*sens*spec/(sens+spec)
             sensspec = (sensspec_new + sensspec_old)/2
             sensspec_old = sensspec_new
-
+            sensspec_scores[epoch] = sensspec_new
             if trial is not None:
                 trial.report(f1_val, epoch)
                 if epoch > 9:
                     if trial.should_prune():
                         trial.set_user_attr('sens', sens)
                         trial.set_user_attr('spec', spec)
-                        trial.set_user_attr('prec', spec)
-                        trial.set_user_attr('sensspec', spec)
+                        trial.set_user_attr('prec', prec)
+                        trial.set_user_attr('sensspec', sensspec_new)
                         raise optuna.exceptions.TrialPruned()
 
             if self.writer is not None:
@@ -210,6 +216,7 @@ class model_train():
 
                     self.writer.add_scalar(run+'/sens', sens, epoch)
                     self.writer.add_scalar(run+'/spec', spec, epoch)
+                    self.writer.add_scalar(run+'/sensspec', 2*sens*spec/(sens+spec), epoch)
                     self.writer.add_scalar(run+'/f1', f1, epoch)
                     self.writer.add_scalar(run+'/precision', prec, epoch)
                     self.writer.add_scalar(run+'/loss', test_loss, epoch)
@@ -229,10 +236,18 @@ class model_train():
                 if np.mean(abs(np.diff(train_loss[(epoch-4):(epoch+1)]))) < 5e-5:
                     break
         if self.choose_best and epochs>0:
-            best_epoch = torch.argmax(f1_scores).item()
+            if self.choose_best_metric == 'f1':
+                best_epoch = torch.argmax(f1_scores).item()
+            else:
+                best_epoch = torch.argmax(sensspec_scores).item()
+
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
             checkpoint = torch.load(best_model_path)
             self.model.load_state_dict(checkpoint['model_state_dict'])
+            # Save final model as final model
+            model_check = best_model_path + '/final_model_' + str(best_epoch) + '.pt'
+            torch.save({'model_state_dict': self.model.state_dict()},
+                        model_check)
         elif safe_best_model:
             model_check = checkpoint_path + '/final_model' + '.pt'
             torch.save({'model_state_dict': self.model.state_dict()},
