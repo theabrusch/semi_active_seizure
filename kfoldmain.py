@@ -126,7 +126,8 @@ def main(args):
                                             val_loss = test_loss,
                                             writer = writer,
                                             scheduler = scheduler,
-                                            choose_best = args.choose_best)
+                                            choose_best = args.choose_best,
+                                            choose_best_metric = args.choose_best_metric)
 
     time = datetime.now()
     if args.val_split is not None:
@@ -238,6 +239,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_best_model', type=eval, default=False)      
     parser.add_argument('--model_path', type=str, default=None)
     parser.add_argument('--choose_best', type=eval, default=False)
+    parser.add_argument('--choose_best_metric', type=str, default='f1')
 
     # Training parameters
     parser.add_argument('--optimizer', type = str, default = 'RMSprop')

@@ -29,6 +29,9 @@ class model_train():
         self.writer = writer
         self.choose_best = choose_best
         self.choose_best_metric = choose_best_metric
+        if self.choose_best_metric not in ['f1', 'sensspec']:
+            raise ValueError('Accepted metrics are f1 and sensspec.')
+            
         if val_loss is not None:
             self.val_loss = val_loss.to(self.device)
         else:
