@@ -247,6 +247,7 @@ def get_kfold(hdf5_path,
                 n_val_splits = 7,
                 choose_orig_val = True,
                 orig_split = False,
+                seed = 20,
                 **kwargs):
 
     if orig_split:
@@ -343,7 +344,9 @@ def get_kfold(hdf5_path,
         if orig_split:
             train_seiz = [subj for subj in train_seiz if subj in spec_seiz_subjs]
             val_seiz = [subj for subj in val_seiz if subj in spec_seiz_subjs]
-            val_bckg = []
+            np.random.seed(seed)
+            val_bckg = np.random.choice(val_bckg, size = len(val_seiz))
+            np.random.seed(None) 
         
         train = np.append(train_seiz, train_bckg)
         val = np.append(val_seiz, val_bckg)
