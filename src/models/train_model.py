@@ -239,7 +239,7 @@ class model_train():
         if self.choose_best and epochs>0:
             if self.choose_best_metric == 'f1':
                 best_epoch = torch.argmax(f1_scores).item()
-            else:
+            elif self.choose_best_metric == 'sensspec':
                 best_epoch = torch.argmax(sensspec_scores).item()
 
             best_model_path = checkpoint_path + '/epoch_' + str(best_epoch) + '.pt'
