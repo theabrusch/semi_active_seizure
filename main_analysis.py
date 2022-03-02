@@ -49,7 +49,7 @@ def main(args):
     datagen['seiz_classes'] = args.eval_seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length
-    datagen['prefetch_data_from_seg'] = False
+    datagen['prefetch_data_from_seg'] = True
     datagen['protocol'] = args.protocol
     datagen['batch_size'] = args.batch_size
     datagen['use_train_seed'] = False
@@ -65,7 +65,7 @@ def main(args):
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
-    model_config['cnn_dropoutprob'] = args.cnn_sdropoutprob
+    model_config['cnn_dropoutprob'] = args.cnn_dropoutprob
     model_config['dropoutprob'] = args.dropoutprob
     model_config['glob_avg_pool'] = args.glob_avg_pool
     model_config['padding'] = args.padding
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     parser.add_argument('--excl_seiz', type = eval, default = False) 
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
-    parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
+    parser.add_argument('--eval_seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'tcsz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--batch_size', type=eval, default=512)
@@ -153,6 +153,7 @@ if __name__ == '__main__':
 
     # model
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
+    parser.add_argument('--model_path', type=str)
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
     parser.add_argument('--cnn_dropoutprob', type=float, default=0.4)
