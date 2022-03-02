@@ -8,28 +8,28 @@ from dataapi import data_collection as dc
 from src.visualization import plot_predictions
 import shutil
 
-dir_path = '/Volumes/GoogleDrive/Mit drev/Matematisk modellering/Speciale/semi_active_seizure/models/checkpoints/2021-11-30 12:18:52.182086'
-shutil.rmtree(dir_path)
-
-with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_tcsz_split_3_results.pickle', 'rb') as rb:
+with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_tcsz_valsplit_both_split_3_results.pickle', 'rb') as rb:
     res = pickle.load(rb)
 
-recs = res['rec'].unique()
+rec = '/train/00008889/s002_t008'
+temp = res[res['rec']==rec]
+
 res['seiz prob'] = res['y pred']
 rec_stats = []
 rec_stats_seiz_collect = []
 annos_pred = []
-for thresh in [0,3,5]:
+for thresh in [0,3,5,7]:
     postprocs = analysis.Postprocessing(segments = res, 
-                                        fs = 1/2, 
+                                        label_fs = 1/2, 
+                                        orig_fs = 250,
                                         prob_thresh = 0.7, 
                                         dur_thresh = thresh, 
                                         statemachine = False,
                                         post_proces=['duration_filt', 'target_agg'])
-    anno = postprocs.postproces()
+    anno, res = postprocs.postproces()
     annos_pred.append(anno)
 
-    OVLP = analysis.AnyOverlap(anno, res, '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', margin=0)
+    OVLP = analysis.AnyOverlap(anno, res, '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', seiz_eval = ['tcsz'], margin=0)
     TP, FN, FP, TN, total_recdur, anno_stats, recstats_collect, recstats_seiz = OVLP.compute_performance()
     rec_stats.append(recstats_collect)
     rec_stats_seiz_collect.append(recstats_seiz)
@@ -41,6 +41,7 @@ f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5'
 
 TCSZ0 =  rec_stats_seiz_collect[0][rec_stats_seiz_collect[0]['seiz_type'] == 'tcsz']
 TCSZ2 =  rec_stats_seiz_collect[2][rec_stats_seiz_collect[2]['seiz_type'] == 'tcsz']
+TCSZ3 = rec_stats_seiz_collect[3][rec_stats_seiz_collect[3]['seiz_type'] == 'tcsz']
 rec = '/train/00008889/s002_t008'
 res_badtcsz = res[res['rec']==rec]
 record = f[rec]
@@ -63,10 +64,10 @@ seiz_goodtcsz = res_goodtcsz[res_goodtcsz['seiz_types']=='tcsz']
 record = f[rec]
 annos = record['Annotations']
 
-channels = [0,1,2,3,4]
+channels = list(range(20))
 fig = plot_predictions.plot_predictions(rec, res_goodtcsz['seiz prob'], 
                                         annos_pred[2][rec], channels,
-                                        0, 560, -500, 500)
+                                        ['tcsz'], 0, 620, -500, 500)
 plt.show()
 
 channels = list(range(20))

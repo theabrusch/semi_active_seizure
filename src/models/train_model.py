@@ -262,7 +262,7 @@ class model_train():
                 checkpoint = torch.load(best_model_sensspec)
                 self.model.load_state_dict(checkpoint['model_state_dict'])
                 # Save final model as final model
-                model_check = best_model_path + '/final_model_' + str(best_epoch_f1) + '_sensspec.pt'
+                model_check = best_model_path + '/final_model_' + str(best_epoch_sensspec) + '_sensspec.pt'
                 torch.save({'model_state_dict': self.model.state_dict()},
                             model_check)
 
