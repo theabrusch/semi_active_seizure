@@ -6,7 +6,8 @@ from dataapi import data_collection as dc
 class Postprocessing():
     def __init__(self, 
                 segments, 
-                fs, 
+                label_fs, 
+                orig_fs,
                 prob_thresh = 0.75, 
                 dur_thresh = 1,
                 p_up = 0.1,
@@ -14,7 +15,8 @@ class Postprocessing():
                 post_proces = ['duration_filt', 'target_agg']):
                 
         self.segments = segments
-        self.fs = fs
+        self.fs = label_fs
+        self.orig_fs = orig_fs
         self.prob_thresh = prob_thresh
         self.p_up = p_up,
         self.dur_thresh = dur_thresh
@@ -26,9 +28,12 @@ class Postprocessing():
         recs = self.segments['rec'].values
         uni_recs = np.unique(recs)
         annos_collect = dict()
+        total_rec_mod = pd.DataFrame()
         for rec in uni_recs:
             rec_idx = np.array(recs) == rec
-            rec_pred = proba[rec_idx]
+            rec_mod = self.check_for_missing_val(rec_idx)
+            total_rec_mod = total_rec_mod.append(rec_mod, ignore_index=True)
+            rec_pred = rec_mod['seiz prob']
             if self.statemachine:
                 y_pred = self.statemachinepostprocess(rec_pred)
             else:
@@ -39,13 +44,43 @@ class Postprocessing():
             if 'target_agg' in self.post_proces:
                 annos = self._target_aggregation(annos)
             annos_collect[rec] = annos
-        return annos_collect
+        return annos_collect, total_rec_mod
+    
+    def check_for_missing_val(self, rec_idx):
+        rec = self.segments[rec_idx]
+        diff_samples =  int(1/self.fs*self.orig_fs)
+        startseg_diff = (rec['startseg'].diff() >diff_samples).sum()
+        if not startseg_diff > 0:
+            return rec
+        else:
+            startseg = 0
+            for i, seg in rec.iterrows():
+                if seg['startseg'] - startseg > diff_samples:
+                    n_missing = int((seg['startseg'] - startseg)/diff_samples-1)
+                    miss_startseg = np.array([startseg+(n+1)*diff_samples for n in range(n_missing)])
+                    miss_endseg = miss_startseg+diff_samples
+                    temp = pd.DataFrame({'startseg': miss_startseg, 'endseg': miss_endseg})
+                    temp['label'] = np.nan
+                    temp['seiz_types'] = np.nan
+                    temp['path'] = seg['path']
+                    temp['subj'] = seg['subj']
+                    temp['rec'] = seg['rec']
+                    temp['y pred'] = np.nan
+                    temp['seiz prob'] = np.nan
+                    rec_mod = rec.append(temp, ignore_index = True).reset_index()
+                startseg = seg['startseg']
+            rec_mod = rec_mod.sort_values(by='startseg').reset_index()
+            return rec_mod
+
+
+
     
     def _probabilistic_filtering(self, probability):
         '''
         Set threshold for seizure prediction
         '''
         y_pred = (probability > self.prob_thresh).astype(int)
+        y_pred[np.isnan(probability)] = np.nan
         return y_pred
 
     def _to_events(self, rec_pred):
@@ -112,7 +147,7 @@ class Postprocessing():
                 if lengths[i] < threshold:
                     end = starts[i] + lengths[i]
                     rec_pred[starts[i]:end] = 0
-        return rec_pred.astype(int)
+        return rec_pred
 
     def statemachinepostprocess(self, rec_pred):
         state = 'neg'
@@ -145,16 +180,17 @@ class Postprocessing():
 
 
 class AnyOverlap():
-    def __init__(self, pred_annos, segments, hdf5_path, margin = 1) -> None:
+    def __init__(self, pred_annos, segments, hdf5_path, seiz_eval, margin = 1) -> None:
         self.pred_annos = pred_annos
-        self.segments = segments
+        #self.segments = segments
         self.hdf5_path = hdf5_path
         self.margin = margin
+        self.seiz_eval = seiz_eval
     
     def compute_performance(self):
         recs = self.pred_annos.keys()
         file = dc.File(self.hdf5_path, 'r')
-        seiz_classes = ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
+        seiz_classes = self.seiz_eval
         TP = 0
         FN = 0
         FP = 0
@@ -199,8 +235,10 @@ class AnyOverlap():
             start = anno['Start']-rec_start
             if anno['Name'] in seiz_classes:
                 lab = 1
-            else:
+            elif anno['Name'] == 'bckg':
                 lab = 0
+            else:
+                lab = np.nan
             an = {'Name': lab, 'Start': start, 'Duration': anno['Duration'], 'class': anno['Name']}
             conv_annos.append(an)
         return conv_annos
@@ -215,24 +253,25 @@ class AnyOverlap():
         for anno in rec_true_annos:
             true_stop = anno['Start'] + anno['Duration']
             hit = False
-            for pred_anno in rec_pred_annos:
-                if pred_anno['Name'] == anno['Name']:
-                    pred_stop = pred_anno['Start'] + pred_anno['Duration']
-                    if anno['Start'] < pred_stop + self.margin and  true_stop > pred_anno['Start']-self.margin:
-                        hit = True
-                        break
-            if hit:
-                if anno['Name'] ==1:
-                    TP_annos.append(anno)
-                    temp = pd.DataFrame({'seiz_type': anno['class'], 'hit': 1, 'dur' : anno['Duration']}, index =[0])
-                    rec_stat = rec_stat.append(temp, ignore_index=True)
+            if not np.isnan(anno['Name']):
+                for pred_anno in rec_pred_annos:
+                    if pred_anno['Name'] == anno['Name']:
+                        pred_stop = pred_anno['Start'] + pred_anno['Duration']
+                        if anno['Start'] < pred_stop + self.margin and  true_stop > pred_anno['Start']-self.margin:
+                            hit = True
+                            break
+                if hit:
+                    if anno['Name'] ==1:
+                        TP_annos.append(anno)
+                        temp = pd.DataFrame({'seiz_type': anno['class'], 'hit': 1, 'dur' : anno['Duration']}, index =[0])
+                        rec_stat = rec_stat.append(temp, ignore_index=True)
+                    else:
+                        TN_annos.append(anno)
                 else:
-                    TN_annos.append(anno)
-            else:
-                if anno['Name'] == 1:
-                    FN_annos.append(anno)
-                    temp = pd.DataFrame({'seiz_type': anno['class'], 'hit': 0, 'dur' : anno['Duration']}, index =[0])
-                    rec_stat = rec_stat.append(temp, ignore_index=True)
+                    if anno['Name'] == 1:
+                        FN_annos.append(anno)
+                        temp = pd.DataFrame({'seiz_type': anno['class'], 'hit': 0, 'dur' : anno['Duration']}, index =[0])
+                        rec_stat = rec_stat.append(temp, ignore_index=True)
 
         for anno in rec_pred_annos:
             true_stop = anno['Start'] + anno['Duration']

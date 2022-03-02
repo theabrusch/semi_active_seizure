@@ -32,18 +32,21 @@ def main(args):
     splitdict = dict()
     splitdict['hdf5_path'] = args.file_path
     splitdict['split'] = args.split
-    splitdict['only_train_seiz'] = False
-    splitdict['val_split'] = None
-    splitdict['excl_seiz'] = False
+    splitdict['only_train_seiz'] = args.onlytrainseiz
+    splitdict['val_split'] = args.val_split
+    splitdict['n_val_splits'] = 7
+    splitdict['excl_seiz'] = args.excl_seiz
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = args.n_splits
+    splitdict['choose_orig_val'] = args.choose_orig_val
+    splitdict['orig_split'] = args.orig_split
     
     _, test = train_val_split.get_kfold(**splitdict)
 
     # get testloader
     datagen = config['data_gen']
     datagen['seed'] = args.seed
-    datagen['seiz_classes'] = args.seiz_classes
+    datagen['seiz_classes'] = args.eval_seiz_classes
     datagen['hdf5_path'] = args.file_path
     datagen['window_length'] = args.window_length
     datagen['prefetch_data_from_seg'] = False
@@ -62,6 +65,7 @@ def main(args):
     # load model
     model_config = config['model_kwargs']
     model_config['model'] = args.model_type
+    model_config['cnn_dropoutprob'] = args.cnn_sdropoutprob
     model_config['dropoutprob'] = args.dropoutprob
     model_config['glob_avg_pool'] = args.glob_avg_pool
     model_config['padding'] = args.padding
@@ -132,12 +136,16 @@ if __name__ == '__main__':
     parser.add_argument('--file_path', type = str)
     parser.add_argument('--seed', type = int, default = 20)
     parser.add_argument('--split', type = int, default = 0)
+    parser.add_argument('--val_split', type = eval, default = None)
     parser.add_argument('--n_splits', type = int, default = 5)
+    parser.add_argument('--choose_orig_val', type = eval, default = False)
+    parser.add_argument('--orig_split', type = eval, default=False)
     # exclude subjects that have 1 or more seizures not included in analysis
     parser.add_argument('--excl_seiz', type = eval, default = False) 
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
     parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
+    parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'tcsz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--batch_size', type=eval, default=512)
     # protocol(s) to use for training
@@ -147,8 +155,8 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, default='BaselineCNN')
     parser.add_argument('--glob_avg_pool', type=eval, default=False)
     parser.add_argument('--dropoutprob', type=float, default=0.4)
-    parser.add_argument('--padding', type=eval, default=False)       
-    parser.add_argument('--model_path', type=str)       
+    parser.add_argument('--cnn_dropoutprob', type=float, default=0.4)
+    parser.add_argument('--padding', type=eval, default=False)              
 
     args = parser.parse_args()
     main(args)
