@@ -489,7 +489,7 @@ class SegmentData():
         self.subj_strat = subj_strat
 
         if bckg_stride is None and seiz_stride is None:
-            self.stride = self.window_length
+            self.stride = [self.window_length, self.window_length]
         elif seiz_stride is None:
             self.stride = bckg_stride
         elif bckg_stride is None:

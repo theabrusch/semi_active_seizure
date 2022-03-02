@@ -92,7 +92,7 @@ def main(args):
     segments['seiz prob'] = probability
 
     # save results for further analysis
-    pickle_path = args.job_name + '_split_' + str(args.split) + '_results.pickle'
+    pickle_path = 'data/predictions/'+ args.job_name + '_split_' + str(args.split) + '_results.pickle'
 
     with open(pickle_path, 'wb') as fp:
         pickle.dump(segments, fp)
@@ -123,7 +123,6 @@ def main(args):
             t.add_row([seiz, sens_temp, len(y_true_temp)])
 
     writer.add_text("Seizure specific performance", t.get_html_string(), global_step=0)
-
 
     writer.close()
 
