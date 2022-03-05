@@ -345,7 +345,7 @@ def get_kfold(hdf5_path,
             train_seiz = [subj for subj in train_seiz if subj in spec_seiz_subjs]
             val_seiz = [subj for subj in val_seiz if subj in spec_seiz_subjs]
             np.random.seed(seed)
-            val_bckg = np.random.choice(val_bckg, size = len(val_seiz))
+            val_bckg = np.random.choice(val_bckg, size = 2*len(val_seiz))
             np.random.seed(None) 
         
         train = np.append(train_seiz, train_bckg)

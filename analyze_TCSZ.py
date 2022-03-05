@@ -7,80 +7,84 @@ import numpy as np
 from dataapi import data_collection as dc
 from src.visualization import plot_predictions
 import shutil
+import pyedflib
+from datetime import timedelta
+import datetime
 
-with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_tcsz_valsplit_both_split_3_results.pickle', 'rb') as rb:
-    res = pickle.load(rb)
+files = ['/Users/theabrusch/Desktop/Speciale_data/tcsz_eval_split_3_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/fnsz_eval_f1_split_3_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_choosebest_split_3_results.pickle']
+models = ['tcsz', 'fnsz', 'full']
+res = dict()
+annos_pred = dict()
+recstats = dict()
+rectstats_seiz = dict()
+thresh = 5    
 
-rec = '/train/00008889/s002_t008'
-temp = res[res['rec']==rec]
+for i in range(len(files)):
+    with open(files[i], 'rb') as rb:
+        res[models[i]] = pickle.load(rb)
+    if 'seiz prob' not in res[models[i]].keys():
+        res[models[i]]['seiz prob'] = res[models[i]]['y pred']
+    postprocs = analysis.Postprocessing(segments = res[models[i]], 
+                                            label_fs = 1/2, 
+                                            orig_fs = 250,
+                                            prob_thresh = 0.7, 
+                                            dur_thresh = thresh, 
+                                            statemachine = False,
+                                            post_proces=['duration_filt', 'target_agg'])
+    annos_pred[models[i]], res[models[i]] = postprocs.postproces()
 
-res['seiz prob'] = res['y pred']
-rec_stats = []
-rec_stats_seiz_collect = []
-annos_pred = []
-for thresh in [0,3,5,7]:
-    postprocs = analysis.Postprocessing(segments = res, 
-                                        label_fs = 1/2, 
-                                        orig_fs = 250,
-                                        prob_thresh = 0.7, 
-                                        dur_thresh = thresh, 
-                                        statemachine = False,
-                                        post_proces=['duration_filt', 'target_agg'])
-    anno, res = postprocs.postproces()
-    annos_pred.append(anno)
-
-    OVLP = analysis.AnyOverlap(anno, res, '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', seiz_eval = ['tcsz'], margin=0)
-    TP, FN, FP, TN, total_recdur, anno_stats, recstats_collect, recstats_seiz = OVLP.compute_performance()
-    rec_stats.append(recstats_collect)
-    rec_stats_seiz_collect.append(recstats_seiz)
-
-
+    OVLP = analysis.AnyOverlap(pred_annos=annos_pred[models[i]], hdf5_path='/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', seiz_eval = None, margin=0)
+    TP, FN, FP, TN, total_recdur, anno_stats, recstats[models[i]], rectstats_seiz[models[i]] = OVLP.compute_performance()
 
 # Analyse TCSZ
-f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
+f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r+')
 
-TCSZ0 =  rec_stats_seiz_collect[0][rec_stats_seiz_collect[0]['seiz_type'] == 'tcsz']
-TCSZ2 =  rec_stats_seiz_collect[2][rec_stats_seiz_collect[2]['seiz_type'] == 'tcsz']
-TCSZ3 = rec_stats_seiz_collect[3][rec_stats_seiz_collect[3]['seiz_type'] == 'tcsz']
-rec = '/train/00008889/s002_t008'
-res_badtcsz = res[res['rec']==rec]
+cpsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='cpsz']
+fnsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='fnsz']
+tcsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='tcsz']
+gnsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='gnsz']
+
+model = 'full'
+
+
+rec = '/train/00013145/s004_t006'
+res_temp = res[model]
+res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
+
 annos = record['Annotations']
 channels = list(range(len(record['TCP'].attrs['chNames'])))
 
-fig = plot_predictions.visualize_seizures(rec_name=rec, 
-                                          rec_pred = res_badtcsz['seiz prob'],  
-                                          channels = channels, 
-                                          time_start = 0, 
-                                          time_end = 230, 
-                                          y_min = -500, 
-                                          y_max = 500)
+channels = list(range(20))
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
+                                        ['fnsz'], 40, 150, -200, 200)
 plt.show()
 
+model2 = 'tcsz'
+res_temp2 = res[model2]
+res_rec2 = res_temp2[res_temp2['rec']==rec]
 
-rec = '/train/00008889/s002_t008'
-res_goodtcsz = res[res['rec']==rec]
-seiz_goodtcsz = res_goodtcsz[res_goodtcsz['seiz_types']=='tcsz']
+fig = plot_predictions.visualize_seizures(rec_name=rec, 
+                                          rec_pred = res_rec['seiz prob'],  
+                                          channels = channels, 
+                                          time_start = 72, 
+                                          time_end = 82, 
+                                          y_min = -100, 
+                                          y_max = 100)
+                                          #rec_pred_second = res_rec2['seiz prob'],
+                                          #model_names = ['Full model', 'TCSZ model'])
+plt.show()
+
+rec = '/train/00006520/s003_t003'
 record = f[rec]
+
 annos = record['Annotations']
-
 channels = list(range(20))
-fig = plot_predictions.plot_predictions(rec, res_goodtcsz['seiz prob'], 
-                                        annos_pred[2][rec], channels,
-                                        ['tcsz'], 0, 620, -500, 500)
+fig = plot_predictions.plot_predictions(rec, None, 
+                                        None, channels,
+                                        ['tcsz', 'fnsz'], 140, 190, -500, 500)
 plt.show()
-
-channels = list(range(20))
-
-fig = plot_predictions.visualize_seizures(rec_name=rec, 
-                                          rec_pred = res_goodtcsz['seiz prob'],  
-                                          channels = channels, 
-                                          time_start = 200, 
-                                          time_end = 220, 
-                                          y_min = -500, 
-                                          y_max = 500)
-plt.show()
-
 
 TCSZ_pred = res[res['seiz_types']=='tcsz']
 TCSZ_pred['label pred']=(TCSZ_pred['seiz prob'] >=0.7).astype(int)
@@ -134,4 +138,22 @@ for i, seg in seizures.iterrows():
         max_energy_wrong_all.append(max_energy)
 
 
+ch_hdr = record['TCP'].attrs['edfSignalHdr']
+temp_ch = np.array(('P4-O2', 'uV', 250, 5482.288, -5482.28, 32767, -32767, '[HP:0.000 Hz LP:0.0 Hz N:0.0]', 'Unknown'), dtype = ch_hdr.dtype)
+ch_hdr = np.append(ch_hdr, temp_ch)
+record['TCP'].attrs['edfSignalHdr'] = ch_hdr
 
+record.export_to_edf('/Users/theabrusch/Desktop/Speciale_data/edf/00008889_s002_t008.edf',
+                     ['TCP'], with_annotations=True)
+
+subjects = f.get_children(dc.Subject, get_obj=False)
+tcsz_subj_recs = dict()
+for subj in subjects:
+    subject = f[subj]
+    for rec in subject.keys():
+        record = subject[rec]
+        for anno in record['Annotations']:
+            if anno['Name']=='tcsz' and subj not in tcsz_subj_recs.keys():
+                tcsz_subj_recs[subj] = [rec]
+            elif anno['Name']=='tcsz': 
+                tcsz_subj_recs[subj].append(rec)
