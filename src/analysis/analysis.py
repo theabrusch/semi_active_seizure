@@ -180,12 +180,14 @@ class Postprocessing():
 
 
 class AnyOverlap():
-    def __init__(self, pred_annos, segments, hdf5_path, seiz_eval, margin = 1) -> None:
+    def __init__(self, pred_annos, hdf5_path, seiz_eval=None, margin = 1) -> None:
         self.pred_annos = pred_annos
-        #self.segments = segments
         self.hdf5_path = hdf5_path
         self.margin = margin
-        self.seiz_eval = seiz_eval
+        if seiz_eval is None:
+            self.seiz_eval = ['seiz','fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz']
+        else:
+            self.seiz_eval = seiz_eval
     
     def compute_performance(self):
         recs = self.pred_annos.keys()
