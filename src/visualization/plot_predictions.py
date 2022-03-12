@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from dataapi import data_collection as dc
 
-def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_start, time_end, y_min, y_max):
+def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_start, time_end, y_min, y_max,
+                     label_pad = 50):
     ## plot records
     f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
     record = f[rec_name]
@@ -50,7 +51,7 @@ def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_st
         for j,an in enumerate(diff_seiz_start):
             ax[ch].axvspan(an, diff_seiz_end[j], np.min(signal), np.max(signal), facecolor = 'lavender')
 
-        ax[ch].set_ylabel(channel_name, rotation = 0, labelpad = 30, fontsize = 14)
+        ax[ch].set_ylabel(channel_name, rotation = 0, loc = 'bottom', labelpad = label_pad, fontsize = 14)
         time = np.linspace(0, record.duration, len(channel))
         ax[ch].plot(time, channel, linewidth = 0.7)
 
@@ -78,7 +79,7 @@ def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_st
         ax[len(channels)+1].set_xlim([time_start, time_end])
         ax[len(channels)+1].hlines(0.7, time_start, time_end, linestyles ='dashed')
         ax[len(channels)+1].set_ylim([-0.2,1.1])
-        ax[len(channels)+1].set_ylabel(f'Seiz. \n prob.', fontsize = 14, rotation = 0, labelpad = 30)
+        ax[len(channels)+1].set_ylabel(f'Seiz. \n prob.', fontsize = 14, loc = 'bottom', rotation = 0, labelpad = label_pad)
         ax[len(channels)+1].get_xaxis().set_ticks([])
         ax[len(channels)+1].yaxis.tick_right()
         ax[len(channels)+1].yaxis.set_ticks([0.7])
@@ -133,9 +134,9 @@ def visualize_seizures(rec_name, rec_pred, channels, time_start, time_end, y_min
             
     time_pred = np.arange(0, len(rec_pred)*2, 2)
     if rec_pred_second is not None:
-        nrows = len(channels) + 4
+        nrows = len(channels) + 6
     else:
-        nrows = len(channels) + 2
+        nrows = len(channels) + 3
     fig, ax = plt.subplots(nrows = nrows, figsize = (15,6), sharex = 'row', gridspec_kw = {'hspace': 0})
     for i in range(len(channels)):
         ch = channels[i]
@@ -146,7 +147,7 @@ def visualize_seizures(rec_name, rec_pred, channels, time_start, time_end, y_min
         for j,an in enumerate(anno_start_line):
             ax[ch].axvspan(an, anno_end_line[j], np.min(signal), np.max(signal), facecolor = 'bisque')
 
-        ax[ch].set_ylabel(channel_name, rotation = 0, labelpad = 30, fontsize = 14)
+        ax[ch].set_ylabel(channel_name, rotation = 0, loc = 'bottom', labelpad = 50, fontsize = 14)
         time = np.linspace(0, record.duration, len(channel))
         ax[ch].plot(time, channel, linewidth = 0.7)
         ax[ch].vlines(time_pred, np.min(signal), np.max(signal), linestyles = 'solid', color = 'black')
@@ -173,42 +174,60 @@ def visualize_seizures(rec_name, rec_pred, channels, time_start, time_end, y_min
     ax[i+1].spines['top'].set_visible(False)
     ax[i+1].spines['bottom'].set_visible(False)
 
-    ax[i+2].plot(time_pred+1, rec_pred, color = 'black')
-    ax[i+2].set_xlim([time_start, time_end])
-    ax[i+2].hlines(0.7, time_start, time_end, linestyles ='dashed')
-    ax[i+2].set_ylim([-0.2,1.1])
-    ax[i+2].set_ylabel(f'Seiz. \n prob.', fontsize = 14, rotation = 0, labelpad = 30)
-    ax[i+2].yaxis.tick_right()
-    ax[i+2].set_yticks([0.7])
-    ax[i+2].tick_params('x', labelsize=12)
-    ax[i+2].tick_params('y', labelsize=12)
+    ax[i+2].get_xaxis().set_ticks([])
+    ax[i+2].get_yaxis().set_ticks([])
+
+    ax[i+2].spines['right'].set_visible(False)
+    ax[i+2].spines['left'].set_visible(False)
+    ax[i+2].spines['top'].set_visible(False)
+    ax[i+2].spines['bottom'].set_visible(False)
+
+    
+    ax[i+3].plot(time_pred+1, rec_pred, color = 'black')
+    ax[i+3].set_xlim([time_start, time_end])
+    ax[i+3].hlines(0.7, time_start, time_end, linestyles ='dashed')
+    ax[i+3].set_ylim([-0.2,1.1])
+    ax[i+3].set_ylabel(f'Seiz. \n prob.', fontsize = 14, rotation = 0,  loc = 'bottom', labelpad = 50)
+    ax[i+3].yaxis.tick_right()
+    ax[i+3].set_yticks([0.7])
+    ax[i+3].tick_params('x', labelsize=12)
+    ax[i+3].tick_params('y', labelsize=12)
 
     if rec_pred_second is None:
-        ax[i+2].set_xlabel('Time (s)', fontsize = 14)
+        ax[i+3].set_xlabel('Time (s)', fontsize = 14)
     else:
-        ax[i+2].get_xaxis().set_ticks([])
-        ax[i+2].set_title(model_names[0], fontsize = 10)
-
         ax[i+3].get_xaxis().set_ticks([])
-        ax[i+3].get_xaxis().set_ticks([])
+        ax[i+3].set_title(model_names[0], fontsize = 10)
 
-        ax[i+3].get_yaxis().set_ticks([])
-        ax[i+3].spines['right'].set_visible(False)
-        ax[i+3].spines['left'].set_visible(False)
-        ax[i+3].spines['top'].set_visible(False)
-        ax[i+3].spines['bottom'].set_visible(False)
+        ax[i+4].get_xaxis().set_ticks([])
+        ax[i+4].get_xaxis().set_ticks([])
 
-        ax[i+4].plot(time_pred+1, rec_pred_second, color = 'black')
-        ax[i+4].set_xlim([time_start, time_end])
-        ax[i+4].hlines(0.7, time_start, time_end, linestyles ='dashed')
-        ax[i+4].set_ylim([-0.2,1.1])
-        ax[i+4].set_ylabel(f'Seiz. \n prob.', fontsize = 14, rotation = 0, labelpad = 30)
-        ax[i+4].yaxis.tick_right()
-        ax[i+4].set_yticks([0.7])
-        ax[i+4].tick_params('x', labelsize=12)
-        ax[i+4].tick_params('y', labelsize=12)
-        ax[i+4].set_xlabel('Time (s)', fontsize = 14)
-        ax[i+4].set_title(model_names[1], fontsize = 10)
+        ax[i+4].get_yaxis().set_ticks([])
+        ax[i+4].spines['right'].set_visible(False)
+        ax[i+4].spines['left'].set_visible(False)
+        ax[i+4].spines['top'].set_visible(False)
+        ax[i+4].spines['bottom'].set_visible(False)
+
+        ax[i+5].get_xaxis().set_ticks([])
+        ax[i+5].get_xaxis().set_ticks([])
+
+        ax[i+5].get_yaxis().set_ticks([])
+        ax[i+5].spines['right'].set_visible(False)
+        ax[i+5].spines['left'].set_visible(False)
+        ax[i+5].spines['top'].set_visible(False)
+        ax[i+5].spines['bottom'].set_visible(False)
+
+        ax[i+6].plot(time_pred+1, rec_pred_second, color = 'black')
+        ax[i+6].set_xlim([time_start, time_end])
+        ax[i+6].hlines(0.7, time_start, time_end, linestyles ='dashed')
+        ax[i+6].set_ylim([-0.2,1.1])
+        ax[i+6].set_ylabel(f'Seiz. \n prob.', fontsize = 14, rotation = 0, loc = 'bottom', labelpad = 50)
+        ax[i+6].yaxis.tick_right()
+        ax[i+6].set_yticks([0.7])
+        ax[i+6].tick_params('x', labelsize=12)
+        ax[i+6].tick_params('y', labelsize=12)
+        ax[i+6].set_xlabel('Time (s)', fontsize = 14)
+        ax[i+6].set_title(model_names[1], fontsize = 10)
 
 
     plt.tight_layout()

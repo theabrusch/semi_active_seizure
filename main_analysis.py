@@ -27,7 +27,6 @@ def main(args):
     with open('configuration.yml', 'r') as file:
         config = yaml.safe_load(file)
 
-    time_start = datetime.now()
     # get split
     splitdict = dict()
     splitdict['hdf5_path'] = args.file_path
@@ -38,11 +37,13 @@ def main(args):
     splitdict['excl_seiz'] = args.excl_seiz
     splitdict['seiz_classes'] = args.seiz_classes
     splitdict['n_splits'] = args.n_splits
-    splitdict['choose_orig_val'] = args.choose_orig_val
+    splitdict['choose_orig_val'] = False
     splitdict['orig_split'] = args.orig_split
     
-    _, test = train_val_split.get_kfold(**splitdict)
-
+    if args.val_split is None:
+        _, test = train_val_split.get_kfold(**splitdict)
+    else:
+        _, test, _ = train_val_split.get_kfold(**splitdict)
     # get testloader
     datagen = config['data_gen']
     datagen['seed'] = args.seed
