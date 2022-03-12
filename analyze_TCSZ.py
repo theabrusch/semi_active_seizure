@@ -40,7 +40,7 @@ for i in range(len(files)):
 f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r+')
 
 cpsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='cpsz']
-fnsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='fnsz']
+fnsz = rectstats_seiz['fnsz'][rectstats_seiz['fnsz']['seiz_type']=='fnsz']
 tcsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='tcsz']
 gnsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='gnsz']
 

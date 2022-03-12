@@ -194,15 +194,15 @@ class BaselineCNNV2(nn.Module):
             nn.Dropout(cnn_dropoutprob),
         )
         self.convblock12 = nn.Sequential(
-            nn.Conv1d(in_channels = 20, out_channels = 40, 
-                      kernel_size = 10, padding = 0),
-            nn.BatchNorm1d(40),
+            nn.Conv2d(in_channels = 20, out_channels = 40, 
+                      kernel_size = (1,10), padding = 0),
+            nn.BatchNorm2d(40),
             nn.ELU(),
-            nn.MaxPool1d(kernel_size = 2, stride = 2),
+            nn.MaxPool2d(kernel_size = (1,2), stride = (1,2)),
             nn.Dropout(cnn_dropoutprob),
-            nn.Conv1d(in_channels = 40, out_channels = 80, 
-                      kernel_size = 10, padding = 0),
-            nn.BatchNorm1d(80),
+            nn.Conv2d(in_channels = 40, out_channels = 80, 
+                      kernel_size = (1,10), padding = 0),
+            nn.BatchNorm2d(80),
             nn.ELU(),)
 
         if not glob_avg_pool:

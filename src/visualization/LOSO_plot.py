@@ -2,6 +2,7 @@ from sklearn.model_selection import LeaveOneGroupOut
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Patch
+import matplotlib
 
 # Generate the class/group data
 n_points = 100
@@ -14,6 +15,12 @@ y = np.hstack([[ii] * int(100 * perc) for ii, perc in enumerate(percentiles_clas
 groups = np.hstack([[ii] * 10 for ii in range(10)])
 cmap_data = plt.cm.Paired
 cmap_cv = plt.cm.coolwarm
+
+col = matplotlib.colors.Normalize(vmin=-0.2, vmax=1.2)
+
+rgba = cmap_cv(col(1))
+print(rgba)
+
 n_splits = 4
 percentiles_classes = [0.1, 0.3, 0.6]
 y = np.hstack([[ii] * int(100 * perc) for ii, perc in enumerate(percentiles_classes)])
@@ -96,7 +103,7 @@ def plot_cv_indices(cv, X, y, group, ax, n_splits, lw=10):
     #)
 
     # Formatting
-    yticklabels = [0,1,'', 9] + ["group"]
+    yticklabels = [0,1,'', 9] + ["subject"]
     ax.set(
         yticks=np.arange(n_splits + 1) + 0.5,
         yticklabels=yticklabels,
@@ -112,13 +119,12 @@ cv = LeaveOneGroupOut()
 fig, ax = plt.subplots(figsize=(6, 3))
 plot_cv_indices(cv, X, y, groups, ax, n_splits)
 ax.legend(
-    [Patch(color=cmap_cv(0.8)), Patch(color=cmap_cv(0.02))],
-    ["Testing set", "Training set"],
+    [Patch(color=cmap_cv(col(1))), Patch(color=cmap_cv(col(0)))],
+    ["Test set", "Train set"],
     loc=(1.02, 0.8),
 )
 # Make the legend fit
 plt.tight_layout()
-fig.subplots_adjust(right=0.7)
 plt.show()
 
 # %%
