@@ -145,7 +145,7 @@ if __name__ == '__main__':
     # exclude seizure types to include in training but not evaluation
     parser.add_argument('--onlytrainseiz', default = None)
     parser.add_argument('--eval_seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
-    parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'tcsz'])
+    parser.add_argument('--seiz_classes', nargs = '+', default=['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'])
     parser.add_argument('--window_length', type=float, default = 2)
     parser.add_argument('--batch_size', type=eval, default=512)
     # protocol(s) to use for training
