@@ -108,7 +108,7 @@ def main(args):
             pert_total[subj][seiz] = pert_map
 
             # save temporary results for further analysis
-            pickle_path = 'data/predictions/'+ args.job_name + '_split_' + str(args.split) + '_pertmaps.pickle'
+            pickle_path = 'data/predictions/'+ args.job_name + str(datetime.now()) + '_split_' + str(args.split) + '_pertmaps.pickle'
 
             with open(pickle_path, 'wb') as fp:
                 pickle.dump(pert_total, fp)
