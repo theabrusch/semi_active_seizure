@@ -4,7 +4,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import torch
 
 
-def spectral_amplitude_perturbation(model, data, n_iterations, device):
+def spectral_amplitude_perturbation(model, data, n_iterations):
     '''
     Function for applying the spectral amplitude perturbation
 
@@ -26,13 +26,15 @@ def spectral_amplitude_perturbation(model, data, n_iterations, device):
     '''
 
     orig_dataset = TensorDataset(torch.Tensor(data))
-    orig_dataloader = DataLoader(orig_dataset, batch_size=1024, shuffle = False)
-    
+    orig_dataloader = DataLoader(orig_dataset, batch_size = 512, shuffle = False)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")    
+    model = model.to(device)
     # get original evaluation
     orig_pred = model_eval(model, orig_dataloader, device)
 
     # convert to frequency spectrum
-    fft_input = np.fft.rfft(data, n=data.shape[2], axis=2)
+    fft_input = np.fft.rfft(data, n = data.shape[2], axis = 2)
     amps = np.abs(fft_input)
     phases = np.angle(fft_input)
 
@@ -42,13 +44,13 @@ def spectral_amplitude_perturbation(model, data, n_iterations, device):
         # Compute perturbed inputs
         amps_pert, phases_pert, pert_vals = amp_perturbation_additive(amps, phases)
         fft_pert = amps_pert * np.exp(1j * phases_pert)
-        inputs_pert = np.fft.irfft(fft_pert, n=data.shape[2], axis=2).astype(
+        inputs_pert = np.fft.irfft(fft_pert, n = data.shape[2], axis = 2).astype(
             np.float32
         )
 
         # convert to dataloader
         pert_dataset = TensorDataset(torch.Tensor(inputs_pert))
-        pert_dataloader = DataLoader(pert_dataset, batch_size=1024, shuffle = False)
+        pert_dataloader = DataLoader(pert_dataset, batch_size = 512, shuffle = False)
 
         # get perturbed outputs
         pert_output = model_eval(model, pert_dataloader, device)
@@ -57,7 +59,7 @@ def spectral_amplitude_perturbation(model, data, n_iterations, device):
         out_diff = pert_output - orig_pred
 
         pert_corrs_tmp = utils_vis.wrap_reshape_apply_fn(
-                utils_vis.corr, pert_vals, out_diff, axis_a=(0,), axis_b=(0)
+                utils_vis.corr, pert_vals, out_diff, axis_a = (0,), axis_b = (0)
             )
         pert_corrs += pert_corrs_tmp
 
