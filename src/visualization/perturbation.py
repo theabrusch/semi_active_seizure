@@ -4,7 +4,7 @@ from torch.utils.data import TensorDataset, DataLoader
 import torch
 
 
-def spectral_amplitude_perturbation(model, data, n_iterations):
+def perturbation_maps(model, data, n_iterations, correct_wrong = False, label = None):
     '''
     Function for applying the spectral amplitude perturbation
 
@@ -14,6 +14,10 @@ def spectral_amplitude_perturbation(model, data, n_iterations):
         Numpy array with shape (samples, channels, time)
     n_iterations: (int)
         Number of perturbations to run
+    correct_wrong: (bool)
+        Whether or not to create perturbation maps for correctly and wrongly classified samples separately
+    label: (int)
+        Used to determine correct and wrong classifications
 
     Implementation is based on https://github.com/robintibor/braindecode/blob/62c9163b29903751a1dff08e243fcfa0bf7a7118/braindecode/visualization/perturbation.py#L147
     References
@@ -33,6 +37,34 @@ def spectral_amplitude_perturbation(model, data, n_iterations):
     # get original evaluation
     orig_pred = model_eval(model, orig_dataloader, device)
 
+    if correct_wrong:
+        pred_class = np.argmax(orig_pred, axis = 1)
+        # get right and wrong predictions
+        correct_idx = pred_class==label
+        wrong_idx = pred_class!=label
+
+        # divide data and predictions and get pert maps
+        correct_data = data[correct_idx]
+        correct_pred = orig_pred[correct_idx]
+        correct_pert = spectral_amplitude_perturbation(model, correct_data, n_iterations, device, correct_pred)
+        
+        wrong_data = data[wrong_idx]
+        wrong_pred = orig_pred[wrong_idx]
+        wrong_pert = spectral_amplitude_perturbation(model, wrong_data, n_iterations, device, wrong_pred)
+
+        pert_out = [(np.sum(correct_idx), correct_pert), (np.sum(wrong_idx), wrong_pert)]
+    
+    else:
+        pert_map = spectral_amplitude_perturbation(model, data, n_iterations, device, orig_pred)
+        pert_out = (len(data), pert_map)
+
+    return pert_out
+        
+def spectral_amplitude_perturbation(model, data, n_iterations, device, orig_pred):
+    '''
+    Compute the actual spectral perturbations.
+    Function wrapped by perturbation_maps
+    '''
     # convert to frequency spectrum
     fft_input = np.fft.rfft(data, n = data.shape[2], axis = 2)
     amps = np.abs(fft_input)
@@ -65,7 +97,6 @@ def spectral_amplitude_perturbation(model, data, n_iterations):
 
     perturbation = pert_corrs/n_iterations
     return perturbation
-
 
 
 def model_eval(model, dataloader, device):
