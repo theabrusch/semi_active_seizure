@@ -111,7 +111,7 @@ class BaselineCNN(nn.Module):
         out = F.softmax(x, dim = 1)
 
         if return_features:
-            return out, features, x
+            return out, x
         else:
             return out
     
@@ -223,7 +223,7 @@ class BaselineCNNV2(nn.Module):
         out = F.softmax(x, dim = 1)
 
         if return_features:
-            return out, features
+            return out, x
         else:
             return out
     
