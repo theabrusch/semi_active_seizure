@@ -11,8 +11,8 @@ import pyedflib
 from datetime import timedelta
 import datetime
 
-files = ['/Users/theabrusch/Desktop/Speciale_data/tcsz_eval_split_3_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/fnsz_eval_f1_split_3_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_choosebest_split_3_results.pickle']
-models = ['tcsz', 'fnsz', 'full']
+files = ['/Users/theabrusch/Desktop/Speciale_data/fullmodel_valsplit_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/fnsz_gnsz_cpsz_full_eval_split_3_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_choosebest_split_3_results.pickle']
+models = ['val', 'fnsz', 'full']
 res = dict()
 annos_pred = dict()
 recstats = dict()
@@ -37,39 +37,40 @@ for i in range(len(files)):
     TP, FN, FP, TN, total_recdur, anno_stats, recstats[models[i]], rectstats_seiz[models[i]] = OVLP.compute_performance()
 
 # Analyse TCSZ
-f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r+')
+f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
 
 cpsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='cpsz']
 fnsz = rectstats_seiz['fnsz'][rectstats_seiz['fnsz']['seiz_type']=='fnsz']
 tcsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='tcsz']
 gnsz = rectstats_seiz['full'][rectstats_seiz['full']['seiz_type']=='gnsz']
 
-model = 'full'
+val_tcsz = rectstats_seiz['val'][rectstats_seiz['val']['seiz_type']=='tcsz']
 
+model = 'val'
 
-rec = '/train/00013145/s004_t006'
+rec = '/train/00005426/s009_t001'
 res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
 annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
 
-channels = list(range(20))
+channels = list(range(5))
 fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
                                         annos_pred[model][rec], channels,
-                                        ['fnsz'], 40, 150, -200, 200)
+                                        ['tcsz'], 0, 1048, -500, 500)
 plt.show()
 
 model2 = 'tcsz'
 res_temp2 = res[model2]
 res_rec2 = res_temp2[res_temp2['rec']==rec]
+channels = list(range(len(record['TCP'].attrs['chNames'])))
 
 fig = plot_predictions.visualize_seizures(rec_name=rec, 
                                           rec_pred = res_rec['seiz prob'],  
                                           channels = channels, 
-                                          time_start = 72, 
-                                          time_end = 82, 
+                                          time_start = 400, 
+                                          time_end = 410, 
                                           y_min = -100, 
                                           y_max = 100)
                                           #rec_pred_second = res_rec2['seiz prob'],

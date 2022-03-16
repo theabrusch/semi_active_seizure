@@ -7,7 +7,7 @@ import numpy as np
 from dataapi import data_collection as dc
 
 def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_start, time_end, y_min, y_max,
-                     label_pad = 50):
+                     rec_pred2 = None, anno_pred2 = None, label_pad = 50):
     ## plot records
     f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
     record = f[rec_name]
@@ -37,8 +37,11 @@ def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_st
         height = 5
     else:
         height = 7.5
-
-    fig, ax = plt.subplots(nrows = len(channels)+4, figsize = (15,height), sharex = 'row', gridspec_kw = {'hspace': 0})
+    if rec_pred2 is not None:
+        nrows = len(channels)+8
+    else:
+        nrows = len(channels) + 4
+    fig, ax = plt.subplots(nrows = nrows, figsize = (15,height), sharex = 'row', gridspec_kw = {'hspace': 0})
     for i in range(len(channels)):
         ch = channels[i]
         channel = signal[:, ch]
@@ -92,6 +95,7 @@ def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_st
     ax[len(channels)+2].spines['left'].set_visible(False)
     ax[len(channels)+2].spines['top'].set_visible(False)
     ax[len(channels)+2].spines['bottom'].set_visible(False)
+
     if not anno_pred is None:
         bin_pred = np.zeros(len(time_pred))
 
@@ -110,6 +114,60 @@ def plot_predictions(rec_name, rec_pred, anno_pred, channels, seiz_eval, time_st
 
         ax[len(channels)+3].tick_params('x', labelsize=12)
         ax[len(channels)+3].tick_params('y', labelsize=12)
+    
+    if not rec_pred2 is None:
+        ax[len(channels)+1].set_title('Full model', fontsize = 14)
+        ax[len(channels)+3].set_xlabel('')
+        ax[len(channels)+3].set_xticks([])
+        idx = len(channels) + 4
+        ax[idx].get_xaxis().set_ticks([])
+        ax[idx].get_yaxis().set_ticks([])
+
+        ax[idx].spines['right'].set_visible(False)
+        ax[idx].spines['left'].set_visible(False)
+        ax[idx].spines['top'].set_visible(False)
+        ax[idx].spines['bottom'].set_visible(False)
+
+        # plot rec pred 2
+        idx = len(channels) + 5
+        ax[idx].plot(time_pred, rec_pred2, color = 'black')
+        ax[idx].set_xlim([time_start, time_end])
+        ax[idx].hlines(0.7, time_start, time_end, linestyles ='dashed')
+        ax[idx].set_ylim([-0.2,1.1])
+        ax[idx].set_ylabel(f'Seiz. \n prob.', fontsize = 14, loc = 'bottom', rotation = 0, labelpad = label_pad)
+        ax[idx].get_xaxis().set_ticks([])
+        ax[idx].yaxis.tick_right()
+        ax[idx].yaxis.set_ticks([0.7])
+        ax[idx].set_title('Revised model', fontsize = 14)
+
+        idx = len(channels) + 6
+        ax[idx].get_xaxis().set_ticks([])
+        ax[idx].get_yaxis().set_ticks([])
+
+        ax[idx].spines['right'].set_visible(False)
+        ax[idx].spines['left'].set_visible(False)
+        ax[idx].spines['top'].set_visible(False)
+        ax[idx].spines['bottom'].set_visible(False)
+
+        # plot anno pred 2
+        bin_pred = np.zeros(len(time_pred))
+        for anno in anno_pred2:
+            if anno['Name'] == 1:
+                st = int(anno['Start']/2)
+                end = int((anno['Start'] + anno['Duration'])/2)
+                bin_pred[st:end] = 1
+
+        idx = len(channels)+7
+        ax[idx].plot(time_pred, bin_pred, color = 'black')
+        ax[idx].set_yticks([0, 1], ['bckg', 'seiz'], fontsize = 12)
+        ax[idx].set_xlabel('Time (s)', fontsize = 14)
+        #ax[8].set_ylabel('Pred.', fontsize = 14)
+        ax[idx].set_xlim([time_start, time_end])
+
+
+        ax[idx].tick_params('x', labelsize=12)
+        ax[idx].tick_params('y', labelsize=12)
+
 
     plt.tight_layout()
     f.close()

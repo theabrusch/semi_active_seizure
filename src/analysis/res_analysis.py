@@ -7,70 +7,70 @@ import numpy as np
 from dataapi import data_collection as dc
 from src.visualization import plot_predictions
 
-with open('/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_fnsz_cpsz_gnsz_valsplit_f1_split_3_results.pickle', 'rb') as rb:
-    res = pickle.load(rb)
 
-seiz_types = res['seiz_types'].unique()
+files = ['/Users/theabrusch/Desktop/Speciale_data/fnsz_gnsz_cpsz_full_eval_split_3_results.pickle', '/Users/theabrusch/Desktop/Speciale_data/finalsplit_test_choosebest_split_3_results.pickle']
+models = ['rev', 'full']
+res = dict()
+annos_pred = dict()
+recstats = dict()
+rectstats_seiz = dict()
+thresh = 5    
 
-for seiz in seiz_types:
-    idx = res['seiz_types'] == seiz
-    print(seiz)
-    y_true = res['label'][res['seiz_types'] == seiz]
-    y_pred = (res['y pred'][res['seiz_types'] == seiz] > 0.5).astype(int)
-    print(recall_score(y_true=y_true, y_pred = y_pred))
+for i in range(len(files)):
+    with open(files[i], 'rb') as rb:
+        res[models[i]] = pickle.load(rb)
+    if 'seiz prob' not in res[models[i]].keys():
+        res[models[i]]['seiz prob'] = res[models[i]]['y pred']
+    postprocs = analysis.Postprocessing(segments = res[models[i]], 
+                                            label_fs = 1/2, 
+                                            orig_fs = 250,
+                                            prob_thresh = 0.7, 
+                                            dur_thresh = thresh, 
+                                            statemachine = False,
+                                            post_proces=['duration_filt', 'target_agg'])
+    annos_pred[models[i]], res[models[i]] = postprocs.postproces()
 
-recs = res['rec'].unique()
-res['seiz prob'] = res['y pred']
-rec_stats = []
-rec_stats_seiz_collect = []
-annos_pred = []
-for thresh in [0,3,5]:
-    postprocs = analysis.Postprocessing(segments = res, 
-                                        label_fs = 1/2, 
-                                        orig_fs = 250,
-                                        prob_thresh = 0.7, 
-                                        dur_thresh = thresh, 
-                                        statemachine = False,
-                                        post_proces=['duration_filt', 'target_agg'])
-    anno, res = postprocs.postproces()
-    annos_pred.append(anno)
-
-    OVLP = analysis.AnyOverlap(anno, '/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', seiz_eval = None, margin=0)
-    TP, FN, FP, TN, total_recdur, anno_stats, recstats_collect, recstats_seiz = OVLP.compute_performance()
-    rec_stats.append(recstats_collect)
-    rec_stats_seiz_collect.append(recstats_seiz)
+    OVLP = analysis.AnyOverlap(pred_annos=annos_pred[models[i]], hdf5_path='/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', seiz_eval = None, margin=0)
+    TP, FN, FP, TN, total_recdur, anno_stats, recstats[models[i]], rectstats_seiz[models[i]] = OVLP.compute_performance()
 
 
-temp = recstats_seiz[((recstats_seiz['seiz_type'] == 'fnsz')|(recstats_seiz['seiz_type'] == 'gnsz')|(recstats_seiz['seiz_type'] == 'cpsz'))]
-gnsz = rec_stats_seiz_collect[2][(rec_stats_seiz_collect[0]['seiz_type'] == 'gnsz')]
-cpsz = recstats_seiz[(recstats_seiz['seiz_type'] == 'cpsz')]
-gnsz = recstats_seiz[(recstats_seiz['seiz_type'] == 'gnsz')]
-tcsz = recstats_seiz[(recstats_seiz['seiz_type'] == 'tcsz')]
 
 #Plot records
 #FNSZ
-res_rec = res['seiz prob'][res['rec']=='/train/00013145/s006_t007']
 f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
-record = f['/train/00013145/s006_t007']
+
+model = 'full'
+
+rec = '/train/00013145/s006_t007'
+res_temp = res[model]
+res_rec = res_temp[res_temp['rec']==rec]
+record = f[rec]
+
 annos = record['Annotations']
+
+model2 = 'full'
+res_temp2 = res[model2]
+res_rec2 = res_temp[res_temp['rec']==rec]
+
 channels = [2,3,4,5,6]
-fig = plot_predictions.plot_predictions('/train/00013145/s006_t007', res_rec, 
-                                        annos_pred[0]['/train/00013145/s006_t007'], channels,
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
                                         ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'],
-                                        0, 650, -500, 500)
+                                        0, 650, -500, 500, rec_pred2=res_rec2['seiz prob'], anno_pred2=annos_pred[model2][rec])
 plt.show()
 
 
 # FNSZ
-rec = '/test/00008174/s001_t001'
+rec = '/train/00010088/s010_t001'
 res_rec = res['seiz prob'][res['rec']==rec]
 record = f[rec]
 annos = record['Annotations']
 channels = [0,1,2,3,4]
-fig = plot_predictions.plot_predictions(rec, res_rec, annos_pred[0][rec], channels,
+fig = plot_predictions.plot_predictions(rec, res_rec, annos_pred[2][rec], channels,
                                         ['fnsz', 'gnsz', 'cpsz', 'spsz', 'tcsz', 'seiz', 'absz', 'tnsz', 'mysz'],
-                                        0, 1200, -1000, 1000)
+                                        0, 1300, -1000, 1000)
 plt.show()
+
 
 # TCSZ
 rec = '/train/00008889/s002_t008'

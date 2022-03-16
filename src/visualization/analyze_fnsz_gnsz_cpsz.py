@@ -36,6 +36,17 @@ for i in range(len(files)):
     OVLP = analysis.AnyOverlap(pred_annos=annos_pred[models[i]], hdf5_path='/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', seiz_eval = None, margin=0)
     TP, FN, FP, TN, total_recdur, anno_stats, recstats[models[i]], rectstats_seiz[models[i]] = OVLP.compute_performance()
 
+res_temp = res['fnsz']
+res_temp = res_temp[res_temp['seiz_types']=='fnsz']
+
+subjects = res_temp['subj'].unique()
+
+for subj in subjects:
+    temp = res_temp[res_temp['subj']==subj]
+    pred = (temp['seiz prob'] > 0.5).astype(int)
+    tp = ((pred==1)&(temp['label']==1)).sum()
+    print(tp/len(temp))
+
 # Analyse TCSZ
 f = dc.File('/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 'r')
 
@@ -48,22 +59,32 @@ fnsz_res = rectstats_seiz['fnsz'][rectstats_seiz['fnsz']['seiz_type']=='fnsz'].r
 gnsz_res = rectstats_seiz['fnsz'][rectstats_seiz['fnsz']['seiz_type']=='gnsz'].reset_index()
 
 
+fnsz_res['subj'] = fnsz_res['rec'].str.split('/').str[1:3].str.join('/')
+fnsz_res.groupby('subj').sum()['hit']/fnsz_res.groupby('subj').count()['hit']
+
 #FNSZ first seizures
 fnsz_joined = fnsz_res[((fnsz_res['hit']==1)&(fnsz_full['hit']==0))]
 
 model = 'full'
 
-rec = '/train/00013145/s003_t005'
+rec = '/train/00013145/s007_t006'
 res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
+
+model2 = 'fnsz'
+res_temp2 = res[model2]
+res_rec2 = res_temp2[res_temp2['rec']==rec]
+
 annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
+channels = list(range(5))
 
 fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
                                         annos_pred[model][rec], channels,
-                                        ['fnsz'], 200, 400, -300, 300)
+                                        ['fnsz'], 0, 600, -100, 100, rec_pred2=res_rec2['seiz prob'], anno_pred2=annos_pred[model2][rec])
+plt.show()
+
 
 model2 = 'fnsz'
 res_temp2 = res[model2]
@@ -73,11 +94,12 @@ fig = plot_predictions.plot_predictions(rec, res_rec2['seiz prob'],
                                         annos_pred[model2][rec], channels,
                                         ['fnsz'], 200, 400, -300, 300)
 
+channels = list(range(len(record['TCP'].attrs['chNames'])))
 fig = plot_predictions.visualize_seizures(rec_name=rec, 
                                           rec_pred = res_rec['seiz prob'],  
                                           channels = channels, 
-                                          time_start = 350, 
-                                          time_end = 360, 
+                                          time_start = 160, 
+                                          time_end = 180, 
                                           y_min = -100, 
                                           y_max = 100,
                                           rec_pred_second = res_rec2['seiz prob'],
@@ -93,35 +115,20 @@ res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
-annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
-
-fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
-                                        annos_pred[model][rec], channels,
-                                        ['fnsz'], 350, 600, -500, 500)
-
-
 model2 = 'fnsz'
 res_temp2 = res[model2]
 res_rec2 = res_temp2[res_temp2['rec']==rec]
 
-fig = plot_predictions.plot_predictions(rec, res_rec2['seiz prob'], 
-                                        annos_pred[model2][rec], channels,
-                                        ['fnsz'], 350, 600, -500, 500)
+
+annos = record['Annotations']
+channels = list(range(5))
+
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
+                                        ['fnsz'], 350, 600, -500, 500,
+                                        rec_pred2=res_rec2['seiz prob'], anno_pred2=annos_pred[model2][rec])
+
 plt.show()
-
-
-fig = plot_predictions.visualize_seizures(rec_name=rec, 
-                                          rec_pred = res_rec['seiz prob'],  
-                                          channels = channels, 
-                                          time_start = 505, 
-                                          time_end = 515, 
-                                          y_min = -100, 
-                                          y_max = 100,
-                                          rec_pred_second = res_rec2['seiz prob'],
-                                          model_names = ['Full model', 'Small model'])
-plt.show()
-
 
 
 #FNSZ third seizures
@@ -134,51 +141,40 @@ res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
-annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
-
-fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
-                                        annos_pred[model][rec], channels,
-                                        ['fnsz'], 50, 150, -100, 100)
-plt.show()
-
 model2 = 'fnsz'
 res_temp2 = res[model2]
 res_rec2 = res_temp2[res_temp2['rec']==rec]
 
-fig = plot_predictions.plot_predictions(rec, res_rec2['seiz prob'], 
-                                        annos_pred[model2][rec], channels,
-                                        ['fnsz'], 50, 150, -100, 100)
-plt.show()
 
+annos = record['Annotations']
+channels = list(range(5))
 
-fig = plot_predictions.visualize_seizures(rec_name=rec, 
-                                          rec_pred = res_rec['seiz prob'],  
-                                          channels = channels, 
-                                          time_start = 88, 
-                                          time_end = 98, 
-                                          y_min = -100, 
-                                          y_max = 100,
-                                          rec_pred_second = res_rec2['seiz prob'],
-                                          model_names = ['Full model', 'Small model'])
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
+                                        ['fnsz'], 50, 150, -100, 100,
+                                        rec_pred2 = res_rec2['seiz prob'], anno_pred2=annos_pred[model2][rec])
 plt.show()
 
 #CPSZ
 cpsz_joined = cpsz_res[((cpsz_res['hit']==1)&(cpsz_full['hit']==0))]
 rec = '/train/00000883/s011_t007'
 
-model = 'fnsz'
-
+model = 'full'
 res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
+model2 = 'fnsz'
+res_temp2 = res[model2]
+res_rec2 = res_temp2[res_temp2['rec']==rec]
+
 annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
+channels = list(range(5))
 
 fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
                                         annos_pred[model][rec], channels,
-                                        ['cpsz'], 0, 750, -300, 300)
+                                        ['cpsz'], 0, 750, -300, 300,
+                                        rec_pred2 = res_rec2['seiz prob'], anno_pred2 = annos_pred[model2][rec])
 plt.show()
 
 
@@ -186,6 +182,27 @@ plt.show()
 gnsz_joined = gnsz_res[((gnsz_res['hit']==1)&(gnsz_full['hit']==0))]
 rec = '/train/00011870/s001_t003'
 
+model = 'full'
+
+res_temp = res[model]
+res_rec = res_temp[res_temp['rec']==rec]
+record = f[rec]
+
+model2 = 'fnsz'
+res_temp2 = res[model2]
+res_rec2 = res_temp2[res_temp2['rec']==rec]
+
+annos = record['Annotations']
+channels = list(range(5))
+
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
+                                        ['gnsz'], 0, 1500, -500, 500,
+                                        rec_pred2 = res_rec2['seiz prob'], anno_pred2 = annos_pred[model2][rec])
+plt.show()
+
+# GNSZ
+rec = '/train/00012707/s003_t009'
 
 model = 'full'
 
@@ -193,60 +210,36 @@ res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
-annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
-
-fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
-                                        annos_pred[model][rec], channels,
-                                        ['gnsz'], 0, 1500, -500, 500)
-plt.show()
-
 model2 = 'fnsz'
 res_temp2 = res[model2]
 res_rec2 = res_temp2[res_temp2['rec']==rec]
 
-fig = plot_predictions.visualize_seizures(rec_name=rec, 
-                                          rec_pred = res_rec['seiz prob'],  
-                                          channels = channels, 
-                                          time_start = 200, 
-                                          time_end = 210, 
-                                          y_min = -100, 
-                                          y_max = 100,
-                                          rec_pred_second = res_rec2['seiz prob'],
-                                          model_names = ['Full model', 'Small model'])
+annos = record['Annotations']
+channels = list(range(5))
+
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
+                                        ['gnsz'], 100, 300, -500, 500,
+                                        rec_pred2 = res_rec2['seiz prob'], anno_pred2 = annos_pred[model2][rec])
 plt.show()
 
-
-
-# GNSZ
-rec = '/train/00012707/s003_t009'
-
-
-model = 'fnsz'
+#GNSZ
+rec = '/test/00008174/s001_t001'
+model = 'full'
 
 res_temp = res[model]
 res_rec = res_temp[res_temp['rec']==rec]
 record = f[rec]
 
-annos = record['Annotations']
-channels = list(range(len(record['TCP'].attrs['chNames'])))
-
-fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
-                                        annos_pred[model][rec], channels,
-                                        ['gnsz'], 100, 300, -500, 500)
-plt.show()
-
 model2 = 'fnsz'
 res_temp2 = res[model2]
 res_rec2 = res_temp2[res_temp2['rec']==rec]
 
-fig = plot_predictions.visualize_seizures(rec_name=rec, 
-                                          rec_pred = res_rec['seiz prob'],  
-                                          channels = channels, 
-                                          time_start = 440, 
-                                          time_end = 450, 
-                                          y_min = -100, 
-                                          y_max = 100,
-                                          rec_pred_second = res_rec2['seiz prob'],
-                                          model_names = ['Full model', 'Small model'])
+annos = record['Annotations']
+channels = list(range(5))
+
+fig = plot_predictions.plot_predictions(rec, res_rec['seiz prob'], 
+                                        annos_pred[model][rec], channels,
+                                        ['gnsz'], 0, 1280, -500, 500,
+                                        rec_pred2 = res_rec2['seiz prob'], anno_pred2 = annos_pred[model2][rec])
 plt.show()
