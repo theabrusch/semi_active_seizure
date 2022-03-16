@@ -107,12 +107,11 @@ def main(args):
                                                       correct_wrong=args.correct_wrong, label = label)
             pert_total[subj][seiz] = pert_map
 
-    # save results for further analysis
-    pickle_path = 'data/predictions/'+ args.job_name + '_split_' + str(args.split) + '_pertmaps.pickle'
+            # save temporary results for further analysis
+            pickle_path = 'data/predictions/'+ args.job_name + '_split_' + str(args.split) + '_pertmaps.pickle'
 
-    with open(pickle_path, 'wb') as fp:
-        pickle.dump(pert_total, fp)
-
+            with open(pickle_path, 'wb') as fp:
+                pickle.dump(pert_total, fp)
 
     writer.close()
 
