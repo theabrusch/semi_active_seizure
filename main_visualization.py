@@ -78,7 +78,6 @@ def main(args):
     # save temporary results for further analysis
     pickle_path = 'data/predictions/'+ args.job_name + str(datetime.now()) + '_split_' + str(args.split) + '_pertmaps.pickle'
 
-
     pert_total = dict()
     j = 1
     for subj in test:

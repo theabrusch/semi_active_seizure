@@ -30,7 +30,7 @@ def perturbation_maps(model, data, n_iterations, correct_wrong = False, label = 
     '''
 
     orig_dataset = TensorDataset(torch.Tensor(data))
-    orig_dataloader = DataLoader(orig_dataset, batch_size = 512, shuffle = False)
+    orig_dataloader = DataLoader(orig_dataset, batch_size = 512, shuffle = False, pin_memory=True)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")    
     model = model.to(device)
@@ -71,40 +71,34 @@ def spectral_amplitude_perturbation(model, data, n_iterations, device, orig_pred
     Compute the actual spectral perturbations.
     Function wrapped by perturbation_maps
     '''
-    n_samples = len(data)
     # convert to frequency spectrum
     fft_input = np.fft.rfft(data, n = data.shape[2], axis = 2)
     amps = np.abs(fft_input)
     phases = np.angle(fft_input)
 
-    #
-    amps_rep = np.repeat(amps, n_iterations, axis = 0)
-    phases_rep = np.repeat(phases, n_iterations, axis = 0)
-    # Compute perturbed inputs
-    amps_pert, phases_pert, pert_vals = amp_perturbation_additive(amps_rep, phases_rep)
-    fft_pert = amps_pert * np.exp(1j * phases_pert)
-    inputs_pert = np.fft.irfft(fft_pert, n = data.shape[2], axis = 2).astype(
-        np.float32
-    )
-
-    # convert to dataloader
-    pert_dataset = TensorDataset(torch.Tensor(inputs_pert))
-    pert_dataloader = DataLoader(pert_dataset, batch_size = 512, shuffle = False)
-
-    # get perturbed outputs
-    pert_output = model_eval(model, pert_dataloader, device)
-
-    pert_output = [pert_output[i*n_samples:(i+1)*n_samples,...] for i in range(n_iterations)]
-    pert_vals = [pert_vals[i*n_samples:(i+1)*n_samples,...] for i in range(n_iterations)]
+    #pert_output = [pert_output[i*n_samples:(i+1)*n_samples,...] for i in range(n_iterations)]
+    #pert_vals = [pert_vals[i*n_samples:(i+1)*n_samples,...] for i in range(n_iterations)]
     
     pert_corrs = 0
 
     for i in range(n_iterations):
+        # Compute perturbed inputs
+        amps_pert, phases_pert, pert_vals = amp_perturbation_additive(amps, phases)
+        fft_pert = amps_pert * np.exp(1j * phases_pert)
+        inputs_pert = np.fft.irfft(fft_pert, n = data.shape[2], axis = 2).astype(
+            np.float32
+        )
+        # convert to dataloader
+        pert_dataset = TensorDataset(torch.Tensor(inputs_pert))
+        pert_dataloader = DataLoader(pert_dataset, batch_size = 512, shuffle = False, pin_memory=True)
+
+        # get perturbed outputs
+        pert_output = model_eval(model, pert_dataloader, device)
         # get difference between perturbed and original outputs
-        out_diff = pert_output[i] - orig_pred
+        out_diff = pert_output - orig_pred
 
         pert_corrs_tmp = utils_vis.wrap_reshape_apply_fn(
-                utils_vis.corr, pert_vals[i], out_diff, axis_a = (0,), axis_b = (0)
+                utils_vis.corr, pert_vals, out_diff, axis_a = (0,), axis_b = (0)
             )
         pert_corrs += pert_corrs_tmp
 
