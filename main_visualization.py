@@ -76,7 +76,10 @@ def main(args):
     model.load_state_dict(checkpoint['model_state_dict'])
 
     pert_total = dict()
+    j = 1
     for subj in test:
+        print('Computing perturbations for subject', j, 'out of', len(test))
+        j += 1
         datasegment = datagenerator.SegmentData(**datagen,
                                                 subjects_to_use = [subj])
         segment, norm_coef = datasegment.segment_data(split = 'test')
@@ -94,8 +97,14 @@ def main(args):
                 temp = dataset._get_segment(seg)
                 input_data[i,:,:] = temp
 
-            # get perturbations 
-            pert_map = perturbation.spectral_amplitude_perturbation(model, input_data, args.n_iterations)
+            # get perturbations
+            if seiz in args.seiz_classes:
+                label = 1
+            else:
+                label = 0
+            
+            pert_map = perturbation.perturbation_maps(model, input_data, args.n_iterations, 
+                                                      correct_wrong=args.correct_wrong, label = label)
             pert_total[subj][seiz] = pert_map
 
     # save results for further analysis
@@ -138,6 +147,7 @@ if __name__ == '__main__':
 
     # visualization
     parser.add_argument('--n_iterations', type = int, default = 100)
+    parser.add_argument('--correct_wrong', type = eval, default = False)
 
     args = parser.parse_args()
     main(args)

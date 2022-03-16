@@ -29,8 +29,9 @@ parser.add_argument('--dropoutprob', type=float, default=0.4)
 parser.add_argument('--cnn_dropoutprob', type=float, default=0.4)
 parser.add_argument('--padding', type=eval, default=True)              
 
-    # visualization
-parser.add_argument('--n_iterations', type = int, default = 2)
+# visualization
+parser.add_argument('--n_iterations', type = int, default = 1)
+parser.add_argument('--correct_wrong', type = eval, default = True)
 
 args = parser.parse_args(['--file_path','/Users/theabrusch/Desktop/Speciale_data/hdf5/temple_seiz_full.hdf5', 
                           '--window_length', '2',
