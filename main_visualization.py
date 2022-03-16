@@ -75,6 +75,10 @@ def main(args):
     checkpoint = torch.load(args.model_path, map_location = 'cpu')
     model.load_state_dict(checkpoint['model_state_dict'])
 
+    # save temporary results for further analysis
+    pickle_path = 'data/predictions/'+ args.job_name + str(datetime.now()) + '_split_' + str(args.split) + '_pertmaps.pickle'
+
+
     pert_total = dict()
     j = 1
     for subj in test:
@@ -106,9 +110,6 @@ def main(args):
             pert_map = perturbation.perturbation_maps(model, input_data, args.n_iterations, 
                                                       correct_wrong=args.correct_wrong, label = label)
             pert_total[subj][seiz] = pert_map
-
-            # save temporary results for further analysis
-            pickle_path = 'data/predictions/'+ args.job_name + str(datetime.now()) + '_split_' + str(args.split) + '_pertmaps.pickle'
 
             with open(pickle_path, 'wb') as fp:
                 pickle.dump(pert_total, fp)
